@@ -2,6 +2,10 @@ import { Table, Column, Model, DataType, HasMany } from "sequelize-typescript";
 import { Property } from "./Property";
 import { VendorProperty } from "./VendorProperty";
 import { Favorite } from "./Favorite";
+import { Review } from "./Review";
+import { Visit } from "./Visit";
+import { Lead } from "./Lead";
+import { Sale } from "./Sale";
 
 @Table({ tableName: "users" })
 export class User extends Model {
@@ -67,6 +71,21 @@ export class User extends Model {
   })
   avatarUrl?: string;
 
+  // 📌 Nuevos campos para el sistema de roles
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  })
+  isActive!: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  hasPurchased!: boolean;
+
   // Relationships
   @HasMany(() => Property, "createdBy")
   createdProperties?: Property[];
@@ -76,4 +95,16 @@ export class User extends Model {
 
   @HasMany(() => Favorite)
   favorites?: Favorite[];
+
+  @HasMany(() => Review)
+  reviews?: Review[];
+
+  @HasMany(() => Visit)
+  visits?: Visit[];
+
+  @HasMany(() => Lead, "vendorId")
+  assignedLeads?: Lead[];
+
+  @HasMany(() => Sale, "vendorId")
+  sales?: Sale[];
 }

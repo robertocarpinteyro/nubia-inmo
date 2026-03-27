@@ -11,6 +11,8 @@ import { User } from "./User";
 import { PropertyMedia } from "./PropertyMedia";
 import { VendorProperty } from "./VendorProperty";
 import { Favorite } from "./Favorite";
+import { Review } from "./Review";
+import { Visit } from "./Visit";
 
 @Table({ tableName: "properties" })
 export class Property extends Model {
@@ -133,7 +135,7 @@ export class Property extends Model {
   @Column({
     type: DataType.DECIMAL(5, 2),
     allowNull: true,
-    defaultValue: 0,
+    defaultValue: 4.00,
   })
   commissionPercentage?: number;
 
@@ -143,6 +145,31 @@ export class Property extends Model {
     defaultValue: false,
   })
   featured!: boolean;
+
+  // 📌 Nuevos campos para vendedores
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  landingPageUrl?: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  videoUrls?: string; // JSON array stringified
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  mediaFolderUrl?: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  technicalSheet?: string; // JSON stringified
 
   // Foreign key — admin who created it
   @ForeignKey(() => User)
@@ -164,4 +191,10 @@ export class Property extends Model {
 
   @HasMany(() => Favorite)
   favorites?: Favorite[];
+
+  @HasMany(() => Review)
+  reviews?: Review[];
+
+  @HasMany(() => Visit)
+  visits?: Visit[];
 }

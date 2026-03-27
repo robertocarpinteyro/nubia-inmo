@@ -8,7 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import Image from "next/image";
 import axios from "axios";
 import { useRouter } from "next/navigation"; 
-
+import { useAuth, API_BASE_URL } from "@/context/AuthContext";
 
 import OpenEye from "@/assets/images/icon/icon_68.svg";
 
@@ -21,19 +21,19 @@ interface FormData {
 
 const RegisterForm = () => {
   const router = useRouter(); 
+  const { login } = useAuth();
 
   const schema = yup
   .object({
-    name: yup.string().required("Name is required"),
-    email: yup.string().required("Email is required").email("Invalid email"),
-    password: yup.string().required("Password is required"),
+    name: yup.string().required("El nombre es obligatorio"),
+    email: yup.string().required("El email es obligatorio").email("Email inválido"),
+    password: yup.string().required("La contraseña es obligatoria"),
     termsAccepted: yup
       .boolean()
-      .oneOf([true], "You must accept the terms and conditions") 
+      .oneOf([true], "Debes aceptar los términos y condiciones") 
       .required(),
   })
   .required();
-
 
   const {
     register,
@@ -54,18 +54,21 @@ const RegisterForm = () => {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/signup", data);
+      const response = await axios.post(`${API_BASE_URL}/auth/signup`, data);
 
       if (response.status === 201) {
-        toast.success("Registration successful! Redirecting to login...", {
+        // Guardar token y usuario en contexto + localStorage
+        login(response.data.token, response.data.user);
+
+        toast.success("¡Registro exitoso! Redirigiendo...", {
           position: "top-center",
         });
 
         reset();
-        setTimeout(() => router.push("/dashboard/dashboard-index"), 2000); 
+        setTimeout(() => router.push("/dashboard/dashboard-index"), 1000);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Error during registration", {
+      toast.error(error.response?.data?.error || "Error durante el registro", {
         position: "top-center",
       });
     } finally {
@@ -78,25 +81,25 @@ const RegisterForm = () => {
       <div className="row">
         <div className="col-12">
           <div className="input-group-meta position-relative mb-25">
-            <label>Name*</label>
-            <input type="text" {...register("name")} placeholder="Your Name" />
+            <label>Nombre*</label>
+            <input type="text" {...register("name")} placeholder="Tu nombre" />
             <p className="form_error">{errors.name?.message}</p>
           </div>
         </div>
         <div className="col-12">
           <div className="input-group-meta position-relative mb-25">
             <label>Email*</label>
-            <input type="email" {...register("email")} placeholder="Youremail@gmail.com" />
+            <input type="email" {...register("email")} placeholder="tucorreo@gmail.com" />
             <p className="form_error">{errors.email?.message}</p>
           </div>
         </div>
         <div className="col-12">
           <div className="input-group-meta position-relative mb-20">
-            <label>Password*</label>
+            <label>Contraseña*</label>
             <input
               type={isPasswordVisible ? "text" : "password"}
               {...register("password")}
-              placeholder="Enter Password"
+              placeholder="Ingresa tu contraseña"
               className="pass_log_id"
             />
             <span className="placeholder_icon">
@@ -112,8 +115,8 @@ const RegisterForm = () => {
             <div>
               <input type="checkbox" id="termsAccepted" {...register("termsAccepted")} />
               <label htmlFor="termsAccepted">
-                By hitting the &quot;Register&quot; button, you agree to the{" "}
-                <Link href="#">Terms conditions</Link> & <Link href="#">Privacy Policy</Link>
+                Al registrarte aceptas los{" "}
+                <Link href="#">Términos y condiciones</Link> y <Link href="#">Política de privacidad</Link>
               </label>
               <p className="form_error">{errors.termsAccepted?.message}</p>
             </div>
@@ -121,7 +124,7 @@ const RegisterForm = () => {
         </div>
         <div className="col-12">
           <button type="submit" className="btn-two w-100 text-uppercase d-block mt-20" disabled={loading}>
-            {loading ? "Signing up..." : "SIGN UP"}
+            {loading ? "Registrando..." : "REGISTRARSE"}
           </button>
         </div>
       </div>
