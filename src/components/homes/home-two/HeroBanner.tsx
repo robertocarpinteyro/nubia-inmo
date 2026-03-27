@@ -1,56 +1,102 @@
 "use client"
 import Image from "next/image"
-import Link from "next/link";
-import { useState } from "react";
-import VideoPopup from "@/modals/VideoPopup";
-import DropdownTwo from "@/components/search-dropdown/home-dropdown/DropdownTwo";
+import Link from "next/link"
+import DropdownTwo from "@/components/search-dropdown/home-dropdown/DropdownTwo"
 
-import titleShape from "@/assets/images/shape/shape_11.svg"
-import bannerImg_1 from "@/assets/images/assets/ils_03.png"
-import bannerImg_2 from "@/assets/images/shape/shape_12.svg"
-import bannerImg_3 from "@/assets/images/assets/badge_01.svg"
+import bannerImg from "@/assets/images/assets/ils_03.png"
 
 const HeroBanner = () => {
-
-   const [isVideoOpen, setIsVideoOpen] = useState(false);
-
    return (
-      <>
-         <div className="hero-banner-two z-1 position-relative">
-            <div className="container">
-               <div className="position-relative line-bg pt-200 md-pt-150 pb-130 xl-pb-100">
-                  <div className="row">
-                     <div className="col-xxl-9 col-xl-8 col-lg-9 col-md-10">
-                        <h1 className="hero-heading font-garamond wow fadeInUp">Find the right home for your family <span><Image src={titleShape} alt="" className="lazy-img icon d-inline-block" /></span></h1>
-                        <p className="fs-24 color-dark pt-35 md-pt-30 pb-35 mb-pb-20 wow fadeInUp" data-wow-delay="0.1s">We’ve more than 745,000 apartments, place & plot.</p>
-                        <div className="d-inline-flex align-items-center flex-wrap">
-                           <Link href="/listing_07" className="btn-seven mb-20 me-4 me-xxl5"><span>Explore All listing</span> <i className="bi bi-arrow-up-right"></i></Link>
-                           <a onClick={() => setIsVideoOpen(true)} style={{ cursor: "pointer" }} className="video-icon tran3s d-flex align-items-center justify-content-center mb-20">
-                              <i className="fa-light fa-play"></i>
-                              <div className="ps-3 text-start">
-                                 <span className="d-block">Watch</span>
-                                 <strong className="fs-20 color-dark fw-normal d-block">Intro video</strong>
-                              </div>
-                           </a>
-                        </div>
+      <div className="nubia-hero">
+         <div className="container">
+            <div className="hero-inner">
+               <div className="row align-items-center">
+                  <div className="col-lg-6 col-xl-5">
+                     {/* Badge */}
+                     <div className="hero-badge wow fadeInUp">
+                        <span className="dot"></span>
+                        Inmobiliaria Premium · México
+                     </div>
+
+                     {/* Main heading */}
+                     <h1 className="nubia-hero-heading wow fadeInUp" data-wow-delay="0.05s">
+                        <span className="d-block">Abriendo</span>
+                        <span className="d-block accent-line">Nuevas</span>
+                        <span className="d-block outline-line">Puertas</span>
+                     </h1>
+
+                     {/* Subtitle */}
+                     <p className="hero-subtitle mt-40 mb-45 wow fadeInUp" data-wow-delay="0.1s">
+                        Conectamos personas con el hogar de sus sueños en México.
+                        Propiedades residenciales, comerciales e inversión.
+                     </p>
+
+                     {/* CTA group */}
+                     <div className="hero-cta-group wow fadeInUp" data-wow-delay="0.15s">
+                        <Link href="/listing_07" className="btn-nubia-primary">
+                           Explorar Propiedades
+                           <i className="bi bi-arrow-up-right"></i>
+                        </Link>
+                        <Link href="/contact" className="btn-nubia-ghost">
+                           <i className="bi bi-telephone"></i>
+                           Contáctanos
+                        </Link>
                      </div>
                   </div>
 
-                  <DropdownTwo />
+                  {/* Illustration - visible on large screens inside flow */}
+                  <div className="col-lg-6 col-xl-7 d-none d-lg-block">
+                     {/* empty — illustration is absolute */}
+                  </div>
+               </div>
+
+               {/* Search strip */}
+               <div className="row mt-80 md-mt-50 wow fadeInUp" data-wow-delay="0.2s">
+                  <div className="col-12">
+                     <div className="nubia-search-strip">
+                        <div className="search-inner">
+                           <input
+                              type="text"
+                              className="search-field"
+                              placeholder="Buscar por colonia, municipio o ciudad..."
+                           />
+                           <select className="search-select">
+                              <option value="">Tipo</option>
+                              <option value="casa">Casa</option>
+                              <option value="depto">Departamento</option>
+                              <option value="terreno">Terreno</option>
+                              <option value="comercial">Comercial</option>
+                           </select>
+                           <select className="search-select">
+                              <option value="">Operación</option>
+                              <option value="venta">Venta</option>
+                              <option value="renta">Renta</option>
+                           </select>
+                           <button className="search-btn" type="button">
+                              <i className="bi bi-search"></i>
+                              Buscar
+                           </button>
+                        </div>
+                     </div>
+                  </div>
                </div>
             </div>
-            <Image src={bannerImg_1} alt="" className="lazy-img shapes illustration" />
-            <Image src={bannerImg_2} alt="" className="lazy-img shapes shape_01" />
-            <Image src={bannerImg_3} alt="" className="lazy-img shapes shape_02" />
          </div>
-         {/* video modal start */}
-         <VideoPopup
-            isVideoOpen={isVideoOpen}
-            setIsVideoOpen={setIsVideoOpen}
-            videoId={"tUP5S4YdEJo"}
+
+         {/* 3D illustration */}
+         <Image
+            src={bannerImg}
+            alt="Propiedad 3D NUBIA"
+            className="hero-illustration lazy-img"
+            priority
          />
-         {/* video modal end */}
-      </>
+
+         {/* Scroll indicator */}
+         <div className="hero-scroll">
+            <span className="scroll-line"></span>
+            <span>Scroll</span>
+         </div>
+      </div>
    )
 }
 

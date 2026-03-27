@@ -1,0 +1,992 @@
+// ============================================================
+// NUBIA Inmobiliaria — Brand Design System
+// Exaggerated Minimalism · Dark Editorial · Proptech
+// ============================================================
+
+// ─── GLOBAL NUBIA RESET ────────────────────────────────────
+.nubia-home {
+  background: $nubia-dark;
+}
+
+// ─── DARK HEADER OVERRIDES ─────────────────────────────────
+.nubia-home .theme-main-menu {
+  &.menu-overlay {
+    background: transparent;
+  }
+  // Logo NUBIA text override
+  .nubia-logo-text {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: $nubia-white;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  // Nav links on dark bg
+  .navbar-nav .nav-link,
+  .navbar-nav .nav-item > a {
+    color: rgba($nubia-white, 0.82) !important;
+    &:hover { color: $nubia-white !important; }
+  }
+  .login-btn-one a,
+  .login-btn-one i {
+    color: rgba($nubia-white, 0.82) !important;
+  }
+  .btn-two {
+    background: $nubia-purple;
+    border-color: $nubia-purple;
+    color: $nubia-white !important;
+    &:hover { background: $nubia-purple-2; }
+  }
+  .sidenavbtn {
+    border-color: $nubia-border;
+    color: $nubia-white;
+    &:hover { background: $nubia-white; color: $nubia-dark; }
+  }
+  // Sticky dark override
+  &.fixed {
+    background: rgba($nubia-dark, 0.96) !important;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 $nubia-border;
+    .nubia-logo-text { color: $nubia-white; }
+    .navbar-nav .nav-link,
+    .navbar-nav .nav-item > a {
+      color: rgba($nubia-white, 0.82) !important;
+    }
+  }
+}
+
+// ─── HERO BANNER — NUBIA ───────────────────────────────────
+.nubia-hero {
+  background: $nubia-dark;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+
+  // Subtle grid texture
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba($nubia-white, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba($nubia-white, 0.025) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    padding: 180px 0 100px;
+  }
+
+  // Giant editorial heading
+  .nubia-hero-heading {
+    font-size: clamp(3.5rem, 11vw, 130px);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    color: $nubia-white;
+    text-transform: uppercase;
+    margin: 0;
+
+    .accent-line {
+      color: $nubia-purple;
+    }
+    .outline-line {
+      -webkit-text-stroke: 2px $nubia-white;
+      color: transparent;
+    }
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 1.5vw, 18px);
+    color: rgba($nubia-white, 0.55);
+    line-height: 1.7;
+    max-width: 480px;
+    margin: 0;
+  }
+
+  .hero-cta-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn-nubia-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: $nubia-purple;
+    color: $nubia-white;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    padding: 16px 32px;
+    border-radius: 2px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.2s ease;
+    i { font-size: 14px; }
+    &:hover {
+      background: $nubia-purple-2;
+      color: $nubia-white;
+      transform: translateY(-1px);
+    }
+  }
+
+  .btn-nubia-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: rgba($nubia-white, 0.72);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 16px 24px;
+    border: 1px solid $nubia-border;
+    border-radius: 2px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    i { font-size: 14px; }
+    &:hover {
+      color: $nubia-white;
+      border-color: rgba($nubia-white, 0.3);
+    }
+  }
+
+  // 3D illustration
+  .hero-illustration {
+    position: absolute;
+    right: -2%;
+    bottom: 0;
+    max-width: 52%;
+    z-index: 1;
+    pointer-events: none;
+    filter: drop-shadow(0 40px 80px rgba($nubia-purple, 0.2));
+  }
+
+  // Floating badge
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: $nubia-purple-3;
+    border: 1px solid rgba($nubia-purple, 0.3);
+    padding: 8px 16px;
+    border-radius: 100px;
+    color: $nubia-purple-2;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+
+    span.dot {
+      width: 6px;
+      height: 6px;
+      background: $nubia-purple;
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+  }
+
+  // Scroll indicator
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba($nubia-white, 0.3);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, transparent, rgba($nubia-white, 0.3));
+      animation: scroll-pulse 2s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+@keyframes scroll-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+// ─── STATS BAR ─────────────────────────────────────────────
+.nubia-stats {
+  background: $nubia-dark-2;
+  border-top: 1px solid $nubia-border;
+  border-bottom: 1px solid $nubia-border;
+  padding: 64px 0;
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  .stat-item {
+    padding: 0 40px;
+    border-right: 1px solid $nubia-border;
+    &:first-child { padding-left: 0; }
+    &:last-child { border-right: none; }
+  }
+
+  .stat-number {
+    font-size: clamp(2.5rem, 5vw, 64px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: $nubia-white;
+    display: block;
+
+    &.purple { color: $nubia-purple; }
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: rgba($nubia-white, 0.45);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 10px;
+    display: block;
+  }
+}
+
+// ─── SECTION — DARK ────────────────────────────────────────
+.nubia-section-dark {
+  background: $nubia-dark;
+  color: $nubia-white;
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $nubia-purple;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .section-heading {
+    font-size: clamp(2.5rem, 6vw, 80px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: $nubia-white;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .section-body {
+    font-size: 17px;
+    color: rgba($nubia-white, 0.55);
+    line-height: 1.75;
+  }
+}
+
+// ─── SECTION — SAGE (Light) ─────────────────────────────────
+.nubia-section-sage {
+  background: $nubia-sage;
+  color: $nubia-dark;
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $nubia-dark;
+    opacity: 0.45;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .section-heading {
+    font-size: clamp(2.5rem, 6vw, 80px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: $nubia-dark;
+    text-transform: uppercase;
+    margin: 0;
+  }
+}
+
+// ─── SECTION — WHITE ───────────────────────────────────────
+.nubia-section-white {
+  background: $nubia-off-white;
+  color: $nubia-dark;
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $nubia-dark;
+    opacity: 0.4;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .section-heading {
+    font-size: clamp(2rem, 5vw, 64px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: $nubia-dark;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .section-body {
+    font-size: 17px;
+    color: rgba($nubia-dark, 0.55);
+    line-height: 1.75;
+  }
+}
+
+// ─── PROPERTY CARD — NUBIA ─────────────────────────────────
+.nubia-property-card {
+  background: $nubia-dark-3;
+  border: 1px solid $nubia-border-2;
+  border-radius: 2px;
+  overflow: hidden;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba($nubia-purple, 0.35);
+    transform: translateY(-3px);
+  }
+
+  .card-thumb {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: $nubia-dark-2;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    &:hover img { transform: scale(1.04); }
+  }
+
+  .card-tag {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: $nubia-purple;
+    color: $nubia-white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 2px;
+  }
+
+  .card-body-inner {
+    padding: 24px;
+  }
+
+  .card-price {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: $nubia-white;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba($nubia-white, 0.75);
+    margin-bottom: 6px;
+  }
+
+  .card-location {
+    font-size: 13px;
+    color: rgba($nubia-white, 0.35);
+    margin-bottom: 20px;
+    i { margin-right: 5px; }
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 20px;
+    padding-top: 16px;
+    border-top: 1px solid $nubia-border-2;
+    font-size: 13px;
+    color: rgba($nubia-white, 0.45);
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      i { color: rgba($nubia-white, 0.25); font-size: 14px; }
+    }
+  }
+}
+
+// ─── FEATURE BLOCK — DARK ──────────────────────────────────
+.nubia-feature-block {
+  position: relative;
+  overflow: hidden;
+
+  &.dark {
+    background: $nubia-dark;
+    border-top: 1px solid $nubia-border;
+    border-bottom: 1px solid $nubia-border;
+  }
+
+  &.sage { background: $nubia-sage; }
+
+  .feature-big-number {
+    font-size: clamp(5rem, 14vw, 180px);
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.06em;
+    color: $nubia-white;
+    text-transform: uppercase;
+    display: block;
+    opacity: 0.06;
+    position: absolute;
+    right: -20px;
+    bottom: -10px;
+    pointer-events: none;
+  }
+
+  .feature-image-wrap {
+    border-radius: 2px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .feature-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: $nubia-purple;
+    margin-bottom: 16px;
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 1px;
+      background: $nubia-purple;
+    }
+  }
+
+  .feature-heading {
+    font-size: clamp(2rem, 5vw, 64px);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+  }
+
+  .feature-body {
+    font-size: 16px;
+    line-height: 1.75;
+    max-width: 420px;
+  }
+
+  .feature-rate {
+    .rate-number {
+      font-size: clamp(3rem, 6vw, 72px);
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+    }
+    .rate-label {
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+  }
+
+  .feature-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: gap 0.25s ease;
+
+    &.light { color: $nubia-white; }
+    &.dark-link { color: $nubia-dark; }
+
+    i {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    &.light i {
+      background: $nubia-white;
+      color: $nubia-dark;
+    }
+    &.dark-link i {
+      background: $nubia-dark;
+      color: $nubia-white;
+    }
+
+    &:hover { gap: 16px; }
+  }
+}
+
+// ─── PROCESS SECTION ───────────────────────────────────────
+.nubia-process {
+  background: $nubia-off-white;
+  position: relative;
+  overflow: hidden;
+
+  .process-step {
+    padding: 48px 0;
+    border-bottom: 1px solid rgba($nubia-dark, 0.1);
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    position: relative;
+    transition: background 0.2s ease;
+    cursor: default;
+
+    &:last-child { border-bottom: none; }
+
+    &:hover .step-number { color: $nubia-purple; }
+  }
+
+  .step-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba($nubia-dark, 0.2);
+    letter-spacing: 0.1em;
+    min-width: 48px;
+    padding-top: 4px;
+    transition: color 0.25s ease;
+  }
+
+  .step-title {
+    font-size: clamp(1.5rem, 3vw, 36px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: $nubia-dark;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+
+  .step-body {
+    font-size: 16px;
+    color: rgba($nubia-dark, 0.5);
+    line-height: 1.7;
+    max-width: 500px;
+    margin: 0;
+  }
+
+  .process-cta-card {
+    background: $nubia-purple;
+    padding: 48px 40px;
+    border-radius: 2px;
+    color: $nubia-white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .cta-heading {
+      font-size: clamp(1.75rem, 3vw, 42px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: $nubia-white;
+      text-transform: uppercase;
+    }
+
+    .cta-body {
+      font-size: 16px;
+      color: rgba($nubia-white, 0.65);
+      line-height: 1.7;
+    }
+
+    .btn-cta-white {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: $nubia-white;
+      color: $nubia-purple;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 14px 28px;
+      border-radius: 2px;
+      text-decoration: none;
+      width: fit-content;
+      transition: background 0.2s ease;
+      &:hover { background: $nubia-off-white; }
+    }
+  }
+}
+
+// ─── TESTIMONIAL SECTION ───────────────────────────────────
+.nubia-testimonial {
+  background: $nubia-dark-2;
+  border-top: 1px solid $nubia-border;
+
+  .testimonial-quote {
+    font-size: clamp(1.5rem, 3vw, 36px);
+    font-weight: 400;
+    font-style: italic;
+    color: $nubia-white;
+    line-height: 1.5;
+    font-family: $sub-font;
+    max-width: 700px;
+  }
+
+  .testimonial-author {
+    font-size: 15px;
+    color: rgba($nubia-white, 0.45);
+    font-style: normal;
+    margin-top: 8px;
+
+    strong {
+      color: rgba($nubia-white, 0.75);
+      font-style: normal;
+    }
+  }
+
+  .counter-block-nubia {
+    padding: 40px 0;
+    border-bottom: 1px solid $nubia-border;
+
+    &:last-child { border-bottom: none; }
+
+    .count-number {
+      font-size: clamp(2.5rem, 5vw, 60px);
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      color: $nubia-white;
+      line-height: 1;
+    }
+    .count-label {
+      font-size: 14px;
+      color: rgba($nubia-white, 0.4);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+  }
+}
+
+// ─── CTA BANNER ────────────────────────────────────────────
+.nubia-cta-banner {
+  background: $nubia-dark;
+  border-top: 1px solid $nubia-border;
+  padding: 120px 0;
+
+  .cta-super-text {
+    font-size: clamp(3rem, 9vw, 110px);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 0.88;
+    text-transform: uppercase;
+    color: $nubia-white;
+
+    span {
+      -webkit-text-stroke: 2px rgba($nubia-white, 0.3);
+      color: transparent;
+    }
+  }
+
+  .cta-email-form {
+    display: flex;
+    gap: 0;
+    max-width: 500px;
+
+    input {
+      flex: 1;
+      background: $nubia-dark-3;
+      border: 1px solid $nubia-border;
+      border-right: none;
+      border-radius: 2px 0 0 2px;
+      color: $nubia-white;
+      padding: 16px 20px;
+      font-size: 15px;
+      outline: none;
+
+      &::placeholder { color: rgba($nubia-white, 0.25); }
+      &:focus { border-color: rgba($nubia-purple, 0.5); }
+    }
+
+    button {
+      background: $nubia-purple;
+      border: none;
+      color: $nubia-white;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 16px 28px;
+      border-radius: 0 2px 2px 0;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      white-space: nowrap;
+      &:hover { background: $nubia-purple-2; }
+    }
+  }
+
+  .cta-note {
+    font-size: 13px;
+    color: rgba($nubia-white, 0.3);
+    margin-top: 14px;
+  }
+}
+
+// ─── FOOTER NUBIA OVERRIDE ─────────────────────────────────
+.nubia-home .footer-one.dark-bg {
+  background: $nubia-dark !important;
+  border-top: 1px solid $nubia-border;
+
+  .nubia-footer-logo {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    color: $nubia-white;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 24px;
+  }
+
+  p, .email { color: rgba($nubia-white, 0.45) !important; }
+
+  h6 { color: rgba($nubia-white, 0.45); font-size: 12px; letter-spacing: 0.15em; }
+
+  .footer-title { color: rgba($nubia-white, 0.45) !important; font-size: 12px !important; letter-spacing: 0.15em; }
+
+  .footer-nav-link li a {
+    color: rgba($nubia-white, 0.6);
+    transition: color 0.2s;
+    &:hover { color: $nubia-white; }
+  }
+
+  .social-icon li a {
+    color: rgba($nubia-white, 0.4);
+    font-size: 1.1em;
+    transition: color 0.2s;
+    &:hover { color: $nubia-white; }
+  }
+}
+
+// ─── NUBIA MARQUEE STRIP ───────────────────────────────────
+.nubia-marquee-strip {
+  background: $nubia-purple;
+  padding: 18px 0;
+  overflow: hidden;
+
+  .marquee-inner {
+    display: flex;
+    gap: 0;
+    animation: marquee-scroll 20s linear infinite;
+    white-space: nowrap;
+  }
+
+  .marquee-item {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $nubia-white;
+    padding: 0 40px;
+    opacity: 0.9;
+
+    span.sep {
+      margin: 0 20px;
+      opacity: 0.4;
+    }
+  }
+}
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+// ─── SEARCH STRIP ──────────────────────────────────────────
+.nubia-search-strip {
+  background: $nubia-dark-2;
+  border-top: 1px solid $nubia-border;
+  padding: 24px 0;
+
+  .search-inner {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid $nubia-border;
+    border-radius: 2px;
+    overflow: hidden;
+    background: $nubia-dark-3;
+  }
+
+  .search-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: $nubia-white;
+    padding: 18px 24px;
+    font-size: 15px;
+    outline: none;
+    border-right: 1px solid $nubia-border;
+
+    &::placeholder { color: rgba($nubia-white, 0.25); }
+  }
+
+  .search-select {
+    background: transparent;
+    border: none;
+    color: rgba($nubia-white, 0.6);
+    padding: 18px 20px;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    border-right: 1px solid $nubia-border;
+    appearance: none;
+
+    option { background: $nubia-dark-3; }
+  }
+
+  .search-btn {
+    background: $nubia-purple;
+    border: none;
+    color: $nubia-white;
+    padding: 18px 32px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    &:hover { background: $nubia-purple-2; }
+  }
+}
+
+// ─── RESPONSIVE ────────────────────────────────────────────
+@media (max-width: 1200px) {
+  .nubia-hero {
+    .hero-illustration {
+      max-width: 48%;
+      opacity: 0.8;
+    }
+    .hero-inner {
+      padding: 160px 0 80px;
+    }
+  }
+
+  .nubia-stats .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    .stat-item {
+      padding: 24px 32px;
+      border-bottom: 1px solid $nubia-border;
+      &:nth-child(2) { border-right: none; }
+      &:nth-child(3), &:nth-child(4) { border-bottom: none; }
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  .nubia-hero {
+    .hero-illustration {
+      position: static;
+      max-width: 80%;
+      margin: 40px auto 0;
+      display: block;
+      filter: none;
+    }
+    .nubia-hero-heading {
+      font-size: clamp(3rem, 12vw, 80px);
+    }
+    .hero-inner {
+      padding: 120px 0 60px;
+    }
+  }
+
+  .nubia-stats .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nubia-cta-banner .cta-super-text {
+    font-size: clamp(2.5rem, 9vw, 80px);
+  }
+}
+
+@media (max-width: 767px) {
+  .nubia-hero {
+    min-height: auto;
+    .nubia-hero-heading {
+      font-size: clamp(2.5rem, 13vw, 60px);
+    }
+    .hero-scroll { display: none; }
+  }
+
+  .nubia-stats .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    .stat-item { padding: 20px; }
+  }
+
+  .nubia-process .process-step {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .nubia-search-strip .search-inner {
+    flex-direction: column;
+    .search-field, .search-select {
+      border-right: none;
+      border-bottom: 1px solid $nubia-border;
+    }
+    .search-btn { width: 100%; justify-content: center; }
+  }
+}

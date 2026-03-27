@@ -17,7 +17,7 @@ const AboutUsOne = () => {
          <BLockFeatureOne />
          <VideoBanner />
          <BLockFeatureFive style={true} />
-         <Feedback style={true} />
+         <Feedback />
          <AgentArea style={false} />
          <Brand />
          <FancyBanner style={false} />

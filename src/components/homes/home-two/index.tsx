@@ -1,32 +1,26 @@
-import FooterOne from "@/layouts/footers/FooterOne"
-import HeroBanner from "./HeroBanner"
-import FeedbackOne from "./FeedbackOne"
-import Property from "./Property"
-import BLockFeatureOne from "./BLockFeatureOne"
-import FancyBannerOne from "./FancyBannerOne"
-import BLockFeatureTwo from "./BLockFeatureTwo"
-import FeedbackTwo from "./FeedbackTwo"
-import Blog from "./Blog"
-import FAQ from "./FAQ"
-import FancyBannerTwo from "./FancyBannerTwo"
 import HeaderTwo from "@/layouts/headers/HeaderTwo"
+import HeroBanner from "./HeroBanner"
+import StatsBar from "./StatsBar"
+import NubiaProperties from "./NubiaProperties"
+import NubiaFeatures from "./NubiaFeatures"
+import NubiaProcess from "./NubiaProcess"
+import NubiaTestimonial from "./NubiaTestimonial"
+import NubiaCtaBanner from "./NubiaCtaBanner"
+import NubiaFooter from "./NubiaFooter"
 
 const HomeTwo = () => {
   return (
-    <>
-      <HeaderTwo style_1={false} style_2={false} />
+    <div className="nubia-home">
+      <HeaderTwo style_1={false} style_2={false} nubia={true} />
       <HeroBanner />
-      <FeedbackOne />
-      <Property />
-      <BLockFeatureOne />
-      <FancyBannerOne />
-      <BLockFeatureTwo />
-      <FeedbackTwo />
-      <Blog style={false} />
-      <FAQ />
-      <FancyBannerTwo/>
-      <FooterOne style={true} />
-    </>
+      <StatsBar />
+      <NubiaProperties />
+      <NubiaFeatures />
+      <NubiaProcess />
+      <NubiaTestimonial />
+      <NubiaCtaBanner />
+      <NubiaFooter />
+    </div>
   )
 }
 
