@@ -49,7 +49,22 @@ const LoginForm = () => {
             toast.success("Login exitoso", { position: "top-center" });
             reset();
 
-            // Redirigir según el rol
+            // Cerrar modal de Bootstrap antes de redirigir
+            const modalEl = document.getElementById("loginModal");
+            if (modalEl) {
+               const bootstrap = (window as any).bootstrap;
+               if (bootstrap) {
+                  const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                  if (modalInstance) modalInstance.hide();
+               }
+            }
+            // Limpiar backdrop y clases residuales del modal
+            document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+            document.body.classList.remove("modal-open");
+            document.body.style.removeProperty("overflow");
+            document.body.style.removeProperty("padding-right");
+
+            // Redirigir al dashboard
             router.push("/dashboard/dashboard-index");
          } else {
             toast.error(result.error || "Email o contraseña inválidos");

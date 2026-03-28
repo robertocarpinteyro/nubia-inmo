@@ -1,12 +1,12 @@
-import DashboardHeaderOne from "@/layouts/headers/dashboard/DashboardHeaderOne"
+"use client"
+import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
 import ProfileBody from "./ProfileBody"
 
 const DashboardProfile = () => {
    return (
-      <>
-         <DashboardHeaderOne />
+      <DashboardLayout title="Mi Perfil">
          <ProfileBody />
-      </>
+      </DashboardLayout>
    )
 }
 

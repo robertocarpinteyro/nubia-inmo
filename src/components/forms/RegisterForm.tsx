@@ -65,7 +65,22 @@ const RegisterForm = () => {
         });
 
         reset();
-        setTimeout(() => router.push("/dashboard/dashboard-index"), 1000);
+
+        // Cerrar modal de Bootstrap antes de redirigir
+        const modalEl = document.getElementById("loginModal");
+        if (modalEl) {
+          const bootstrap = (window as any).bootstrap;
+          if (bootstrap) {
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+          }
+        }
+        document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+        document.body.classList.remove("modal-open");
+        document.body.style.removeProperty("overflow");
+        document.body.style.removeProperty("padding-right");
+
+        setTimeout(() => router.push("/dashboard/dashboard-index"), 500);
       }
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Error durante el registro", {

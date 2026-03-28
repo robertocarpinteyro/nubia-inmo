@@ -1,12 +1,12 @@
-import DashboardHeaderOne from "@/layouts/headers/dashboard/DashboardHeaderOne"
+"use client"
+import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
 import PropertyListBody from "./PropertyListBody"
 
 const PropertyList = () => {
    return (
-      <>
-         <DashboardHeaderOne />
+      <DashboardLayout title="Mis Propiedades">
          <PropertyListBody />
-      </>
+      </DashboardLayout>
    )
 }
 

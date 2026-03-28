@@ -1,13 +1,13 @@
-import DashboardHeaderOne from "@/layouts/headers/dashboard/DashboardHeaderOne";
-import AccountSettingBody from "./AccountSettingBody";
+"use client"
+import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
+import AccountSettingBody from "./AccountSettingBody"
 
 const DashboardAccountSetting = () => {
    return (
-      <>
-         <DashboardHeaderOne />
+      <DashboardLayout title="Configuración">
          <AccountSettingBody />
-      </>
+      </DashboardLayout>
    )
 }
 
-export default DashboardAccountSetting;
+export default DashboardAccountSetting

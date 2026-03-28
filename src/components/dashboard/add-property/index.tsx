@@ -1,12 +1,12 @@
-import DashboardHeaderOne from "@/layouts/headers/dashboard/DashboardHeaderOne"
+"use client"
+import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
 import AddPropertyBody from "./AddPropertyBody"
 
 const DashboardAddProperty = () => {
    return (
-      <>
-         <DashboardHeaderOne />
+      <DashboardLayout title="Agregar Propiedad" allowedRoles={["admin"]}>
          <AddPropertyBody />
-      </>
+      </DashboardLayout>
    )
 }
 
