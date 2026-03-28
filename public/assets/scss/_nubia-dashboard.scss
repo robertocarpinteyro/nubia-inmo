@@ -1,0 +1,772 @@
+// ============================================================
+// NUBIA Dashboard — Design System
+// Dark sidebar · Light content · Purple accents
+// ============================================================
+
+// ─── LAYOUT ─────────────────────────────────────────────────
+.nubia-dash-wrap {
+  display: flex;
+  min-height: 100vh;
+  background: #F0F0ED;
+}
+
+// ─── SIDEBAR ────────────────────────────────────────────────
+.nubia-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: $nubia-dark;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 200;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
+
+  .sidebar-logo {
+    padding: 28px 24px 24px;
+    border-bottom: 1px solid $nubia-border;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    a {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      color: $nubia-white;
+      text-decoration: none;
+    }
+
+    .close-sidebar {
+      display: none;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.4);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+    }
+  }
+
+  .sidebar-user {
+    padding: 20px 24px;
+    border-bottom: 1px solid $nubia-border;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: $nubia-purple;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: $nubia-white;
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+
+    .user-info {
+      overflow: hidden;
+      .name {
+        font-size: 14px;
+        font-weight: 600;
+        color: $nubia-white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .role-badge {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: $nubia-purple-2;
+      }
+    }
+  }
+
+  .sidebar-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.2);
+    padding: 20px 24px 8px;
+  }
+
+  nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li a,
+    li button {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      border-radius: 0;
+      border: none;
+      background: none;
+      width: 100%;
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s;
+      position: relative;
+
+      i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      &:hover {
+        color: rgba(255,255,255,0.85);
+        background: rgba(255,255,255,0.04);
+      }
+
+      &.active {
+        color: $nubia-white;
+        background: rgba($nubia-purple, 0.15);
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 4px;
+          bottom: 4px;
+          width: 3px;
+          background: $nubia-purple;
+          border-radius: 0 2px 2px 0;
+        }
+
+        i { color: $nubia-purple; }
+      }
+    }
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 20px 24px;
+    border-top: 1px solid $nubia-border;
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.35);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 10px 0;
+      width: 100%;
+      transition: color 0.2s;
+
+      i { font-size: 16px; }
+      &:hover { color: rgba(255,255,255,0.65); }
+    }
+  }
+
+  // Mobile hidden state
+  &.sidebar-hidden {
+    transform: translateX(-100%);
+  }
+}
+
+// ─── MAIN CONTENT ───────────────────────────────────────────
+.nubia-dash-main {
+  margin-left: 260px;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+// ─── TOP BAR ────────────────────────────────────────────────
+.nubia-topbar {
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: $nubia-dark;
+    padding: 8px;
+  }
+
+  .page-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $nubia-dark;
+    letter-spacing: -0.01em;
+  }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .topbar-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: rgba($nubia-dark, 0.55);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    text-decoration: none;
+
+    &:hover { background: #f5f5f2; color: $nubia-dark; }
+
+    .notif-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 7px;
+      height: 7px;
+      background: $nubia-purple;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+  }
+
+  .topbar-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: $nubia-purple;
+    color: $nubia-white;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-transform: uppercase;
+    border: none;
+    position: relative;
+  }
+
+  .topbar-user-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    width: 200px;
+    padding: 8px 0;
+    z-index: 500;
+
+    .menu-user-info {
+      padding: 12px 16px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      margin-bottom: 6px;
+
+      .menu-name { font-size: 14px; font-weight: 600; color: $nubia-dark; }
+      .menu-email { font-size: 12px; color: rgba($nubia-dark, 0.4); }
+    }
+
+    a, button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      color: rgba($nubia-dark, 0.7);
+      text-decoration: none;
+      border: none;
+      background: none;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.15s;
+      i { font-size: 14px; width: 16px; }
+      &:hover { background: #f5f5f2; color: $nubia-dark; }
+      &.danger { color: #e53e3e; &:hover { background: #fff5f5; } }
+    }
+  }
+}
+
+// ─── CONTENT AREA ───────────────────────────────────────────
+.nubia-dash-content {
+  padding: 32px;
+  flex: 1;
+}
+
+// ─── KPI CARDS ──────────────────────────────────────────────
+.nubia-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.nubia-kpi-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  border: 1px solid rgba(0,0,0,0.05);
+  position: relative;
+  overflow: hidden;
+
+  .kpi-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba($nubia-dark, 0.4);
+    margin-bottom: 8px;
+  }
+
+  .kpi-value {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: $nubia-dark;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .kpi-sub {
+    font-size: 13px;
+    color: rgba($nubia-dark, 0.4);
+  }
+
+  .kpi-icon {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  &.purple .kpi-icon { background: rgba($nubia-purple, 0.1); color: $nubia-purple; }
+  &.green .kpi-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+  &.amber .kpi-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+  &.blue .kpi-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+  .kpi-trend {
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    &.up { color: #10b981; }
+    &.down { color: #ef4444; }
+  }
+}
+
+// ─── DASH CARD (panel blanco genérico) ──────────────────────
+.nubia-dash-card {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.05);
+  overflow: hidden;
+
+  .card-head {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: $nubia-dark;
+      margin: 0;
+    }
+
+    .card-action {
+      font-size: 13px;
+      font-weight: 600;
+      color: $nubia-purple;
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  .card-body-inner {
+    padding: 24px;
+  }
+}
+
+// ─── TABLE ──────────────────────────────────────────────────
+.nubia-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba($nubia-dark, 0.35);
+    padding: 0 24px 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  td {
+    padding: 14px 24px;
+    font-size: 14px;
+    color: rgba($nubia-dark, 0.75);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: #fafafa; }
+
+  .cell-bold { font-weight: 600; color: $nubia-dark; }
+
+  .cell-muted { color: rgba($nubia-dark, 0.35); font-size: 13px; }
+}
+
+// ─── BADGES ─────────────────────────────────────────────────
+.nubia-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+
+  &.purple { background: rgba($nubia-purple, 0.1); color: $nubia-purple; }
+  &.green  { background: rgba(16,185,129,0.1); color: #059669; }
+  &.amber  { background: rgba(245,158,11,0.1); color: #d97706; }
+  &.red    { background: rgba(239,68,68,0.1); color: #dc2626; }
+  &.gray   { background: rgba(0,0,0,0.06); color: rgba($nubia-dark, 0.5); }
+}
+
+// ─── BUTTONS ────────────────────────────────────────────────
+.btn-nubia-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &.primary {
+    background: $nubia-purple;
+    color: #fff;
+    &:hover { background: $nubia-purple-2; }
+  }
+
+  &.outline {
+    background: transparent;
+    color: $nubia-purple;
+    border: 1px solid rgba($nubia-purple, 0.35);
+    &:hover { background: rgba($nubia-purple, 0.06); }
+  }
+
+  &.ghost {
+    background: rgba(0,0,0,0.04);
+    color: rgba($nubia-dark, 0.65);
+    &:hover { background: rgba(0,0,0,0.08); color: $nubia-dark; }
+  }
+
+  &.danger {
+    background: rgba(239,68,68,0.08);
+    color: #dc2626;
+    &:hover { background: rgba(239,68,68,0.15); }
+  }
+}
+
+// ─── FORM ───────────────────────────────────────────────────
+.nubia-form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba($nubia-dark, 0.6);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: #f5f5f2;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 6px;
+    font-size: 14px;
+    color: $nubia-dark;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: $main-font;
+
+    &:focus { border-color: $nubia-purple; background: #fff; }
+    &::placeholder { color: rgba($nubia-dark, 0.3); }
+  }
+
+  textarea { min-height: 100px; resize: vertical; }
+  select { appearance: none; cursor: pointer; }
+}
+
+// ─── PROPERTY CARD (dash) ───────────────────────────────────
+.nubia-dash-prop-card {
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+  .prop-thumb {
+    position: relative;
+    aspect-ratio: 16/9;
+    background: #e0e0da;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+    &:hover img { transform: scale(1.04); }
+  }
+
+  .prop-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: $nubia-purple;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 3px;
+  }
+
+  .prop-body {
+    padding: 16px;
+
+    .prop-price {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: $nubia-dark;
+    }
+
+    .prop-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba($nubia-dark, 0.65);
+      margin: 4px 0 8px;
+    }
+
+    .prop-meta {
+      display: flex;
+      gap: 14px;
+      font-size: 12px;
+      color: rgba($nubia-dark, 0.4);
+
+      span { display: flex; align-items: center; gap: 4px; }
+      i { font-size: 13px; }
+    }
+
+    .prop-commission {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      font-size: 13px;
+      color: rgba($nubia-dark, 0.5);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      strong { color: #10b981; font-size: 15px; font-weight: 700; }
+    }
+  }
+}
+
+// ─── EMPTY STATE ────────────────────────────────────────────
+.nubia-empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  color: rgba($nubia-dark, 0.35);
+
+  i { font-size: 40px; margin-bottom: 16px; display: block; }
+  p { font-size: 15px; margin: 0; }
+}
+
+// ─── LOADING ────────────────────────────────────────────────
+.nubia-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba($nubia-purple, 0.15);
+    border-top-color: $nubia-purple;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ─── MODAL ──────────────────────────────────────────────────
+.nubia-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.nubia-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  .modal-head {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: $nubia-dark;
+      margin: 0;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: rgba($nubia-dark, 0.35);
+      padding: 0;
+      line-height: 1;
+      &:hover { color: $nubia-dark; }
+    }
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+
+  .modal-footer {
+    padding: 0 24px 24px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+}
+
+// ─── RESPONSIVE ─────────────────────────────────────────────
+@media (max-width: 1100px) {
+  .nubia-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 991px) {
+  .nubia-sidebar {
+    transform: translateX(-100%);
+
+    &.sidebar-open {
+      transform: translateX(0);
+    }
+
+    .sidebar-logo .close-sidebar {
+      display: block;
+    }
+  }
+
+  .nubia-dash-main {
+    margin-left: 0;
+  }
+
+  .nubia-topbar .menu-toggle {
+    display: flex;
+  }
+
+  .nubia-dash-content {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .nubia-kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .nubia-kpi-card .kpi-value {
+    font-size: 24px;
+  }
+}
