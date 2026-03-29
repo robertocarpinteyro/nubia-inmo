@@ -1,65 +1,81 @@
 "use client"
-import DashboardHeaderTwo from "@/layouts/headers/dashboard/DashboardHeaderTwo"
-import NiceSelect from "@/ui/NiceSelect";
-import UserReview from "./UserReview";
-import Image from "next/image";
-import Link from "next/link";
+import { useEffect, useState } from "react"
+import { useAuth, API_BASE_URL } from "@/context/AuthContext"
+import Link from "next/link"
 
-import icon_1 from "@/assets/images/icon/icon_46.svg";
+interface Review {
+   id: number
+   rating: number
+   comment: string
+   isVisible: boolean
+   property?: { id: number; title: string }
+   createdAt: string
+}
 
 const ReviewBody = () => {
+   const { getAuthHeaders } = useAuth()
+   const [reviews, setReviews] = useState<Review[]>([])
+   const [loading, setLoading] = useState(true)
 
-   const selectHandler = (e: any) => { };
+   useEffect(() => {
+      fetch(`${API_BASE_URL}/reviews/me`, {
+         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      })
+         .then((r) => r.json())
+         .then((d) => setReviews(Array.isArray(d) ? d : []))
+         .catch(() => setReviews([]))
+         .finally(() => setLoading(false))
+   }, [getAuthHeaders])
 
    return (
-      <div className="dashboard-body">
-         <div className="position-relative">
-            <DashboardHeaderTwo title="Review" />
-            <h2 className="main-title d-block d-lg-none">Reviews</h2>
-
-            <div className="d-sm-flex align-items-center justify-content-between mb-25">
-               <div className="fs-16">Showing <span className="color-dark fw-500">1–5</span> of <span
-                  className="color-dark fw-500">40</span> results</div>
-               <div className="d-flex ms-auto xs-mt-30">
-                  <div className="short-filter d-flex align-items-center ms-sm-auto">
-                     <div className="fs-16 me-2">Short by:</div>
-                     <NiceSelect className="nice-select"
-                        options={[
-                           { value: "1", text: "Newest" },
-                           { value: "2", text: "Best Rating" },
-                           { value: "3", text: "Rating Low" },
-                           { value: "4", text: "Rating High" },
-                        ]}
-                        defaultCurrent={0}
-                        onChange={selectHandler}
-                        name=""
-                        placeholder="" />
-                  </div>
-               </div>
+      <div className="nubia-dash-card" style={{ marginTop: 24, minHeight: 400 }}>
+         <div className="card-head d-flex justify-content-between align-items-center mb-4">
+            <div>
+               <h5 className="card-title">Mis Reseñas</h5>
+               <p style={{ margin: 0, fontSize: 13, color: "rgba(0,0,0,0.5)" }}>
+                  Has dejado {reviews.length} {reviews.length === 1 ? "reseña" : "reseñas"}
+               </p>
             </div>
-
-            <div className="bg-white card-box pt-0 border-20">
-               <div className="theme-details-one">
-                  <div className="review-panel-one">
-                     <div className="position-relative z-1">
-                        <div className="review-wrapper">
-                           <UserReview />
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-            <ul style={{ marginLeft: "15px" }} className="pagination-one d-flex align-items-center style-none pt-40">
-               <li className="me-3"><Link href="#">1</Link></li>
-               <li className="selected"><Link href="#">2</Link></li>
-               <li><Link href="#">3</Link></li>
-               <li><Link href="#">4</Link></li>
-               <li>....</li>
-               <li className="ms-2"><Link href="#" className="d-flex align-items-center">
-                  Last <Image src={icon_1} alt="" className="ms-2" /></Link></li>
-            </ul>
+            <Link href="/listing_07" className="btn-nubia-sm primary">Explorar Propiedades</Link>
          </div>
+
+         {loading ? (
+            <div className="nubia-loading"><div className="spinner"></div></div>
+         ) : reviews.length === 0 ? (
+            <div className="nubia-empty-state">
+               <i className="bi bi-star"></i>
+               <p>No has escrito ninguna reseña todavía.</p>
+            </div>
+         ) : (
+            <div className="d-flex flex-column gap-3">
+               {reviews.map((r) => (
+                  <div key={r.id} style={{ border: "1px solid rgba(0,0,0,0.06)", borderRadius: 12, padding: 20 }}>
+                     <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h6 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>
+                           {r.property?.title ?? "Propiedad Desconocida"}
+                        </h6>
+                        <span style={{ fontSize: 12, color: "rgba(0,0,0,0.4)" }}>
+                           {new Date(r.createdAt).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" })}
+                        </span>
+                     </div>
+                     
+                     <div style={{ color: "#f59e0b", fontSize: 14, marginBottom: 8 }}>
+                        {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
+                     </div>
+                     
+                     <p style={{ fontSize: 14, color: "rgba(0,0,0,0.6)", margin: 0, lineHeight: 1.6 }}>
+                        "{r.comment}"
+                     </p>
+                     
+                     {!r.isVisible && (
+                        <div style={{ marginTop: 12 }}>
+                           <span className="nubia-badge red">Oculta por administrador</span>
+                        </div>
+                     )}
+                  </div>
+               ))}
+            </div>
+         )}
       </div>
    )
 }

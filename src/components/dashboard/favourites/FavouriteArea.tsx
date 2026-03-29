@@ -1,112 +1,127 @@
 "use client"
-import UseShortedProperty from "@/hooks/useShortedProperty";
-import Link from "next/link";
-import Image from "next/image";
-import ReactPaginate from "react-paginate";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 
-import icon from "@/assets/images/icon/icon_46.svg"
-import featureIcon_1 from "@/assets/images/icon/icon_04.svg"
-import featureIcon_2 from "@/assets/images/icon/icon_05.svg"
-import featureIcon_3 from "@/assets/images/icon/icon_06.svg"
+interface Favorite {
+   id: number
+   propertyId: number
+   property?: {
+      id: number
+      title: string
+      price: number
+      address: string
+      bedrooms: number
+      bathrooms: number
+      totalArea: number
+      status: string
+      images?: string[]
+   }
+}
 
 const FavouriteArea = () => {
+   const { getAuthHeaders } = useAuth()
+   const [favs, setFavs] = useState<Favorite[]>([])
+   const [loading, setLoading] = useState(true)
+   const [toast, setToast] = useState("")
 
-   const itemsPerPage = 9;
-   const page = "listing_4";
+   const load = () => {
+      fetch(`${API_BASE_URL}/favorites`, {
+         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      })
+         .then((r) => r.json())
+         .then((d) => setFavs(Array.isArray(d) ? d : []))
+         .catch(() => setFavs([]))
+         .finally(() => setLoading(false))
+   }
 
-   const {
-      itemOffset,
-      sortedProperties,
-      currentItems,
-      pageCount,
-      handlePageClick,
-      handleBathroomChange,
-      handleBedroomChange,
-      handleSearchChange,
-      handlePriceChange,
-      maxPrice,
-      priceValue,
-      resetFilters,
-      selectedAmenities,
-      handleAmenityChange,
-      handleLocationChange,
-      handleStatusChange,
-      handleTypeChange,
-      handlePriceDropChange
-   } = UseShortedProperty({ itemsPerPage, page });
+   useEffect(() => { load() }, [])
 
-   const handleResetFilter = () => {
-      resetFilters();
-   };
+   const removeFavorite = async (propertyId: number) => {
+      try {
+         const res = await fetch(`${API_BASE_URL}/favorites/${propertyId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+         })
+         if (res.ok) {
+            setToast("Propiedad eliminada de favoritos")
+            load()
+         }
+      } catch {
+         setToast("Error al eliminar favorito")
+      }
+      setTimeout(() => setToast(""), 3000)
+   }
 
    return (
-      <>
-         <div className="row gx-xxl-5">
-            {currentItems.map((item: any) => (
-               <div key={item.id} className="col-lg-4 col-md-6 d-flex mb-50 wow fadeInUp" data-wow-delay={item.data_delay_time}>
-                  <div className="listing-card-one border-25 h-100 w-100 ">
-                     <div className="img-gallery p-15">
-                        <div className="position-relative border-25 overflow-hidden">
-                           <div className={`tag border-25 ${item.tag_bg}`}>{item.tag}</div>
-                           <Link href="#" className="fav-btn tran3s"><i className="fa-light fa-heart"></i></Link>
-                           <div id={`carousel${item.carousel}`} className="carousel slide">
-                              <div className="carousel-indicators">
-                                 <button type="button" data-bs-target={`#carousel${item.carousel}`} data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
-                                 <button type="button" data-bs-target={`#carousel${item.carousel}`} data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                 <button type="button" data-bs-target={`#carousel${item.carousel}`} data-bs-slide-to="2" aria-label="Slide 3"></button>
-                              </div>
-                              <div className="carousel-inner">
-                                 {item.carousel_thumb.map((item: any, i: any) => (
-                                    <div key={i} className={`carousel-item ${item.active}`} data-bs-interval="1000000">
-                                       <Link href="/listing_details_01" className="d-block"><Image src={item.img} className="w-100" alt="..." /></Link>
-                                    </div>
-                                 ))}
+      <div className="nubia-dash-card" style={{ marginTop: 24, minHeight: 400 }}>
+         {toast && (
+            <div style={{ position: "fixed", top: 80, right: 24, background: "#7B4FFF", color: "#fff", padding: "12px 20px", borderRadius: 8, zIndex: 9999, fontSize: 14 }}>
+               {toast}
+            </div>
+         )}
+
+         <div className="card-head d-flex justify-content-between align-items-center mb-4">
+            <div>
+               <h5 className="card-title">Mis Favoritos</h5>
+               <p style={{ margin: 0, fontSize: 13, color: "rgba(0,0,0,0.5)" }}>
+                  Has guardado {favs.length} {favs.length === 1 ? "propiedad" : "propiedades"}
+               </p>
+            </div>
+            <Link href="/listing_07" className="btn-nubia-sm primary">Explorar Más</Link>
+         </div>
+
+         {loading ? (
+            <div className="nubia-loading"><div className="spinner"></div></div>
+         ) : favs.length === 0 ? (
+            <div className="nubia-empty-state">
+               <i className="bi bi-heart"></i>
+               <p>No tienes propiedades favoritas guardadas.</p>
+            </div>
+         ) : (
+            <div className="row g-4">
+               {favs.map(({ property }) => {
+                  if (!property) return null
+                  return (
+                     <div key={property.id} className="col-lg-4 col-md-6">
+                        <div className="nubia-dash-prop-card h-100">
+                           <div className="prop-thumb" style={{ height: 200 }}>
+                              {property.images?.[0] ? (
+                                 <img src={property.images[0]} alt={property.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              ) : (
+                                 <div style={{ width: "100%", height: "100%", background: "#e8e8e4", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <i className="bi bi-house" style={{ fontSize: 32, color: "rgba(0,0,0,0.2)" }}></i>
+                                 </div>
+                              )}
+                              <span className="prop-tag">{property.status}</span>
+                              <button 
+                                 className="fav-btn-active" 
+                                 title="Quitar de favoritos"
+                                 onClick={() => removeFavorite(property.id)}
+                                 style={{ position: "absolute", top: 12, right: 12, background: "#fff", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#e63946", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+                              >
+                                 <i className="bi bi-heart-fill"></i>
+                              </button>
+                           </div>
+                           <div className="prop-body">
+                              <div className="prop-price">${Number(property.price).toLocaleString("es-MX")}</div>
+                              <div className="prop-title">{property.title}</div>
+                              {property.address && <div className="prop-meta"><span><i className="bi bi-geo-alt"></i>{property.address}</span></div>}
+                              
+                              <div className="d-flex align-items-center gap-3 mt-3 pt-3 border-top" style={{ fontSize: 13, color: "rgba(0,0,0,0.6)" }}>
+                                 <span><i className="bi bi-arrows-fullscreen me-1"></i> {property.totalArea} m²</span>
+                                 <span><i className="bi bi-door-open me-1"></i> {property.bedrooms} Rec</span>
+                                 <span><i className="bi bi-droplet me-1"></i> {property.bathrooms} Baños</span>
                               </div>
                            </div>
                         </div>
                      </div>
-                     <div className="property-info p-25">
-                        <Link href="/listing_details_03" className="title tran3s">{item.title}</Link>
-                        <div className="address">{item.address}</div>
-                        <ul className="style-none feature d-flex flex-wrap align-items-center justify-content-between">
-                           <li className="d-flex align-items-center">
-                              <Image src={featureIcon_1} alt=""
-                                 className="lazy-img icon me-2" />
-                              <span className="fs-16">{item.property_info.sqft} sqft</span>
-                           </li>
-                           <li className="d-flex align-items-center">
-                              <Image src={featureIcon_2} alt=""
-                                 className="lazy-img icon me-2" />
-                              <span className="fs-16">{item.property_info.bed} bed</span>
-                           </li>
-                           <li className="d-flex align-items-center">
-                              <Image src={featureIcon_3} alt=""
-                                 className="lazy-img icon me-2" />
-                              <span className="fs-16">{item.property_info.bath} bath</span>
-                           </li>
-                        </ul>
-                        <div className="pl-footer top-border d-flex align-items-center justify-content-between">
-                           <strong className="price fw-500 color-dark">${item.price.toLocaleString({ minimumFractionDigits: 2, maximumFractionDigits: 2 })} {item.price_text && <>/ <sub>m</sub></>}</strong>
-                           <Link href="/listing_details_03" className="btn-four rounded-circle"><i className="bi bi-arrow-up-right"></i></Link>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            ))}
-         </div>
-
-         <ReactPaginate
-            breakLabel="..."
-            nextLabel={<Image src={icon} alt="" className="ms-2" />}
-            onPageChange={handlePageClick}
-            pageRangeDisplayed={pageCount}
-            pageCount={pageCount}
-            previousLabel={<Image src={icon} alt="" className="ms-2" />}
-            renderOnZeroPageCount={null}
-            className="pagination-one d-flex align-items-center style-none pt-20"
-         />
-      </>
+                  )
+               })}
+            </div>
+         )}
+      </div>
    )
 }
 
-export default FavouriteArea;
+export default FavouriteArea

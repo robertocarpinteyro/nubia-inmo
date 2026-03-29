@@ -1,70 +1,178 @@
 "use client"
-import DashboardHeaderTwo from "@/layouts/headers/dashboard/DashboardHeaderTwo"
-import NiceSelect from "@/ui/NiceSelect";
-import PropertyTableBody from "./PropertyTableBody";
-import Link from "next/link";
-import Image from "next/image";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 
-import icon_1 from "@/assets/images/icon/icon_46.svg";
+interface Property {
+   id: number
+   title: string
+   price: number
+   status: string
+   vendorCommission?: number
+   isExclusive?: boolean
+}
 
 const PropertyListBody = () => {
+   const { user, getAuthHeaders } = useAuth()
+   const [props, setProps] = useState<Property[]>([])
+   const [loading, setLoading] = useState(true)
+   const [toast, setToast] = useState("")
 
-   const selectHandler = (e: any) => { };
+   const isAdmin = user?.role === "admin"
+
+   const load = () => {
+      // Si es admin, ve toda la lista de propiedades general
+      // Si es vendedor, ve solo las propiedades que se ha asigando
+      const endpoint = isAdmin ? `${API_BASE_URL}/properties?limit=100` : `${API_BASE_URL}/vendor/properties`
+      
+      fetch(endpoint, {
+         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      })
+         .then((r) => r.json())
+         .then((d) => {
+            if (isAdmin) {
+               setProps(Array.isArray(d.properties) ? d.properties : [])
+            } else {
+               setProps(Array.isArray(d) ? d : [])
+            }
+         })
+         .catch(() => setProps([]))
+         .finally(() => setLoading(false))
+   }
+
+   useEffect(() => { 
+      if (user) load() 
+   }, [user])
+
+   // ===== Acciones Vendedor =====
+   const updateVendorStatus = async (id: number, currentStatus: string) => {
+      const newStatus = currentStatus === "available" ? "sold" : currentStatus === "sold" ? "rented" : "available"
+      try {
+         const res = await fetch(`${API_BASE_URL}/vendor/properties/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+            body: JSON.stringify({ status: newStatus }),
+         })
+         if (res.ok) {
+            setToast("Estado de venta actualizado")
+            load()
+         }
+      } catch {
+         setToast("Error al actualizar")
+      }
+      setTimeout(() => setToast(""), 3000)
+   }
+
+   const deleteVendorProp = async (id: number) => {
+      if (!confirm("¿Seguro que deseas dejar de trabajar esta propiedad?")) return
+      try {
+         const res = await fetch(`${API_BASE_URL}/vendor/properties/${id}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+         })
+         if (res.ok) {
+            setToast("Propiedad eliminada de tu lista")
+            load()
+         }
+      } catch {
+         setToast("Error al eliminar")
+      }
+      setTimeout(() => setToast(""), 3000)
+   }
+
+   // ===== Acciones Admin =====
+   const deleteAdminProp = async (id: number) => {
+      if (!confirm("¿Estás seguro que deseas ELIMINAR esta propiedad permanentemente del sistema?")) return
+      try {
+         const res = await fetch(`${API_BASE_URL}/properties/${id}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+         })
+         if (res.ok) {
+            setToast("Propiedad eliminada del sistema")
+            load()
+         }
+      } catch {
+         setToast("Error al eliminar propiedad")
+      }
+      setTimeout(() => setToast(""), 3000)
+   }
 
    return (
-      <div className="dashboard-body">
-         <div className="position-relative">
-            <DashboardHeaderTwo title="My Properties" />
-            <h2 className="main-title d-block d-lg-none">My Properties</h2>
-            <div className="d-sm-flex align-items-center justify-content-between mb-25">
-               <div className="fs-16">Showing <span className="color-dark fw-500">1–5</span> of <span
-                  className="color-dark fw-500">40</span> results</div>
-               <div className="d-flex ms-auto xs-mt-30">
-                  <div className="short-filter d-flex align-items-center ms-sm-auto">
-                     <div className="fs-16 me-2">Short by:</div>
-                     <NiceSelect className="nice-select"
-                        options={[
-                           { value: "1", text: "Newest" },
-                           { value: "2", text: "Best Seller" },
-                           { value: "3", text: "Best Match" },
-                           { value: "4", text: "Price Low" },
-                           { value: "5", text: "Price High" },
-                        ]}
-                        defaultCurrent={0}
-                        onChange={selectHandler}
-                        name=""
-                        placeholder="" />
-                  </div>
-               </div>
+      <div className="nubia-dash-card" style={{ marginTop: 24 }}>
+         {toast && (
+            <div style={{ position: "fixed", top: 80, right: 24, background: "#7B4FFF", color: "#fff", padding: "12px 20px", borderRadius: 8, zIndex: 9999, fontSize: 14 }}>
+               {toast}
             </div>
+         )}
 
-            <div className="bg-white card-box p0 border-20">
-               <div className="table-responsive pt-25 pb-25 pe-4 ps-4">
-                  <table className="table property-list-table">
-                     <thead>
-                        <tr>
-                           <th scope="col">Title</th>
-                           <th scope="col">Date</th>
-                           <th scope="col">View</th>
-                           <th scope="col">Status</th>
-                           <th scope="col">Action</th>
-                        </tr>
-                     </thead>
-                     <PropertyTableBody />
-                  </table>
-               </div>
+         <div className="card-head d-flex justify-content-between align-items-center">
+            <div>
+               <h5 className="card-title">{isAdmin ? "Catálogo General de Propiedades" : "Mis Propiedades Asignadas"}</h5>
+               <p style={{ margin: 0, fontSize: 13, color: "rgba(0,0,0,0.5)" }}>
+                  {isAdmin ? `Total en sistema: ${props.length}` : `Tienes ${props.length} asignadas para venta`}
+               </p>
             </div>
-
-            <ul className="pagination-one d-flex align-items-center justify-content-center style-none pt-40">
-               <li className="me-3"><Link href="#">1</Link></li>
-               <li className="selected"><Link href="#">2</Link></li>
-               <li><Link href="#">3</Link></li>
-               <li><Link href="#">4</Link></li>
-               <li>....</li>
-               <li className="ms-2"><Link href="#" className="d-flex align-items-center">
-                  Last <Image src={icon_1} alt="" className="ms-2" /></Link></li>
-            </ul>
+            {isAdmin ? (
+               <Link href="/dashboard/add-property" className="btn-nubia-sm primary"><i className="bi bi-plus"></i> Nueva Propiedad</Link>
+            ) : (
+               <Link href="/dashboard/available-properties" className="btn-nubia-sm primary">Explorar Nuevas</Link>
+            )}
          </div>
+
+         {loading ? (
+            <div className="nubia-loading"><div className="spinner"></div></div>
+         ) : props.length === 0 ? (
+            <div className="nubia-empty-state">
+               <i className="bi bi-building"></i>
+               <p>{isAdmin ? "Aún no hay propiedades en la base de datos." : "No tienes propiedades asignadas."}</p>
+            </div>
+         ) : (
+            <table className="nubia-table mt-3">
+               <thead>
+                  <tr>
+                     <th>Título / Referencia</th>
+                     <th>Precio</th>
+                     <th>{isAdmin ? "Comisión Ofre." : "Mi Comisión"}</th>
+                     <th>Estado</th>
+                     <th>Acciones</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  {props.map((p) => (
+                     <tr key={p.id}>
+                        <td>
+                           <div className="cell-bold">{p.title}</div>
+                           {p.isExclusive && <span className="nubia-badge purple mt-1">Exclusiva</span>}
+                        </td>
+                        <td className="cell-bold">${Number(p.price).toLocaleString("es-MX")}</td>
+                        <td className="cell-bold" style={{ color: "#10b981" }}>{p.vendorCommission ?? 4}%</td>
+                        <td>
+                           <span className={`nubia-badge ${p.status === "available" ? "green" : p.status === "sold" ? "gray" : "amber"}`}>
+                              {p.status === "available" ? "Disponible" : p.status === "sold" ? "Vendida" : p.status === "rented" ? "Rentada" : p.status}
+                           </span>
+                        </td>
+                        <td className="d-flex gap-2">
+                           {isAdmin ? (
+                              <button onClick={() => deleteAdminProp(p.id)} className="btn-nubia-sm danger" title="Eliminar del sistema">
+                                 <i className="bi bi-trash"></i>
+                              </button>
+                           ) : (
+                              <>
+                                 <button onClick={() => updateVendorStatus(p.id, p.status)} className="btn-nubia-sm outline" title="Cambiar Estado">
+                                    <i className="bi bi-arrow-repeat"></i>
+                                 </button>
+                                 <button onClick={() => deleteVendorProp(p.id)} className="btn-nubia-sm danger" title="Dejar Propiedad">
+                                    <i className="bi bi-x-circle"></i>
+                                 </button>
+                              </>
+                           )}
+                        </td>
+                     </tr>
+                  ))}
+               </tbody>
+            </table>
+         )}
       </div>
    )
 }

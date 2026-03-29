@@ -4,6 +4,33 @@ Historial de cambios del proyecto. Formato: fecha · sesión · descripción.
 
 ---
 
+## [0.5.0] — 2026-03-29 · Sesión 5 (Integración de Datos Reales Frontend & Backend)
+
+### 🔗 Conexión del Catálogo Público y Dashboards al Backend
+
+- **Homepage Dinámico (`Property.tsx`):** Se removió el payload estático del template original. El slider de "Nuevas Propiedades" ahora consulta dinámicamente `GET /api/properties?limit=6` al backend, renderizando solo propiedades reales de la base de datos de Supabase.
+- **Catálogo de Propiedades (`ListingOneArea.tsx`):** La vista listado (`/listing_01`) ahora está conectada bidireccionalmente al backend con soporte de **paginación real** y metadatos calculados desde la base de datos de manera dinámica.
+- **Vistas Empty States:** Se añadieron vistas de "estado vacío" (Empty States) amigables para el Homepage, los Dashboards y el Catálogo en caso de no haber propiedades disponibles en el sistema.
+- **Correcciones de Estructura de Datos:** Se resolvió el error de lectura de propiedades en el dashboard de admin (`PropertyListBody.tsx`), catálogo y Home, alineando el frontend para que lea el objeto `data.properties` (que contiene las filas `rows` de PostgreSQL) y la meta paginación directamente tal como los emite el `PropertyController` en el backend.
+
+---
+
+## [0.4.0] — 2026-03-28 · Sesión 4 (Supabase Backend & Repositorio Git)
+
+### 🛠️ Configuración y Desarrollo del Backend (Nubia Real Estate)
+- **Migración a Supabase:** Se configuró y conectó exitosamente la base de datos a Supabase, resolviendo problemas de conexión y red iniciales.
+- **Autenticación Basada en Roles:** Se implementó un sistema de autenticación seguro con soporte para múltiples roles de usuario (`admin`, `vendor`, y `user`).
+- **Modelos de Base de Datos:** Se crearon los modelos esenciales para la plataforma: Propiedades (Properties), Multimedia (Media), Asignaciones de Vendedores (Vendor assignments) y Favoritos (Favorites).
+- **Controladores y Rutas:** Se configuraron todos los controladores y rutas asociados para manejar el CRUD y la lógica de negocio de los modelos.
+
+### 🚀 Control de Versiones y Despliegue (GitHub)
+- **Inicialización de Git:** Se inicializó el repositorio local para el proyecto Fullstack.
+- **Configuración de Seguridad:** Se actualizó el archivo `.gitignore` para asegurar que dependencias y variables de entorno del backend no se suban al repo.
+- **Commit Inicial:** Se creó el primer commit ("Initial commit: Nubia Real Estate Fullstack Platform").
+- **Subida a Remoto:** Se vinculó el proyecto al repositorio remoto y se hizo el push del código a la rama `main` en `https://github.com/robertocarpinteyro/nubia-inmo.git`.
+
+---
+
 ## [0.3.0] — 2026-03-27 · Sesión 3 (PC — Backend & Lógica)
 
 ### Sistema completo de roles y permisos + Auth frontend conectado
