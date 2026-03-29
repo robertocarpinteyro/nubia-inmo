@@ -4,20 +4,23 @@ import Link from "next/link.js";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 import logo from "@/assets/images/logo/logo_01.svg";
 
 const NavMenu = () => {
     const pathname = usePathname();
     const [navTitle, setNavTitle] = useState("");
+    const { user } = useAuth();
+    const { t } = useLanguage();
 
     const openMobileMenu = (menu: any) => {
-        if (navTitle === menu) {
-            setNavTitle("");
-        } else {
-            setNavTitle(menu);
-        }
+        setNavTitle((prev) => (prev === menu ? "" : menu));
     };
+
+    // Dashboard sólo para admin y vendedor
+    const canSeeDashboard = user?.role === "admin" || user?.role === "vendedor";
 
     return (
         <ul className="navbar-nav align-items-lg-center">
@@ -28,26 +31,30 @@ const NavMenu = () => {
                     </Link>
                 </div>
             </li>
-            <li className="nav-item dashboard-menu">
-                <Link className="nav-link" href="/dashboard/dashboard-index" target="_blank">
-                    Dashboard
-                </Link>
-            </li>
+
+            {canSeeDashboard && (
+                <li className="nav-item dashboard-menu">
+                    <Link className="nav-link" href="/dashboard/dashboard-index" target="_blank">
+                        {t("nav.dashboard")}
+                    </Link>
+                </li>
+            )}
+
             {menu_data.map((menu: any) => (
                 <li
                     key={menu.id}
-                    className={`nav-item dropdown ${menu.class_name} ${menu.title === "Home" ? "no-dropdown" : ""}`}
+                    className={`nav-item dropdown ${menu.class_name || ""} ${menu.key === "home" ? "no-dropdown" : ""}`}
                 >
                     <Link
                         href={menu.link}
-                        className={`nav-link ${menu.has_dropdown && menu.title !== "Home" ? "dropdown-toggle" : ""} 
-                        ${pathname === menu.link ? "active" : ""} ${navTitle === menu.title ? "show" : ""}`}
-                        onClick={() => menu.title !== "Home" && openMobileMenu(menu.title)}
+                        className={`nav-link ${menu.has_dropdown && menu.key !== "home" ? "dropdown-toggle" : ""}
+                        ${pathname === menu.link ? "active" : ""} ${navTitle === menu.key ? "show" : ""}`}
+                        onClick={() => menu.key !== "home" && openMobileMenu(menu.key)}
                     >
-                        {menu.title}
+                        {t(`nav.${menu.key}`)}
                     </Link>
-                    {menu.has_dropdown && menu.title !== "Home" && (
-                        <ul className={`dropdown-menu ${navTitle === menu.title ? "show" : ""}`}>
+                    {menu.has_dropdown && menu.key !== "home" && (
+                        <ul className={`dropdown-menu ${navTitle === menu.key ? "show" : ""}`}>
                             {menu.sub_menus &&
                                 menu.sub_menus.map((sub_m: any, i: any) => (
                                     <li key={i}>
@@ -55,7 +62,7 @@ const NavMenu = () => {
                                             href={sub_m.link}
                                             className={`dropdown-item ${pathname === sub_m.link ? "active" : ""}`}
                                         >
-                                            <span>{sub_m.title}</span>
+                                            <span>{t(`nav.submenus.${sub_m.key}`)}</span>
                                         </Link>
                                     </li>
                                 ))}
@@ -72,7 +79,7 @@ const NavMenu = () => {
                                                                 href={mega_m.link}
                                                                 className={`dropdown-item ${pathname === mega_m.link ? "active" : ""}`}
                                                             >
-                                                                <span>{mega_m.title}</span>
+                                                                <span>{t(`nav.submenus.${mega_m.key}`)}</span>
                                                             </Link>
                                                         </li>
                                                     ))}

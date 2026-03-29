@@ -3,6 +3,7 @@ import "../styles/index.scss";
 import { Provider } from "react-redux";
 import store from "@/redux/store";
 import { AuthProvider } from "@/context/AuthContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 export default function RootLayout({
   children,
@@ -13,7 +14,7 @@ export default function RootLayout({
   const isDev = process.env.NODE_ENV === 'development'
 
   return (
-    <html lang="en" suppressHydrationWarning={isDev}>
+    <html lang="es" suppressHydrationWarning={isDev}>
       <head>
         <meta name="keywords" content="Real estate, Property sale, Property buy" />
         <meta name="description" content="HOZN is a beautiful website designed for Real Estate Agency." />
@@ -40,7 +41,9 @@ export default function RootLayout({
         <div className="main-page-wrapper">
           <Provider store={store}>
             <AuthProvider>
-              {children}
+              <LanguageProvider>
+                {children}
+              </LanguageProvider>
             </AuthProvider>
           </Provider>
         </div>

@@ -1,6 +1,5 @@
 import HeaderTwo from "@/layouts/headers/HeaderTwo"
 import HeroBanner from "./HeroBanner"
-import StatsBar from "./StatsBar"
 import NubiaProperties from "./NubiaProperties"
 import NubiaFeatures from "./NubiaFeatures"
 import NubiaProcess from "./NubiaProcess"
@@ -13,7 +12,6 @@ const HomeTwo = () => {
     <div className="nubia-home">
       <HeaderTwo style_1={false} style_2={false} nubia={true} />
       <HeroBanner />
-      <StatsBar />
       <NubiaProperties />
       <NubiaFeatures />
       <NubiaProcess />

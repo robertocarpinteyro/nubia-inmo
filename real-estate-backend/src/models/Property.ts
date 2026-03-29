@@ -23,10 +23,22 @@ export class Property extends Model {
   title!: string;
 
   @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  titleEn?: string;
+
+  @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
   description?: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  descriptionEn?: string;
 
   @Column({
     type: DataType.ENUM("casa", "departamento", "terreno", "oficina", "local"),

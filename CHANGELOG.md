@@ -4,6 +4,55 @@ Historial de cambios del proyecto. Formato: fecha · sesión · descripción.
 
 ---
 
+## [0.7.0] — 2026-03-29 · Sesión 7 (Catálogo, Detalle y Homepage conectados al DB)
+
+### 🏠 Homepage — Nuevos Listados dinámicos
+- **`NubiaProperties.tsx`** — Eliminados datos hardcodeados del template. Ahora fetchea `GET /api/properties?limit=3&featured=true` (fallback a los 3 más recientes). Imágenes, precio formateado, ubicación y título vienen de la DB. Cards linkan a `/listing_details_06?id=X`. Soporta ES/EN.
+- **`StatsBar`** — Ocultada del homepage (sección 500+ / 15 años / 98% / 2B MXN eliminada).
+- **Navbar "Inicio"** — `link: "/"` correcto, `has_dropdown: false`.
+- **Navbar "Propiedades"** — Sin dropdown, link directo a `/listing_07`.
+
+### 📋 Catálogo de Propiedades — `/listing_07` y `/listing_05`
+- **`ListingSevenArea.tsx`** y **`ListingFiveArea.tsx`** — Reescritos completamente. Eliminado hook `UseShortedProperty` con datos estáticos. Ahora fetchean `GET /api/properties` con:
+  - Filtros: texto libre, tipo de inmueble, operación (venta/renta), recámaras mínimas, rango de precio
+  - Paginación server-side real
+  - Ordenamiento: más recientes, precio ↑/↓
+  - Empty state cuando no hay resultados
+  - Cards con imagen real, precio formateado, ubicación, link a `/listing_details_06?id=X`
+  - Texto en ES/EN según idioma activo
+- `listing_07`: filtros en barra superior, grid de 9 por página
+- `listing_05`: filtros en sidebar lateral, grid de 6 por página
+
+### 🔍 Detalle de Propiedad — `/listing_details_06?id=X`
+- **`ListingDetailsSixArea.tsx`** — Reescrito. Lee `?id=` via `useSearchParams`, fetchea `GET /api/properties/:id`. Muestra: título, precio, tipo/operación/estado, galería real, descripción, tabla de detalles (rec/baños/m²/año), mapa si hay coordenadas, sidebar con CTA "Agendar Visita" y agente.
+- **`MediaGallery.tsx`** — Reescrito para recibir `media[]` como prop en lugar de imágenes estáticas. Carousel Bootstrap con thumbnails. Fancybox para ver todas las fotos.
+- **`page.tsx`** — Envuelto en `<Suspense>` para compatibilidad con `useSearchParams` en Next.js App Router.
+- **Offcanvas (hamburguesa)** — Links de propiedades actualizados a `/listing_details_06?id=${p.id}`.
+
+---
+
+## [0.6.0] — 2026-03-29 · Sesión 6 (Sistema de Traducción ES/EN + Navbar Inteligente)
+
+### 🌐 Sistema de traducción ES ↔ EN
+- **`src/context/LanguageContext.tsx`** — Nuevo: Context `LanguageProvider` + hook `useLanguage()`. Provee `lang` (es|en), `toggleLang()` y `t(key)` con lookup por dot-notation. Persiste preferencia en `localStorage` (`nubia_lang`).
+- **`src/translations/es.ts`** / **`src/translations/en.ts`** — Archivos de traducciones para `nav`, `header` y `addProperty`. Base para expandir a todo el sitio.
+- **`src/app/layout.tsx`** — Envuelto con `<LanguageProvider>` + `lang="es"` en el tag `<html>`.
+
+### 🔐 Navbar con lógica de autenticación
+- **`src/layouts/headers/HeaderTwo.tsx`** — Refactorizado completo:
+  - Botón **Dashboard** oculto (controlado desde `NavMenu`).
+  - Botón CTA contextual: admins/vendedores ven **"Publicar Propiedad"**, usuarios normales y visitantes ven **"Agendar Visita"** (link a `/contact`).
+  - Estado autenticado: muestra nombre del usuario + botón "Cerrar Sesión" en lugar del link de login.
+  - Botón **switcher de idioma** (ES/EN) siempre visible en la barra superior.
+- **`src/layouts/headers/Menu/NavMenu.tsx`** — Link **"Dashboard"** visible solo para `role === "admin"` o `role === "vendedor"`. Menú usa `t()` para mostrar texto según idioma activo.
+- **`src/data/home-data/MenuData.ts`** — Menú en español por defecto; se agrega campo `key` a cada item y sub-item para lookup en translations.
+
+### 🏠 Campos bilingüe en propiedades
+- **`real-estate-backend/src/models/Property.ts`** — Nuevos campos: `titleEn` (STRING, nullable) y `descriptionEn` (TEXT, nullable). Se crean automáticamente en Supabase con el siguiente reinicio del servidor (Sequelize `alter: true`).
+- **`src/components/dashboard/add-property/AddPropertyBody.tsx`** — Formulario ahora incluye campos para título y descripción en inglés, organizados en par lado a lado con el campo español. Todos los labels pasan por `t()`.
+
+---
+
 ## [0.5.0] — 2026-03-29 · Sesión 5 (Integración de Datos Reales Frontend & Backend)
 
 ### 🔗 Conexión del Catálogo Público y Dashboards al Backend
