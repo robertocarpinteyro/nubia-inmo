@@ -21,7 +21,7 @@ const ProfileBody = () => {
    useEffect(() => {
       const fetchUserData = async () => {
          try {
-            const res = await fetch("http://localhost:5000/api/profile", {
+            const res = await fetch("http://localhost:5001/api/profile", {
                headers: {
                   Authorization: `Bearer ${token}`,
                },
@@ -48,7 +48,7 @@ const ProfileBody = () => {
 
    const handleSave = async () => {
       try {
-         const res = await fetch("http://localhost:5000/api/profile", {
+         const res = await fetch("http://localhost:5001/api/profile", {
             method: "PUT",
             headers: {
                "Content-Type": "application/json",

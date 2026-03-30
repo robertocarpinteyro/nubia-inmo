@@ -33,7 +33,7 @@ const ListingOneArea = () => {
 
    const fetchProperties = (pageIndex: number) => {
       setLoading(true)
-      fetch(`http://localhost:5000/api/properties?page=${pageIndex + 1}&limit=${itemsPerPage}`)
+      fetch(`http://localhost:5001/api/properties?page=${pageIndex + 1}&limit=${itemsPerPage}`)
          .then((r) => r.json())
          .then((data) => {
             setProperties(data.properties || [])

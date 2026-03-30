@@ -24,7 +24,7 @@ const Property = () => {
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
-      fetch("http://localhost:5000/api/properties?limit=6")
+      fetch("http://localhost:5001/api/properties?limit=6")
          .then((r) => r.json())
          .then((data) => {
             const props = data?.properties || []
@@ -65,7 +65,7 @@ const Property = () => {
                                     <div className={`tag border-25 ${item.transactionType === "venta" ? "bg-white text-dark" : "bg-dark text-white"}`}>
                                        {item.transactionType === "venta" ? "Venta" : "Renta"}
                                     </div>
-                                    <Link href={`/listing_details_01?id=${item.id}`} className="d-block h-100">
+                                    <Link href={`/listing_details_nubia?id=${item.id}`} className="d-block h-100">
                                        {item.images && item.images.length > 0 ? (
                                           <img src={item.images[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={item.title} />
                                        ) : (
@@ -78,7 +78,7 @@ const Property = () => {
                               </div>
 
                               <div className="property-info p-25">
-                                 <Link href={`/listing_details_01?id=${item.id}`} className="title tran3s">{item.title}</Link>
+                                 <Link href={`/listing_details_nubia?id=${item.id}`} className="title tran3s">{item.title}</Link>
                                  <div className="address">{item.address}</div>
                                  <ul className="style-none feature d-flex flex-wrap align-items-center justify-content-between mt-15 mb-20">
                                     <li className="d-flex align-items-center">
@@ -95,7 +95,7 @@ const Property = () => {
                                     <strong className="price fw-500 color-dark">
                                        ${Number(item.price).toLocaleString("es-MX")}
                                     </strong>
-                                    <Link href={`/listing_details_01?id=${item.id}`} className="btn-four rounded-circle"><i className="bi bi-arrow-up-right"></i></Link>
+                                    <Link href={`/listing_details_nubia?id=${item.id}`} className="btn-four rounded-circle"><i className="bi bi-arrow-up-right"></i></Link>
                                  </div>
                               </div>
                            </div>

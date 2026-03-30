@@ -64,7 +64,7 @@ const ReviewBody = () => {
                      </div>
                      
                      <p style={{ fontSize: 14, color: "rgba(0,0,0,0.6)", margin: 0, lineHeight: 1.6 }}>
-                        "{r.comment}"
+                        &ldquo;{r.comment}&rdquo;
                      </p>
                      
                      {!r.isVisible && (
