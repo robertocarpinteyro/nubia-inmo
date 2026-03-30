@@ -9,12 +9,14 @@ import {
   getPropertyById,
   uploadMedia,
   deleteMedia,
+  autocompleteProperties,
 } from "../controllers/PropertyController";
 
 const router = Router();
 
 // 📌 Públicas
 router.get("/", getAllProperties);
+router.get("/autocomplete", autocompleteProperties);
 router.get("/:id", getPropertyById);
 
 // 📌 Solo admin

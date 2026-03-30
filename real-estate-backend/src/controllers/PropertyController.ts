@@ -3,7 +3,64 @@ import { AuthRequest } from "../middleware/authMiddleware";
 import { Property } from "../models/Property";
 import { PropertyMedia } from "../models/PropertyMedia";
 import { User } from "../models/User";
-import { Op } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
+import { sequelize } from "../config/database";
+
+// 📌 AUTOCOMPLETE — Público, retorna sugerencias rápidas. Usa FTS si está disponible, iLike como fallback.
+export const autocompleteProperties = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const q = String(req.query.q || "").trim();
+
+    if (q.length < 2) {
+      res.json({ suggestions: [] });
+      return;
+    }
+
+    // Detectar si ya existe la columna FTS
+    const [ftsCheck] = await sequelize.query(
+      `SELECT 1 FROM information_schema.columns
+       WHERE table_name='properties' AND column_name='search_vector' LIMIT 1`,
+      { type: QueryTypes.SELECT }
+    );
+    const hasFts = !!ftsCheck;
+
+    const sql = hasFts
+      ? `SELECT id, title, city, state, "propertyType", "transactionType", price, currency
+         FROM properties
+         WHERE search_vector @@ plainto_tsquery('spanish', :q)
+            OR title   ILIKE :like
+            OR city    ILIKE :like
+            OR state   ILIKE :like
+            OR address ILIKE :like
+         ORDER BY ts_rank(search_vector, plainto_tsquery('spanish', :q)) DESC, "createdAt" DESC
+         LIMIT 6`
+      : `SELECT id, title, city, state, "propertyType", "transactionType", price, currency
+         FROM properties
+         WHERE title       ILIKE :like
+            OR city        ILIKE :like
+            OR state       ILIKE :like
+            OR address     ILIKE :like
+            OR description ILIKE :like
+         ORDER BY "createdAt" DESC
+         LIMIT 6`;
+
+    const suggestions = await sequelize.query<{
+      id: number;
+      title: string;
+      city: string | null;
+      state: string | null;
+      propertyType: string;
+      transactionType: string;
+      price: number;
+      currency: string;
+    }>(sql, { replacements: { q, like: `%${q}%` }, type: QueryTypes.SELECT });
+
+    res.json({ suggestions });
+  } catch (error) {
+    console.error("Autocomplete Error:", error);
+    res.status(500).json({ error: "Error en búsqueda" });
+  }
+};
 
 // 📌 CREATE — Solo admin
 export const createProperty = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -99,8 +156,11 @@ export const getAllProperties = async (req: AuthRequest, res: Response): Promise
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
+        { titleEn: { [Op.iLike]: `%${search}%` } },
         { description: { [Op.iLike]: `%${search}%` } },
         { address: { [Op.iLike]: `%${search}%` } },
+        { city: { [Op.iLike]: `%${search}%` } },
+        { state: { [Op.iLike]: `%${search}%` } },
       ];
     }
 

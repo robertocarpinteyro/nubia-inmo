@@ -1,14 +1,14 @@
-import FooterFour from '@/layouts/footers/FooterFour'
-import HeaderOne from '@/layouts/headers/HeaderOne'
-import ContactArea from './ContactArea'
+import HeaderTwo from "@/layouts/headers/HeaderTwo"
+import NubiaFooter from "@/components/homes/home-two/NubiaFooter"
+import ContactArea from "./ContactArea"
 
 const Contact = () => {
    return (
-      <>
-         <HeaderOne style={true} />
+      <div className="nubia-home">
+         <HeaderTwo style_1={false} style_2={false} nubia={true} />
          <ContactArea />
-         <FooterFour />
-      </>
+         <NubiaFooter />
+      </div>
    )
 }
 

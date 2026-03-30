@@ -4,6 +4,35 @@ Historial de cambios del proyecto. Formato: fecha · sesión · descripción.
 
 ---
 
+## [0.8.0] — 2026-03-29 · Sesión 8 (Redesign Navbar + Offcanvas + Listing_07 + Acceso back)
+
+### 🎨 Redesign NUBIA — Navbar y Catálogo
+- **`HeaderTwo.tsx`** — Rediseño completo: `NubiaLogo` con fallback a texto, auth buttons con avatar (iniciales, fondo morado), nombre del usuario con `color: rgba(255,255,255,0.85)` explícito, botón SVG logout, language switcher ES/EN
+- **`Offcanvas.tsx`** — Panel dark sliding: `background:#0C0C0C`, `right` transition, auth section con avatar+rol+dashboard+logout, featured properties cards, footer con redes sociales y blur backdrop
+- **`NavMenu.tsx`** — `MobileLogo` con fallback, link Dashboard solo para admin/vendedor
+- **`listing_07/ListingSevenArea.tsx`** — Redesign editorial completo: hero banner giant title, sticky filter bar con pills Venta/Renta, `PropertyCard` con hover lift + purple glow + dot nav + specs SVG, `SkeletonCard` shimmer, paginación dark
+- **`listing_07/index.tsx`** — Reemplazado HeaderFour/FooterFour con `HeaderTwo(nubia)` + `NubiaFooter`, wrapper `nubia-home`
+- **`listing-details-nubia/index.tsx`** — Nueva página de detalle: galería + specs + sidebar contacto, wrapper `nubia-home`
+
+### 🔧 Fixes
+- Rutas de logos corregidas: `/logotipos/` → `/assets/images/logo/` (Nubia_Logotipo.png / Nubia_isotipo.png)
+- Links de PropertyCard en listing_07 corregidos: `/listing_details_06` → `/listing_details_nubia`
+- Backend puerto actualizado: 5000 → 5001 (AirPlay Receiver ocupa 5000 en macOS)
+- `ReviewBody.tsx:67` — Comillas sin escapar → `&ldquo;` y `&rdquo;`
+
+### 🛠️ Acceso al backend habilitado para el agente
+- **Claude Code ahora puede leer y editar `real-estate-backend/`** directamente en todas las sesiones futuras. No es necesario pedirlo de nuevo.
+
+### Arquitectura backend resumida
+- **Entry point**: `real-estate-backend/src/server.ts` (puerto 5001 vía `.env PORT=5001`)
+- **ORM**: Sequelize-TypeScript conectado a Supabase `db.fafjujnwwcgijzvouwgb.supabase.co:5432`, SSL
+- **Modelos**: User, Property, PropertyMedia, VendorProperty, Favorite, Review, Visit, Lead, Sale, Permission, AiChatMessage
+- **Auth**: JWT (`JWT_SECRET` en .env), middleware `authenticateUser` + `requireRole(...roles)`
+- **Rutas montadas**: `/api/auth`, `/api/properties`, `/api/vendor`, `/api/favorites`, `/api/admin`, `/api/reviews`, `/api/visits`, `/api/leads`, `/api/sales`
+- **DB sync**: `sequelize.sync({ alter: true })` — aplica cambios de modelo automáticamente al reiniciar
+
+---
+
 ## [0.7.0] — 2026-03-29 · Sesión 7 (Catálogo, Detalle y Homepage conectados al DB)
 
 ### 🏠 Homepage — Nuevos Listados dinámicos

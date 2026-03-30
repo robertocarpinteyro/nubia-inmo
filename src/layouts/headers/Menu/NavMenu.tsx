@@ -4,10 +4,18 @@ import Link from "next/link.js";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 
 import logo from "@/assets/images/logo/logo_01.svg";
+
+// Logo NUBIA mobile con fallback
+const MobileLogo = () => {
+   const [err, setErr] = useState(false)
+   if (err) return <Image src={logo} alt="NUBIA" />
+   return <img src="/assets/images/logo/Nubia_Logotipo.png" alt="NUBIA" height={24} style={{ height: 24, width: "auto" }} onError={() => setErr(true)} />
+}
 
 const NavMenu = () => {
     const pathname = usePathname();
@@ -27,7 +35,7 @@ const NavMenu = () => {
             <li className="d-block d-lg-none">
                 <div className="logo">
                     <Link href="/" className="d-block">
-                        <Image src={logo} alt="" />
+                        <MobileLogo />
                     </Link>
                 </div>
             </li>

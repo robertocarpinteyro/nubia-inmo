@@ -1,7 +1,6 @@
 "use client"
 import NavMenu from "./Menu/NavMenu"
 import Link from "next/link"
-import Image from "next/image"
 import { useState } from "react"
 import UseSticky from "@/hooks/UseSticky"
 import LoginModal from "@/modals/LoginModal"
@@ -9,20 +8,37 @@ import Offcanvas from "./Menu/Offcanvas"
 import HeaderSearchbar from "./Menu/HeaderSearchbar"
 import { useAuth } from "@/context/AuthContext"
 import { useLanguage } from "@/context/LanguageContext"
+import Image from "next/image"
 
-import logo_1 from "@/assets/images/logo/logo_02.svg";
-import logo_2 from "@/assets/images/logo/logo_04.svg";
-import logo_3 from "@/assets/images/logo/logo_06.svg";
+import logo_1 from "@/assets/images/logo/logo_02.svg"
+import logo_2 from "@/assets/images/logo/logo_04.svg"
+import logo_3 from "@/assets/images/logo/logo_06.svg"
+
+// Logo NUBIA con fallback a texto si el archivo no existe aún
+const NubiaLogo = () => {
+   const [err, setErr] = useState(false)
+   if (err) return <span className="nubia-logo-text">NUBIA</span>
+   return (
+      <img
+         src="/assets/images/logo/Nubia_Logotipo.png"
+         alt="NUBIA"
+         height={56}
+         style={{ height: 56, width: "auto" }}
+         onError={() => setErr(true)}
+      />
+   )
+}
 
 const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
-   const { sticky } = UseSticky();
-   const [offCanvas, setOffCanvas] = useState<boolean>(false);
-   const [isSearch, setIsSearch] = useState<boolean>(false);
-   const { user, isAuthenticated, logout } = useAuth();
-   const { lang, toggleLang, t } = useLanguage();
+   const { sticky } = UseSticky()
+   const [offCanvas, setOffCanvas] = useState<boolean>(false)
+   const [isSearch, setIsSearch] = useState<boolean>(false)
+   const { user, isAuthenticated, logout } = useAuth()
+   const { lang, toggleLang, t } = useLanguage()
 
-   // Dashboard accesible sólo para admin y vendedor
-   const canPublish = user?.role === "admin" || user?.role === "vendedor";
+   const canPublish = user?.role === "admin" || user?.role === "vendedor"
+   const firstName = user?.name?.split(" ")[0] || ""
+   const initials = user?.name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() || "U"
 
    return (
       <>
@@ -30,37 +46,41 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
             <div className={`inner-content ${style_2 ? "gap-two" : "gap-one"}`}>
                <div className="top-header position-relative">
                   <div className="d-flex align-items-center">
+
+                     {/* ── LOGO ── */}
                      <div className="logo order-lg-0">
                         <Link href="/" className="d-flex align-items-center">
                            {nubia ? (
-                              <span className="nubia-logo-text">NUBIA</span>
+                              <NubiaLogo />
                            ) : (
-                              <Image src={style_2 ? logo_3 : style_1 ? logo_2 : logo_1} alt="" />
+                              <Image src={style_2 ? logo_3 : style_1 ? logo_2 : logo_1} alt="NUBIA" />
                            )}
                         </Link>
                      </div>
 
+                     {/* ── RIGHT WIDGET ── */}
                      <div className="right-widget ms-auto me-3 me-lg-0 order-lg-3">
-                        <ul className="d-flex align-items-center style-none">
-                           {/* Switcher de idioma — siempre visible */}
-                           <li className="me-2 me-xl-3">
+                        <ul className="d-flex align-items-center style-none gap-2">
+
+                           {/* Switcher idioma */}
+                           <li>
                               <button
                                  onClick={toggleLang}
                                  title={lang === "es" ? "Switch to English" : "Cambiar a Español"}
                                  style={{
                                     background: "transparent",
-                                    border: "1px solid currentColor",
-                                    borderRadius: 4,
-                                    padding: "2px 8px",
-                                    fontSize: 12,
-                                    fontWeight: 600,
+                                    border: "1px solid rgba(255,255,255,0.4)",
+                                    borderRadius: 3,
+                                    padding: "3px 8px",
+                                    fontSize: 11,
+                                    fontWeight: 700,
                                     cursor: "pointer",
-                                    letterSpacing: "0.05em",
-                                    opacity: 0.75,
-                                    transition: "opacity 0.2s",
+                                    letterSpacing: "0.08em",
+                                    color: "rgba(255,255,255,0.6)",
+                                    transition: "all 0.2s",
                                  }}
-                                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-                                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.75")}
+                                 onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                                 onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
                               >
                                  {lang === "es" ? "EN" : "ES"}
                               </button>
@@ -68,28 +88,59 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
 
                            {!style_2 ? (
                               <>
-                                 {/* Botón login / nombre de usuario */}
                                  {isAuthenticated ? (
-                                    <li className="d-flex align-items-center login-btn-one">
-                                       <i className="fa-regular fa-user me-1"></i>
-                                       <span className="fw-500" style={{ fontSize: 14 }}>
-                                          {t("header.greeting")}, {user?.name?.split(" ")[0]}
-                                       </span>
+                                    /* ── Auth: logged in ── */
+                                    <li className="d-flex align-items-center" style={{ gap: 8 }}>
+                                       {/* Avatar + nombre → dashboard */}
+                                       <Link
+                                          href="/dashboard/dashboard-index"
+                                          target="_blank"
+                                          className="d-flex align-items-center tran3s"
+                                          style={{ gap: 8, textDecoration: "none", color: "inherit" }}
+                                       >
+                                          <span style={{
+                                             width: 32, height: 32,
+                                             borderRadius: "50%",
+                                             background: "#7B4FFF",
+                                             color: "#fff",
+                                             fontSize: 12,
+                                             fontWeight: 700,
+                                             display: "flex",
+                                             alignItems: "center",
+                                             justifyContent: "center",
+                                             flexShrink: 0,
+                                             letterSpacing: "0.05em",
+                                          }}>
+                                             {initials}
+                                          </span>
+                                          <span style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.85)" }}>
+                                             {firstName}
+                                          </span>
+                                       </Link>
+                                       {/* Logout */}
                                        <button
                                           onClick={logout}
+                                          title={t("header.logout")}
                                           style={{
                                              background: "transparent",
                                              border: "none",
                                              cursor: "pointer",
-                                             marginLeft: 10,
-                                             fontSize: 13,
-                                             opacity: 0.65,
+                                             padding: "4px 6px",
+                                             opacity: 0.5,
+                                             transition: "opacity 0.2s",
+                                             display: "flex",
+                                             alignItems: "center",
                                           }}
+                                          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                                          onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}
                                        >
-                                          ({t("header.logout")})
+                                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+                                          </svg>
                                        </button>
                                     </li>
                                  ) : (
+                                    /* ── Auth: not logged in ── */
                                     <li className="d-flex align-items-center login-btn-one">
                                        <i className="fa-regular fa-lock"></i>
                                        <Link href="#" data-bs-toggle="modal" data-bs-target="#loginModal" className="fw-500 tran3s">
@@ -98,8 +149,8 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                                     </li>
                                  )}
 
-                                 {/* Botón CTA: Publicar para admin/vendedor, Agendar para el resto */}
-                                 <li className="d-none d-md-inline-block ms-3 ms-xl-4 me-xl-4">
+                                 {/* CTA button */}
+                                 <li className="d-none d-md-inline-block ms-2 ms-xl-3 me-xl-3">
                                     {canPublish ? (
                                        <Link href="/dashboard/add-property" className={style_1 ? "btn-ten" : "btn-two rounded-0"} target="_blank">
                                           <span>{t("header.publishProperty")}</span> <i className="fa-thin fa-arrow-up-right"></i>
@@ -111,8 +162,14 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                                     )}
                                  </li>
 
+                                 {/* Hamburger */}
                                  <li className="d-none d-xl-block">
-                                    <button onClick={() => setOffCanvas(true)} style={{ cursor: "pointer" }} className="sidenavbtn rounded-circle tran3s" type="button">
+                                    <button
+                                       onClick={() => setOffCanvas(true)}
+                                       className="sidenavbtn rounded-circle tran3s"
+                                       type="button"
+                                       style={{ cursor: "pointer" }}
+                                    >
                                        <i className="fa-sharp fa-light fa-bars-filter"></i>
                                     </button>
                                  </li>
@@ -124,7 +181,23 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                                     <Link href="tel:+528112345678" className="tran3s">+52 (81) 1234-5678</Link>
                                  </li>
                                  {isAuthenticated ? (
-                                    <li>
+                                    <li className="d-flex align-items-center" style={{ gap: 6 }}>
+                                       <Link
+                                          href="/dashboard/dashboard-index"
+                                          target="_blank"
+                                          className="login-btn-two rounded-circle tran3s d-flex align-items-center justify-content-center"
+                                          title="Dashboard"
+                                          style={{
+                                             background: "#7B4FFF",
+                                             color: "#fff",
+                                             border: "none",
+                                             fontSize: 11,
+                                             fontWeight: 700,
+                                             letterSpacing: "0.05em",
+                                          }}
+                                       >
+                                          {initials}
+                                       </Link>
                                        <button
                                           onClick={logout}
                                           className="login-btn-two rounded-circle tran3s d-flex align-items-center justify-content-center"
@@ -151,6 +224,7 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                         </ul>
                      </div>
 
+                     {/* ── NAV ── */}
                      <nav className="navbar navbar-expand-lg p0 ms-lg-5 order-lg-2">
                         <button className="navbar-toggler d-block d-lg-none" type="button" data-bs-toggle="collapse"
                            data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"

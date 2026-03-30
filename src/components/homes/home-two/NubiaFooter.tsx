@@ -1,4 +1,20 @@
+"use client"
 import Link from "next/link"
+import { useState } from "react"
+
+const FooterLogo = () => {
+   const [err, setErr] = useState(false)
+   if (err) return <span style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.05em", color: "#fff" }}>NUBIA</span>
+   return (
+      <img
+         src="/assets/images/logo/Nubia_Logotipo.png"
+         alt="NUBIA"
+         height={48}
+         style={{ height: 48, width: "auto" }}
+         onError={() => setErr(true)}
+      />
+   )
+}
 
 const footerLinks = {
    propiedades: [
@@ -39,19 +55,8 @@ const NubiaFooter = () => {
             <div className="row g-5 mb-80">
                {/* Brand */}
                <div className="col-lg-4">
-                  <Link
-                     href="/"
-                     style={{
-                        display: "inline-block",
-                        fontSize: "28px",
-                        fontWeight: 900,
-                        letterSpacing: "-0.05em",
-                        color: "#FFFFFF",
-                        textDecoration: "none",
-                        marginBottom: "24px",
-                     }}
-                  >
-                     NUBIA
+                  <Link href="/" style={{ display: "inline-block", marginBottom: "24px", textDecoration: "none" }}>
+                     <FooterLogo />
                   </Link>
                   <p
                      style={{
@@ -158,8 +163,8 @@ const NubiaFooter = () => {
                         hola@nubia.mx
                      </a>
                      <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
-                        Av. Insurgentes Sur 1234,<br />
-                        Col. Del Valle, CDMX
+                        Av. 5 de Mayo 1810,<br />
+                        San Pedro Cholula, Puebla
                      </p>
                   </div>
                </div>
