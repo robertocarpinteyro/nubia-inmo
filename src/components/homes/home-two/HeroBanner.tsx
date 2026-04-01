@@ -75,15 +75,18 @@ const HeroBanner = () => {
       fitCanvas()
       FRAMES.forEach((src, i) => {
          const img = new window.Image()
+         img.crossOrigin = "anonymous"
          img.onload = () => {
             loaded.current[i] = true
             images.current[i] = img
-            // Draw frame 0 as soon as it loads
             if (i === 0) {
                fitCanvas()
                drawFrame(img)
                lastFrame.current = 0
             }
+         }
+         img.onerror = () => {
+            if (i === 0) console.error("[Hero] frame 0 failed to load:", src)
          }
          img.src = src
          images.current[i] = img
