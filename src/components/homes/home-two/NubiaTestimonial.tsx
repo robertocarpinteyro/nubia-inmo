@@ -31,7 +31,7 @@ const testimonials = [
    },
 ]
 
-const avatarColors = ["#7B4FFF", "#4F8BFF", "#FF4F7B"]
+const avatarColors = ["#D9A76A", "#325573", "#6D7E8C"]
 
 const Stars = ({ count }: { count: number }) => (
    <div style={{ display: "flex", gap: 3 }}>
@@ -50,7 +50,7 @@ const NubiaTestimonial = () => {
    const [active, setActive] = useState(0)
 
    return (
-      <div className="nubia-testimonial" style={{ padding: "100px 0", background: "#0C0C0C", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="nubia-testimonial" style={{ padding: "100px 0", background: "#182D40", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
          <div className="container">
 
             {/* Header */}
@@ -63,13 +63,13 @@ const NubiaTestimonial = () => {
                      fontFamily: "Gordita, sans-serif",
                      fontWeight: 900,
                      fontSize: "clamp(2rem, 4vw, 52px)",
-                     color: "#F5F5F2",
+                     color: "#F2F2F2",
                      letterSpacing: "-0.04em",
                      lineHeight: 1,
                      margin: 0,
                   }}>
                      Lo que dicen<br />
-                     <span style={{ color: "#7B4FFF" }}>nuestros clientes</span>
+                     <span style={{ color: "#D9A76A" }}>nuestros clientes</span>
                   </h2>
                </div>
                {/* Dots nav */}
@@ -82,7 +82,7 @@ const NubiaTestimonial = () => {
                            width: active === i ? 28 : 8,
                            height: 8,
                            borderRadius: 4,
-                           background: active === i ? "#7B4FFF" : "rgba(255,255,255,0.15)",
+                           background: active === i ? "#D9A76A" : "rgba(255,255,255,0.15)",
                            border: "none",
                            cursor: "pointer",
                            padding: 0,
@@ -100,14 +100,14 @@ const NubiaTestimonial = () => {
                      key={i}
                      onClick={() => setActive(i)}
                      style={{
-                        background: active === i ? "#111111" : "#0E0E0E",
-                        border: `1px solid ${active === i ? "rgba(123,79,255,0.35)" : "rgba(255,255,255,0.06)"}`,
+                        background: active === i ? "#1D3347" : "#182D40",
+                        border: `1px solid ${active === i ? "rgba(217,167,106,0.35)" : "rgba(255,255,255,0.06)"}`,
                         borderRadius: 4,
                         padding: "32px 28px",
                         cursor: "pointer",
                         transition: "all 0.3s",
                         transform: active === i ? "translateY(-4px)" : "translateY(0)",
-                        boxShadow: active === i ? "0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(123,79,255,0.15)" : "none",
+                        boxShadow: active === i ? "0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(217,167,106,0.15)" : "none",
                         position: "relative",
                         overflow: "hidden",
                      }}
@@ -120,7 +120,7 @@ const NubiaTestimonial = () => {
                         fontFamily: "Georgia, serif",
                         fontSize: 80,
                         lineHeight: 1,
-                        color: active === i ? "rgba(123,79,255,0.15)" : "rgba(255,255,255,0.04)",
+                        color: active === i ? "rgba(217,167,106,0.15)" : "rgba(255,255,255,0.04)",
                         userSelect: "none",
                         transition: "color 0.3s",
                      }}>
@@ -134,9 +134,9 @@ const NubiaTestimonial = () => {
                         fontWeight: 700,
                         letterSpacing: "0.14em",
                         textTransform: "uppercase",
-                        color: active === i ? "#9D7AFF" : "rgba(255,255,255,0.25)",
-                        background: active === i ? "rgba(123,79,255,0.12)" : "rgba(255,255,255,0.04)",
-                        border: `1px solid ${active === i ? "rgba(123,79,255,0.25)" : "rgba(255,255,255,0.07)"}`,
+                        color: active === i ? "#E8C08E" : "rgba(255,255,255,0.25)",
+                        background: active === i ? "rgba(217,167,106,0.12)" : "rgba(255,255,255,0.04)",
+                        border: `1px solid ${active === i ? "rgba(217,167,106,0.25)" : "rgba(255,255,255,0.07)"}`,
                         borderRadius: 2,
                         padding: "4px 10px",
                         marginBottom: 20,
@@ -182,7 +182,7 @@ const NubiaTestimonial = () => {
                            {t.initials}
                         </div>
                         <div>
-                           <div style={{ fontSize: 13, fontWeight: 700, color: active === i ? "#F5F5F2" : "rgba(255,255,255,0.45)", transition: "color 0.3s" }}>
+                           <div style={{ fontSize: 13, fontWeight: 700, color: active === i ? "#F2F2F2" : "rgba(255,255,255,0.45)", transition: "color 0.3s" }}>
                               {t.name}
                            </div>
                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 2 }}>

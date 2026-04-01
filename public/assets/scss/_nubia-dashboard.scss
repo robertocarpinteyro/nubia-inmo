@@ -65,7 +65,7 @@
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: $nubia-purple;
+      background: $nubia-gold;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -91,7 +91,7 @@
         font-weight: 600;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: $nubia-purple-2;
+        color: $nubia-gold-2;
       }
     }
   }
@@ -142,7 +142,7 @@
 
       &.active {
         color: $nubia-white;
-        background: rgba($nubia-purple, 0.15);
+        background: rgba($nubia-gold, 0.15);
 
         &::before {
           content: '';
@@ -151,11 +151,11 @@
           top: 4px;
           bottom: 4px;
           width: 3px;
-          background: $nubia-purple;
+          background: $nubia-gold;
           border-radius: 0 2px 2px 0;
         }
 
-        i { color: $nubia-purple; }
+        i { color: $nubia-gold; }
       }
     }
   }
@@ -260,7 +260,7 @@
       right: 6px;
       width: 7px;
       height: 7px;
-      background: $nubia-purple;
+      background: $nubia-gold;
       border-radius: 50%;
       border: 2px solid #fff;
     }
@@ -270,7 +270,7 @@
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: $nubia-purple;
+    background: $nubia-gold;
     color: $nubia-white;
     font-size: 14px;
     font-weight: 700;
@@ -382,7 +382,7 @@
     font-size: 18px;
   }
 
-  &.purple .kpi-icon { background: rgba($nubia-purple, 0.1); color: $nubia-purple; }
+  &.purple .kpi-icon { background: rgba($nubia-gold, 0.1); color: $nubia-gold; }
   &.green .kpi-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
   &.amber .kpi-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
   &.blue .kpi-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
@@ -423,7 +423,7 @@
     .card-action {
       font-size: 13px;
       font-weight: 600;
-      color: $nubia-purple;
+      color: $nubia-gold;
       text-decoration: none;
       &:hover { text-decoration: underline; }
     }
@@ -478,7 +478,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
 
-  &.purple { background: rgba($nubia-purple, 0.1); color: $nubia-purple; }
+  &.purple { background: rgba($nubia-gold, 0.1); color: $nubia-gold; }
   &.green  { background: rgba(16,185,129,0.1); color: #059669; }
   &.amber  { background: rgba(245,158,11,0.1); color: #d97706; }
   &.red    { background: rgba(239,68,68,0.1); color: #dc2626; }
@@ -500,16 +500,16 @@
   transition: all 0.2s;
 
   &.primary {
-    background: $nubia-purple;
+    background: $nubia-gold;
     color: #fff;
-    &:hover { background: $nubia-purple-2; }
+    &:hover { background: $nubia-gold-2; }
   }
 
   &.outline {
     background: transparent;
-    color: $nubia-purple;
-    border: 1px solid rgba($nubia-purple, 0.35);
-    &:hover { background: rgba($nubia-purple, 0.06); }
+    color: $nubia-gold;
+    border: 1px solid rgba($nubia-gold, 0.35);
+    &:hover { background: rgba($nubia-gold, 0.06); }
   }
 
   &.ghost {
@@ -550,7 +550,7 @@
     transition: border-color 0.2s;
     font-family: $main-font;
 
-    &:focus { border-color: $nubia-purple; background: #fff; }
+    &:focus { border-color: $nubia-gold; background: #fff; }
     &::placeholder { color: rgba($nubia-dark, 0.3); }
   }
 
@@ -587,7 +587,7 @@
     position: absolute;
     top: 12px;
     left: 12px;
-    background: $nubia-purple;
+    background: $nubia-gold;
     color: #fff;
     font-size: 10px;
     font-weight: 700;
@@ -659,8 +659,8 @@
   .spinner {
     width: 28px;
     height: 28px;
-    border: 3px solid rgba($nubia-purple, 0.15);
-    border-top-color: $nubia-purple;
+    border: 3px solid rgba($nubia-gold, 0.15);
+    border-top-color: $nubia-gold;
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }

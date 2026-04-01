@@ -23,7 +23,7 @@ const NubiaLogo = () => {
          src="/assets/images/logo/Nubia_Logotipo.png"
          alt="NUBIA"
          height={56}
-         style={{ height: 56, width: "auto" }}
+         style={{ height: 56, width: "auto", filter: "brightness(0) saturate(100%) invert(17%) sepia(29%) saturate(900%) hue-rotate(172deg) brightness(90%) contrast(95%)" }}
          onError={() => setErr(true)}
       />
    )
@@ -69,14 +69,14 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                                  title={lang === "es" ? "Switch to English" : "Cambiar a Español"}
                                  style={{
                                     background: "transparent",
-                                    border: "1px solid rgba(255,255,255,0.4)",
+                                    border: "1px solid rgba(24,45,64,0.25)",
                                     borderRadius: 3,
                                     padding: "3px 8px",
                                     fontSize: 11,
                                     fontWeight: 700,
                                     cursor: "pointer",
                                     letterSpacing: "0.08em",
-                                    color: "rgba(255,255,255,0.6)",
+                                    color: "rgba(24,45,64,0.6)",
                                     transition: "all 0.2s",
                                  }}
                                  onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
@@ -101,7 +101,7 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                                           <span style={{
                                              width: 32, height: 32,
                                              borderRadius: "50%",
-                                             background: "#7B4FFF",
+                                             background: "#D9A76A",
                                              color: "#fff",
                                              fontSize: 12,
                                              fontWeight: 700,
@@ -113,7 +113,7 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                                           }}>
                                              {initials}
                                           </span>
-                                          <span style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.85)" }}>
+                                          <span style={{ fontSize: 14, fontWeight: 500, color: "rgba(24,45,64,0.8)" }}>
                                              {firstName}
                                           </span>
                                        </Link>
@@ -188,7 +188,7 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                                           className="login-btn-two rounded-circle tran3s d-flex align-items-center justify-content-center"
                                           title="Dashboard"
                                           style={{
-                                             background: "#7B4FFF",
+                                             background: "#D9A76A",
                                              color: "#fff",
                                              border: "none",
                                              fontSize: 11,

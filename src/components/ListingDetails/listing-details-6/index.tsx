@@ -1,17 +1,17 @@
 import ListingDetailsSixArea from "./ListingDetailsSixArea"
-import FancyBanner from "@/components/common/FancyBanner"
-import FooterFour from "@/layouts/footers/FooterFour"
-import HeaderFour from "@/layouts/headers/HeaderFour"
+import NubiaFooter from "@/components/homes/home-two/NubiaFooter"
+import NubiaCtaBanner from "@/components/homes/home-two/NubiaCtaBanner"
+import HeaderTwo from "@/layouts/headers/HeaderTwo"
 
 const ListingDetailsSix = () => {
    return (
       <>
-         <HeaderFour />
+         <HeaderTwo nubia />
          <ListingDetailsSixArea />
-         <FancyBanner />
-         <FooterFour />
+         <NubiaCtaBanner />
+         <NubiaFooter />
       </>
    )
 }
 
-export default ListingDetailsSix;
+export default ListingDetailsSix

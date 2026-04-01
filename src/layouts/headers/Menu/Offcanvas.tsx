@@ -90,7 +90,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
             width: 440,
             maxWidth: "100vw",
             height: "100vh",
-            background: "#0C0C0C",
+            background: "#182D40",
             borderLeft: "1px solid rgba(255,255,255,0.07)",
             zIndex: 9999,
             transition: "right 0.38s cubic-bezier(0.4,0,0.2,1)",
@@ -152,7 +152,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                      <div style={{
                         width: 48, height: 48,
                         borderRadius: "50%",
-                        background: "linear-gradient(135deg, #7B4FFF, #9D7AFF)",
+                        background: "linear-gradient(135deg, #D9A76A, #E8C08E)",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: 15, fontWeight: 700, color: "#fff",
                         flexShrink: 0, letterSpacing: "0.05em",
@@ -164,7 +164,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                         <div style={{ fontSize: 15, fontWeight: 700, color: "#F5F5F2", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                            {user?.name}
                         </div>
-                        <div style={{ fontSize: 11, color: "#7B4FFF", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
+                        <div style={{ fontSize: 11, color: "#D9A76A", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
                            {roleLabel[user?.role || ""] || user?.role}
                         </div>
                      </div>
@@ -177,10 +177,10 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                            title="Dashboard"
                            style={{
                               width: 36, height: 36, borderRadius: "50%",
-                              background: "rgba(123,79,255,0.15)",
-                              border: "1px solid rgba(123,79,255,0.3)",
+                              background: "rgba(217,167,106,0.15)",
+                              border: "1px solid rgba(217,167,106,0.3)",
                               display: "flex", alignItems: "center", justifyContent: "center",
-                              color: "#9D7AFF", textDecoration: "none",
+                              color: "#E8C08E", textDecoration: "none",
                               transition: "all 0.2s",
                            }}
                         >
@@ -230,7 +230,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                               display: "inline-flex",
                               alignItems: "center",
                               gap: 8,
-                              background: "#7B4FFF",
+                              background: "#D9A76A",
                               color: "#fff",
                               fontSize: 12,
                               fontWeight: 700,
@@ -269,8 +269,8 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                   <div style={{ display: "flex", gap: 6, alignItems: "center", padding: "16px 0", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>
                      <div style={{
                         width: 16, height: 16,
-                        border: "2px solid rgba(123,79,255,0.3)",
-                        borderTopColor: "#7B4FFF",
+                        border: "2px solid rgba(217,167,106,0.3)",
+                        borderTopColor: "#D9A76A",
                         borderRadius: "50%",
                         animation: "nubia-spin 0.8s linear infinite",
                      }} />
@@ -297,14 +297,14 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                            <div style={{
                               display: "flex",
                               gap: 14,
-                              background: "#111111",
+                              background: "#1D3347",
                               borderRadius: 3,
                               border: "1px solid rgba(255,255,255,0.06)",
                               padding: 12,
                               transition: "border-color 0.2s",
                               cursor: "pointer",
                            }}
-                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(123,79,255,0.35)"}
+                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(217,167,106,0.35)"}
                               onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.06)"}
                            >
                               {/* Imagen */}
@@ -313,7 +313,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                                  borderRadius: 2,
                                  overflow: "hidden",
                                  flexShrink: 0,
-                                 background: "#1a1a1a",
+                                 background: "#142537",
                               }}>
                                  {img ? (
                                     <img src={img} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -332,7 +332,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                                     fontWeight: 700,
                                     letterSpacing: "0.1em",
                                     textTransform: "uppercase",
-                                    color: p.transactionType === "venta" ? "#7B4FFF" : "rgba(255,255,255,0.35)",
+                                    color: p.transactionType === "venta" ? "#D9A76A" : "rgba(255,255,255,0.35)",
                                     marginBottom: 4,
                                  }}>
                                     {p.transactionType === "venta" ? "Venta" : "Renta"}
@@ -369,7 +369,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                      fontWeight: 700,
                      letterSpacing: "0.1em",
                      textTransform: "uppercase",
-                     color: "#7B4FFF",
+                     color: "#D9A76A",
                      textDecoration: "none",
                      transition: "gap 0.2s",
                   }}
@@ -420,9 +420,9 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                         transition: "all 0.2s",
                      }}
                         onMouseEnter={e => {
-                           ;(e.currentTarget as HTMLElement).style.background = "rgba(123,79,255,0.15)"
-                           ;(e.currentTarget as HTMLElement).style.borderColor = "rgba(123,79,255,0.4)"
-                           ;(e.currentTarget as HTMLElement).style.color = "#9D7AFF"
+                           ;(e.currentTarget as HTMLElement).style.background = "rgba(217,167,106,0.15)"
+                           ;(e.currentTarget as HTMLElement).style.borderColor = "rgba(217,167,106,0.4)"
+                           ;(e.currentTarget as HTMLElement).style.color = "#E8C08E"
                         }}
                         onMouseLeave={e => {
                            ;(e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"

@@ -79,7 +79,7 @@ const NubiaFeatures = () => {
                <div className="row align-items-center g-5">
                   <div className="col-lg-5">
                      <div className="wow fadeInLeft">
-                        <div className="feature-tag" style={{ color: "#9D7AFF" }}>Inversión</div>
+                        <div className="feature-tag" style={{ color: "#D9A76A" }}>Inversión</div>
                         <h2
                            className="feature-heading mb-30"
                            style={{ color: "#fff" }}
@@ -100,7 +100,7 @@ const NubiaFeatures = () => {
                                  className="feature-rate"
                                  style={{ borderRight: "1px solid rgba(255,255,255,0.1)", paddingRight: "32px" }}
                               >
-                                 <div className="rate-number" style={{ color: "#7B4FFF" }}>12%</div>
+                                 <div className="rate-number" style={{ color: "#D9A76A" }}>12%</div>
                                  <div className="rate-label" style={{ color: "rgba(255,255,255,0.35)" }}>ROI Promedio</div>
                               </div>
                            </div>

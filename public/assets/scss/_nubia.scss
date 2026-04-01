@@ -8,50 +8,53 @@
   background: $nubia-dark;
 }
 
-// ─── DARK HEADER OVERRIDES ─────────────────────────────────
+// ─── WHITE HEADER OVERRIDES ─────────────────────────────────
 .nubia-home .theme-main-menu {
+  background: $nubia-white;
+  box-shadow: 0 1px 0 rgba($nubia-dark, 0.08);
+
   &.menu-overlay {
-    background: transparent;
+    background: $nubia-white;
   }
   // Logo NUBIA text override
   .nubia-logo-text {
     font-size: 22px;
     font-weight: 900;
     letter-spacing: -0.04em;
-    color: $nubia-white;
+    color: $nubia-dark;
     text-transform: uppercase;
     text-decoration: none;
   }
-  // Nav links on dark bg
+  // Nav links on white bg
   .navbar-nav .nav-link,
   .navbar-nav .nav-item > a {
-    color: rgba($nubia-white, 0.82) !important;
-    &:hover { color: $nubia-white !important; }
+    color: rgba($nubia-dark, 0.7) !important;
+    &:hover { color: $nubia-dark !important; }
   }
   .login-btn-one a,
   .login-btn-one i {
-    color: rgba($nubia-white, 0.82) !important;
+    color: rgba($nubia-dark, 0.7) !important;
   }
   .btn-two {
-    background: $nubia-purple;
-    border-color: $nubia-purple;
+    background: $nubia-dark;
+    border-color: $nubia-dark;
     color: $nubia-white !important;
-    &:hover { background: $nubia-purple-2; }
+    &:hover { background: $nubia-blue-mid; border-color: $nubia-blue-mid; }
   }
   .sidenavbtn {
-    border-color: $nubia-border;
-    color: $nubia-white;
-    &:hover { background: $nubia-white; color: $nubia-dark; }
+    border-color: rgba($nubia-dark, 0.2);
+    color: $nubia-dark;
+    &:hover { background: $nubia-dark; color: $nubia-white; }
   }
-  // Sticky dark override
+  // Sticky override (keeps white)
   &.fixed {
-    background: rgba($nubia-dark, 0.96) !important;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 1px 0 $nubia-border;
-    .nubia-logo-text { color: $nubia-white; }
+    background: $nubia-white !important;
+    backdrop-filter: none;
+    box-shadow: 0 2px 12px rgba($nubia-dark, 0.1);
+    .nubia-logo-text { color: $nubia-dark; }
     .navbar-nav .nav-link,
     .navbar-nav .nav-item > a {
-      color: rgba($nubia-white, 0.82) !important;
+      color: rgba($nubia-dark, 0.7) !important;
     }
   }
 }
@@ -65,22 +68,22 @@
   display: flex;
   align-items: center;
 
-  // Subtle grid texture
+  // Subtle grid texture — sits on top of canvas
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba($nubia-white, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba($nubia-white, 0.025) 1px, transparent 1px);
+      linear-gradient(rgba($nubia-white, 0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba($nubia-white, 0.018) 1px, transparent 1px);
     background-size: 80px 80px;
     pointer-events: none;
-    z-index: 0;
+    z-index: 2;
   }
 
   .hero-inner {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     padding: 180px 0 100px;
   }
 
@@ -95,7 +98,7 @@
     margin: 0;
 
     .accent-line {
-      color: $nubia-purple;
+      color: $nubia-gold;
     }
     .outline-line {
       -webkit-text-stroke: 2px $nubia-white;
@@ -122,7 +125,7 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: $nubia-purple;
+    background: $nubia-gold;
     color: $nubia-white;
     font-size: 15px;
     font-weight: 600;
@@ -135,7 +138,7 @@
     transition: background 0.25s ease, transform 0.2s ease;
     i { font-size: 14px; }
     &:hover {
-      background: $nubia-purple-2;
+      background: $nubia-gold-2;
       color: $nubia-white;
       transform: translateY(-1px);
     }
@@ -170,7 +173,7 @@
     max-width: 52%;
     z-index: 1;
     pointer-events: none;
-    filter: drop-shadow(0 40px 80px rgba($nubia-purple, 0.2));
+    filter: drop-shadow(0 40px 80px rgba($nubia-gold, 0.2));
   }
 
   // Floating badge
@@ -178,11 +181,11 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: $nubia-purple-3;
-    border: 1px solid rgba($nubia-purple, 0.3);
+    background: $nubia-gold-3;
+    border: 1px solid rgba($nubia-gold, 0.3);
     padding: 8px 16px;
     border-radius: 100px;
-    color: $nubia-purple-2;
+    color: $nubia-gold-2;
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -192,7 +195,7 @@
     span.dot {
       width: 6px;
       height: 6px;
-      background: $nubia-purple;
+      background: $nubia-gold;
       border-radius: 50%;
       animation: pulse-dot 2s ease-in-out infinite;
     }
@@ -204,7 +207,7 @@
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 3;
+    z-index: 4;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -260,7 +263,7 @@
     color: $nubia-white;
     display: block;
 
-    &.purple { color: $nubia-purple; }
+    &.purple { color: $nubia-gold; }
   }
 
   .stat-label {
@@ -283,7 +286,7 @@
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: $nubia-purple;
+    color: $nubia-gold;
     margin-bottom: 20px;
     display: block;
   }
@@ -375,7 +378,7 @@
   cursor: pointer;
 
   &:hover {
-    border-color: rgba($nubia-purple, 0.35);
+    border-color: rgba($nubia-gold, 0.35);
     transform: translateY(-3px);
   }
 
@@ -398,7 +401,7 @@
     position: absolute;
     top: 16px;
     left: 16px;
-    background: $nubia-purple;
+    background: $nubia-gold;
     color: $nubia-white;
     font-size: 11px;
     font-weight: 700;
@@ -499,7 +502,7 @@
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: $nubia-purple;
+    color: $nubia-gold;
     margin-bottom: 16px;
 
     &::before {
@@ -507,7 +510,7 @@
       display: inline-block;
       width: 20px;
       height: 1px;
-      background: $nubia-purple;
+      background: $nubia-gold;
     }
   }
 
@@ -594,7 +597,7 @@
 
     &:last-child { border-bottom: none; }
 
-    &:hover .step-number { color: $nubia-purple; }
+    &:hover .step-number { color: $nubia-gold; }
   }
 
   .step-number {
@@ -625,7 +628,7 @@
   }
 
   .process-cta-card {
-    background: $nubia-purple;
+    background: $nubia-gold;
     padding: 48px 40px;
     border-radius: 2px;
     color: $nubia-white;
@@ -654,7 +657,7 @@
       align-items: center;
       gap: 10px;
       background: $nubia-white;
-      color: $nubia-purple;
+      color: $nubia-gold;
       font-size: 14px;
       font-weight: 700;
       letter-spacing: 0.05em;
@@ -756,11 +759,11 @@
       outline: none;
 
       &::placeholder { color: rgba($nubia-white, 0.25); }
-      &:focus { border-color: rgba($nubia-purple, 0.5); }
+      &:focus { border-color: rgba($nubia-gold, 0.5); }
     }
 
     button {
-      background: $nubia-purple;
+      background: $nubia-gold;
       border: none;
       color: $nubia-white;
       font-size: 14px;
@@ -772,7 +775,7 @@
       cursor: pointer;
       transition: background 0.2s ease;
       white-space: nowrap;
-      &:hover { background: $nubia-purple-2; }
+      &:hover { background: $nubia-gold-2; }
     }
   }
 
@@ -820,7 +823,7 @@
 
 // ─── NUBIA MARQUEE STRIP ───────────────────────────────────
 .nubia-marquee-strip {
-  background: $nubia-purple;
+  background: $nubia-gold;
   padding: 18px 0;
   overflow: hidden;
 
@@ -852,20 +855,25 @@
   100% { transform: translateX(-50%); }
 }
 
-// ─── SEARCH STRIP ──────────────────────────────────────────
+// ─── SEARCH STRIP — GLASS ──────────────────────────────────
 .nubia-search-strip {
-  background: $nubia-dark-2;
-  border-top: 1px solid $nubia-border;
-  padding: 24px 0;
+  background: transparent;
+  padding: 0;
 
   .search-inner {
     display: flex;
     align-items: center;
     gap: 0;
-    border: 1px solid $nubia-border;
-    border-radius: 2px;
-    background: $nubia-dark-3;
+    background: rgba(255, 255, 255, 0.13);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
     position: relative;
+    overflow: hidden;
   }
 
   .search-field {
@@ -876,28 +884,29 @@
     padding: 18px 24px;
     font-size: 15px;
     outline: none;
-    border-right: 1px solid $nubia-border;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
 
-    &::placeholder { color: rgba($nubia-white, 0.25); }
+    &::placeholder { color: rgba($nubia-white, 0.5); }
   }
 
   .search-select {
     background: transparent;
     border: none;
-    color: rgba($nubia-white, 0.6);
+    color: rgba($nubia-white, 0.8);
     padding: 18px 20px;
     font-size: 14px;
     outline: none;
     cursor: pointer;
-    border-right: 1px solid $nubia-border;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
     appearance: none;
 
-    option { background: $nubia-dark-3; }
+    option { background: $nubia-dark; color: $nubia-white; }
   }
 
   .search-btn {
-    background: $nubia-purple;
+    background: rgba(255, 255, 255, 0.2);
     border: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
     color: $nubia-white;
     padding: 18px 32px;
     font-size: 14px;
@@ -909,7 +918,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    &:hover { background: $nubia-purple-2; }
+    &:hover { background: rgba(255, 255, 255, 0.3); }
   }
 }
 

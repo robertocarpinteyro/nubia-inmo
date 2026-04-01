@@ -62,6 +62,13 @@ const statusLabel: Record<string, { es: string; en: string }> = {
    en_proceso: { es: "En Proceso", en: "In Process" },
 }
 
+// ── Icono SVG inline ─────────────────────────────────────
+const Icon = ({ d, size = 16 }: { d: string; size?: number }) => (
+   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d={d} />
+   </svg>
+)
+
 const ListingDetailsSixArea = () => {
    const searchParams = useSearchParams()
    const propertyId = searchParams.get("id")
@@ -72,40 +79,44 @@ const ListingDetailsSixArea = () => {
    const [loginModal, setLoginModal] = useState(false)
 
    useEffect(() => {
-      if (!propertyId) {
-         setNotFound(true)
-         setLoading(false)
-         return
-      }
+      if (!propertyId) { setNotFound(true); setLoading(false); return }
       setLoading(true)
       fetch(`${API_BASE_URL}/properties/${propertyId}`)
-         .then(r => {
-            if (!r.ok) { setNotFound(true); return null }
-            return r.json()
-         })
+         .then(r => { if (!r.ok) { setNotFound(true); return null } return r.json() })
          .then(data => { if (data) setProperty(data) })
          .catch(() => setNotFound(true))
          .finally(() => setLoading(false))
    }, [propertyId])
 
+   // ── Loading ──────────────────────────────────────────
    if (loading) {
       return (
-         <div className="listing-details-one theme-details-one mt-200 xl-mt-150 pb-150" style={{ textAlign: "center", paddingTop: 100 }}>
-            <div style={{ opacity: 0.4, fontSize: 16 }}>{lang === "en" ? "Loading property..." : "Cargando propiedad..."}</div>
+         <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F2F2F2", paddingTop: 80 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+               <div style={{ width: 32, height: 32, border: "3px solid rgba(24,45,64,0.12)", borderTopColor: "#182D40", borderRadius: "50%", animation: "nubia-detail-spin 0.8s linear infinite" }} />
+               <span style={{ fontSize: 13, color: "rgba(24,45,64,0.4)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                  {lang === "en" ? "Loading..." : "Cargando..."}
+               </span>
+            </div>
+            <style>{`@keyframes nubia-detail-spin { to { transform: rotate(360deg); } }`}</style>
          </div>
       )
    }
 
+   // ── Not found ────────────────────────────────────────
    if (notFound || !property) {
       return (
-         <div className="listing-details-one theme-details-one mt-200 xl-mt-150 pb-150">
-            <div className="container" style={{ textAlign: "center", paddingTop: 80 }}>
-               <h4>{lang === "en" ? "Property not found" : "Propiedad no encontrada"}</h4>
-               <p style={{ opacity: 0.6, marginTop: 12 }}>
+         <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F2F2F2", paddingTop: 80 }}>
+            <div style={{ textAlign: "center", maxWidth: 480 }}>
+               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(24,45,64,0.35)", marginBottom: 16 }}>404</div>
+               <h3 style={{ fontSize: 28, fontWeight: 900, color: "#182D40", letterSpacing: "-0.03em", marginBottom: 12 }}>
+                  {lang === "en" ? "Property not found" : "Propiedad no encontrada"}
+               </h3>
+               <p style={{ color: "rgba(24,45,64,0.5)", fontSize: 15, lineHeight: 1.7, marginBottom: 28 }}>
                   {lang === "en" ? "The property you're looking for doesn't exist or was removed." : "La propiedad que buscas no existe o fue eliminada."}
                </p>
-               <Link href="/listing_07" className="btn-two rounded-0 mt-20" style={{ display: "inline-block", marginTop: 24 }}>
-                  {lang === "en" ? "← Back to listings" : "← Ver todas las propiedades"}
+               <Link href="/listing_07" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#182D40", color: "#fff", padding: "12px 28px", borderRadius: 2, fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none" }}>
+                  ← {lang === "en" ? "Back to listings" : "Ver propiedades"}
                </Link>
             </div>
          </div>
@@ -116,121 +127,185 @@ const ListingDetailsSixArea = () => {
    const description = lang === "en" && property.descriptionEn ? property.descriptionEn : property.description
    const location = [property.address, property.city, property.state].filter(Boolean).join(", ")
    const transText = property.transactionType === "venta"
-      ? (lang === "en" ? "FOR SALE" : "EN VENTA")
-      : (lang === "en" ? "FOR RENT" : "EN RENTA")
+      ? (lang === "en" ? "For Sale" : "En Venta")
+      : (lang === "en" ? "For Rent" : "En Renta")
    const pType = typeLabel[property.propertyType]?.[lang] || property.propertyType
    const pStatus = statusLabel[property.status]?.[lang] || property.status
-
    const mapSrc = property.latitude && property.longitude
       ? `https://maps.google.com/maps?q=${property.latitude},${property.longitude}&z=15&output=embed`
       : null
 
+   const details = [
+      { label: lang === "en" ? "Type" : "Tipo", value: pType },
+      { label: lang === "en" ? "Transaction" : "Operación", value: transText },
+      { label: lang === "en" ? "Status" : "Estado", value: pStatus },
+      { label: lang === "en" ? "Bedrooms" : "Recámaras", value: property.bedrooms ?? "—" },
+      { label: lang === "en" ? "Bathrooms" : "Baños", value: property.bathrooms ?? "—" },
+      { label: lang === "en" ? "Parking" : "Estacionamientos", value: property.parkingSpaces ?? "—" },
+      { label: lang === "en" ? "Built Area" : "Área Construida", value: property.builtArea ? `${property.builtArea} m²` : "—" },
+      { label: lang === "en" ? "Land Area" : "Área Terreno", value: property.totalArea ? `${property.totalArea} m²` : "—" },
+      { label: lang === "en" ? "Year Built" : "Año Construido", value: property.yearBuilt ?? "—" },
+      { label: lang === "en" ? "ZIP Code" : "C.P.", value: property.zipCode ?? "—" },
+   ]
+
    return (
       <>
-         <div className="listing-details-one theme-details-one mt-200 xl-mt-150 pb-150 xl-mb-120">
-            <div className="container">
+         <div style={{ background: "#F2F2F2", minHeight: "100vh", paddingTop: 80 }}>
 
-               {/* ── Banner / Header ── */}
-               <div className="row mb-40">
-                  <div className="col-lg-8">
-                     <h3 className="property-titlee">{title}</h3>
-                     <div className="d-flex flex-wrap mt-10 gap-2 align-items-center">
-                        <div className="list-type text-uppercase mt-15 me-3 bg-white text-dark fw-500">{transText}</div>
-                        <div className="address mt-15">
-                           <i className="bi bi-geo-alt"></i> {location || (lang === "en" ? "Location not specified" : "Ubicación no especificada")}
-                        </div>
-                        {property.featured && (
-                           <span className="mt-15" style={{ background: "#7B4FFF", color: "white", padding: "2px 10px", fontSize: 12, borderRadius: 4, fontWeight: 600 }}>
-                              {lang === "en" ? "Featured" : "Destacada"}
+            {/* ── Breadcrumb ───────────────────────────────── */}
+            <div style={{ background: "#182D40", padding: "14px 0" }}>
+               <div className="container">
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "rgba(255,255,255,0.45)", letterSpacing: "0.06em" }}>
+                     <Link href="/" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none", transition: "color 0.2s" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}>
+                        {lang === "en" ? "Home" : "Inicio"}
+                     </Link>
+                     <span>/</span>
+                     <Link href="/listing_07" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "none", transition: "color 0.2s" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+                        onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}>
+                        {lang === "en" ? "Properties" : "Propiedades"}
+                     </Link>
+                     <span>/</span>
+                     <span style={{ color: "#D9A76A" }}>{title}</span>
+                  </div>
+               </div>
+            </div>
+
+            {/* ── Property Header ──────────────────────────── */}
+            <div style={{ background: "#182D40", paddingBottom: 40, paddingTop: 36 }}>
+               <div className="container">
+                  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 24 }}>
+                     {/* Left: title + location */}
+                     <div style={{ flex: 1, minWidth: 280 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+                           <span style={{ background: "#D9A76A", color: "#182D40", fontSize: 10, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 2 }}>
+                              {transText}
                            </span>
+                           <span style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 2 }}>
+                              {pType}
+                           </span>
+                           {property.featured && (
+                              <span style={{ background: "rgba(217,167,106,0.15)", border: "1px solid rgba(217,167,106,0.3)", color: "#D9A76A", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 2 }}>
+                                 {lang === "en" ? "Featured" : "Destacada"}
+                              </span>
+                           )}
+                        </div>
+                        <h1 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px" }}>
+                           {title}
+                        </h1>
+                        {location && (
+                           <div style={{ display: "flex", alignItems: "center", gap: 6, color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+                              </svg>
+                              {location}
+                           </div>
                         )}
                      </div>
-                  </div>
-                  <div className="col-lg-4 text-lg-end">
-                     <div className="d-inline-block md-mt-40">
-                        <div className="price color-dark fw-500" style={{ fontSize: 28 }}>
+                     {/* Right: price */}
+                     <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>
+                           {lang === "en" ? "Listed price" : "Precio de lista"}
+                        </div>
+                        <div style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#D9A76A", letterSpacing: "-0.04em", lineHeight: 1 }}>
                            {formatPrice(property.price, property.currency || "MXN")}
                         </div>
-                        <div style={{ fontSize: 13, opacity: 0.6, marginTop: 6 }}>
-                           {pType} · {pStatus}
+                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>
+                           {pStatus}
                         </div>
-                        <ul className="style-none d-flex align-items-center action-btns mt-20">
-                           <li><Link href="#" className="d-flex align-items-center justify-content-center tran3s"><i className="fa-light fa-heart"></i></Link></li>
-                           <li><Link href="#" className="d-flex align-items-center justify-content-center tran3s"><i className="fa-light fa-bookmark"></i></Link></li>
-                        </ul>
                      </div>
                   </div>
                </div>
+            </div>
 
-               {/* ── Galería ── */}
-               <MediaGallery media={property.media || []} />
+            {/* ── Gallery ──────────────────────────────────── */}
+            <div style={{ background: "#fff", borderBottom: "1px solid rgba(24,45,64,0.07)" }}>
+               <div className="container" style={{ paddingTop: 0, paddingBottom: 0 }}>
+                  <MediaGallery media={property.media || []} />
+               </div>
+            </div>
 
-               <div className="row pt-80 lg-pt-50">
+            {/* ── Main content ─────────────────────────────── */}
+            <div className="container" style={{ paddingTop: 48, paddingBottom: 80 }}>
+               <div className="row g-4">
+
+                  {/* ── Left column ─────────────────────────── */}
                   <div className="col-xl-8">
 
-                     {/* ── Descripción ── */}
-                     <div className="property-overview bottom-line-dark pb-40 mb-60">
-                        <h4 className="mb-20">{lang === "en" ? "Overview" : "Descripción"}</h4>
+                     {/* Descripción */}
+                     <div style={{ background: "#fff", borderRadius: 4, padding: "36px 40px", marginBottom: 16, border: "1px solid rgba(24,45,64,0.06)" }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#D9A76A", marginBottom: 10 }}>
+                           {lang === "en" ? "About this property" : "Sobre esta propiedad"}
+                        </div>
+                        <h2 style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", fontWeight: 900, color: "#182D40", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 20 }}>
+                           {lang === "en" ? "Overview" : "Descripción"}
+                        </h2>
                         {description ? (
-                           <p className="fs-20 lh-lg">{description}</p>
+                           <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(24,45,64,0.65)", margin: 0 }}>{description}</p>
                         ) : (
-                           <p className="fs-20 lh-lg" style={{ opacity: 0.4 }}>
+                           <p style={{ fontSize: 15, color: "rgba(24,45,64,0.3)", margin: 0, fontStyle: "italic" }}>
                               {lang === "en" ? "No description available." : "Sin descripción disponible."}
                            </p>
                         )}
                      </div>
 
-                     {/* ── Características ── */}
-                     <div className="property-feature-accordion bottom-line-dark pb-40 mb-60">
-                        <h4 className="mb-30">{lang === "en" ? "Property Details" : "Detalles de la Propiedad"}</h4>
+                     {/* Detalles */}
+                     <div style={{ background: "#fff", borderRadius: 4, padding: "36px 40px", marginBottom: 16, border: "1px solid rgba(24,45,64,0.06)" }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#D9A76A", marginBottom: 10 }}>
+                           {lang === "en" ? "Specs" : "Especificaciones"}
+                        </div>
+                        <h2 style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", fontWeight: 900, color: "#182D40", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 28 }}>
+                           {lang === "en" ? "Property Details" : "Detalles de la Propiedad"}
+                        </h2>
                         <div className="row g-3">
-                           {[
-                              { label: lang === "en" ? "Type" : "Tipo", value: pType },
-                              { label: lang === "en" ? "Transaction" : "Operación", value: transText },
-                              { label: lang === "en" ? "Status" : "Estado", value: pStatus },
-                              { label: lang === "en" ? "Bedrooms" : "Recámaras", value: property.bedrooms ?? "—" },
-                              { label: lang === "en" ? "Bathrooms" : "Baños", value: property.bathrooms ?? "—" },
-                              { label: lang === "en" ? "Parking" : "Estacionamientos", value: property.parkingSpaces ?? "—" },
-                              { label: lang === "en" ? "Built Area" : "Área Construida", value: property.builtArea ? `${property.builtArea} m²` : "—" },
-                              { label: lang === "en" ? "Land Area" : "Área Terreno", value: property.totalArea ? `${property.totalArea} m²` : "—" },
-                              { label: lang === "en" ? "Year Built" : "Año Const.", value: property.yearBuilt ?? "—" },
-                              { label: lang === "en" ? "ZIP Code" : "C.P.", value: property.zipCode ?? "—" },
-                           ].map(({ label, value }) => (
-                              <div key={label} className="col-sm-6 col-lg-4">
-                                 <div style={{ background: "#f8f8f8", borderRadius: 8, padding: "14px 18px" }}>
-                                    <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.55, marginBottom: 4 }}>{label}</div>
-                                    <div style={{ fontWeight: 600, fontSize: 16 }}>{String(value)}</div>
+                           {details.map(({ label, value }) => (
+                              <div key={label} className="col-6 col-md-4">
+                                 <div style={{ background: "#F2F2F2", borderRadius: 3, padding: "16px 18px", borderLeft: "3px solid #D9A76A" }}>
+                                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(24,45,64,0.4)", marginBottom: 6 }}>
+                                       {label}
+                                    </div>
+                                    <div style={{ fontWeight: 800, fontSize: 16, color: "#182D40", letterSpacing: "-0.01em" }}>
+                                       {String(value)}
+                                    </div>
                                  </div>
                               </div>
                            ))}
                         </div>
                      </div>
 
-                     {/* ── Mapa ── */}
-                     <div className="property-location bottom-line-dark pb-60 mb-60">
-                        <h4 className="mb-40">{lang === "en" ? "Location" : "Ubicación"}</h4>
+                     {/* Mapa */}
+                     <div style={{ background: "#fff", borderRadius: 4, padding: "36px 40px", marginBottom: 16, border: "1px solid rgba(24,45,64,0.06)" }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#D9A76A", marginBottom: 10 }}>
+                           {lang === "en" ? "Where it is" : "Dónde está"}
+                        </div>
+                        <h2 style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", fontWeight: 900, color: "#182D40", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 28 }}>
+                           {lang === "en" ? "Location" : "Ubicación"}
+                        </h2>
                         {mapSrc ? (
-                           <div className="wrapper">
-                              <div className="map-banner overflow-hidden">
-                                 <div className="gmap_canvas h-100 w-100">
-                                    <iframe src={mapSrc} width="600" height="450" style={{ border: 0 }} allowFullScreen loading="lazy"
-                                       referrerPolicy="no-referrer-when-downgrade" className="w-100 h-100" />
-                                 </div>
-                              </div>
+                           <div style={{ borderRadius: 3, overflow: "hidden", border: "1px solid rgba(24,45,64,0.08)" }}>
+                              <iframe src={mapSrc} width="600" height="400" style={{ border: 0, display: "block" }}
+                                 allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"
+                                 className="w-100" />
                            </div>
                         ) : (
-                           <div style={{ background: "#f5f5f5", borderRadius: 8, padding: "40px 0", textAlign: "center", opacity: 0.4, fontSize: 14 }}>
-                              {lang === "en" ? "Map coordinates not available." : "Coordenadas del mapa no disponibles."}
+                           <div style={{ background: "#F2F2F2", borderRadius: 3, padding: "48px 0", textAlign: "center", color: "rgba(24,45,64,0.3)", fontSize: 14 }}>
+                              {lang === "en" ? "Map coordinates not available." : "Coordenadas no disponibles."}
                            </div>
                         )}
                      </div>
 
-                     {/* ── Dejar reseña ── */}
-                     <div className="review-form">
-                        <h4 className="mb-20">{lang === "en" ? "Leave a Review" : "Dejar una Reseña"}</h4>
-                        <p className="fs-20 lh-lg pb-15">
-                           <a onClick={() => setLoginModal(true)} style={{ cursor: "pointer" }}
-                              className="color-dark fw-500 text-decoration-underline">
+                     {/* Reseña */}
+                     <div style={{ background: "#fff", borderRadius: 4, padding: "36px 40px", border: "1px solid rgba(24,45,64,0.06)" }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#D9A76A", marginBottom: 10 }}>
+                           {lang === "en" ? "Reviews" : "Opiniones"}
+                        </div>
+                        <h2 style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", fontWeight: 900, color: "#182D40", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 16 }}>
+                           {lang === "en" ? "Leave a Review" : "Dejar una Reseña"}
+                        </h2>
+                        <p style={{ fontSize: 14, color: "rgba(24,45,64,0.55)", lineHeight: 1.7, margin: 0 }}>
+                           <a onClick={() => setLoginModal(true)} style={{ cursor: "pointer", color: "#182D40", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3 }}>
                               {lang === "en" ? "Sign in" : "Inicia sesión"}
                            </a>{" "}
                            {lang === "en" ? "to post your review." : "para publicar tu reseña."}
@@ -239,68 +314,99 @@ const ListingDetailsSixArea = () => {
 
                   </div>
 
-                  {/* ── Sidebar de contacto ── */}
+                  {/* ── Sidebar ──────────────────────────────── */}
                   <div className="col-xl-4">
-                     <div className="listing-sidebar-scroll dot-bg ps-xl-5 md-mt-60">
+                     <div style={{ position: "sticky", top: 100, display: "flex", flexDirection: "column", gap: 16 }}>
 
-                        {/* CTA Agendar Visita */}
-                        <div style={{ background: "#0C0C0C", color: "white", borderRadius: 12, padding: "28px 24px", marginBottom: 24 }}>
-                           <h5 style={{ color: "white", marginBottom: 8 }}>
+                        {/* CTA Visita */}
+                        <div style={{ background: "#182D40", borderRadius: 4, padding: "32px 28px" }}>
+                           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)", marginBottom: 12 }}>
+                              {lang === "en" ? "Interested?" : "¿Te interesa?"}
+                           </div>
+                           <h3 style={{ fontSize: "1.35rem", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: 12 }}>
                               {lang === "en" ? "Schedule a Visit" : "Agendar una Visita"}
-                           </h5>
-                           <p style={{ opacity: 0.65, fontSize: 14, marginBottom: 20 }}>
+                           </h3>
+                           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.7, marginBottom: 24 }}>
                               {lang === "en"
-                                 ? "Interested? Contact us to schedule a property visit."
-                                 : "¿Interesado? Contáctanos para agendar una visita a la propiedad."}
+                                 ? "Contact us to schedule a property visit at your convenience."
+                                 : "Contáctanos para agendar una visita a la propiedad a tu conveniencia."}
                            </p>
-                           <Link href="/contact" style={{ display: "block", background: "#7B4FFF", color: "white", textAlign: "center", padding: "12px 0", borderRadius: 6, fontWeight: 600, fontSize: 14 }}>
-                              {lang === "en" ? "Contact an agent" : "Contactar a un agente"}
+                           <Link href="/contact" style={{
+                              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                              background: "#D9A76A", color: "#182D40", textAlign: "center",
+                              padding: "14px 0", borderRadius: 2, fontWeight: 800, fontSize: 13,
+                              letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none",
+                              transition: "background 0.2s",
+                           }}
+                              onMouseEnter={e => (e.currentTarget.style.background = "#E8C08E")}
+                              onMouseLeave={e => (e.currentTarget.style.background = "#D9A76A")}
+                           >
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                 <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                              </svg>
+                              {lang === "en" ? "Contact an agent" : "Contactar agente"}
+                           </Link>
+                           <Link href="/listing_07" style={{
+                              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                              marginTop: 10, background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)",
+                              padding: "12px 0", borderRadius: 2, fontWeight: 700, fontSize: 12,
+                              letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none",
+                              border: "1px solid rgba(255,255,255,0.12)", transition: "all 0.2s",
+                           }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)"; (e.currentTarget as HTMLElement).style.color = "#fff" }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.6)" }}
+                           >
+                              {lang === "en" ? "← All properties" : "← Ver todas"}
                            </Link>
                         </div>
 
-                        {/* Info del agente/creador */}
-                        {property.creator && (
-                           <div style={{ background: "#f8f8f8", borderRadius: 12, padding: "20px 24px", marginBottom: 24 }}>
-                              <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.5, marginBottom: 8 }}>
-                                 {lang === "en" ? "Listed by" : "Publicado por"}
-                              </div>
-                              <div style={{ fontWeight: 600, fontSize: 16 }}>{property.creator.name}</div>
-                              <div style={{ fontSize: 13, opacity: 0.55, marginTop: 4 }}>NUBIA Inmobiliaria</div>
-                           </div>
-                        )}
-
                         {/* Datos rápidos */}
-                        <div style={{ background: "#f8f8f8", borderRadius: 12, padding: "20px 24px" }}>
-                           <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.5, marginBottom: 16 }}>
+                        <div style={{ background: "#fff", borderRadius: 4, padding: "28px", border: "1px solid rgba(24,45,64,0.06)" }}>
+                           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#D9A76A", marginBottom: 18 }}>
                               {lang === "en" ? "Quick info" : "Información rápida"}
                            </div>
-                           <div className="d-flex flex-column gap-3">
-                              {property.bedrooms != null && (
-                                 <div className="d-flex justify-content-between">
-                                    <span style={{ opacity: 0.6, fontSize: 14 }}>{lang === "en" ? "Bedrooms" : "Recámaras"}</span>
-                                    <strong>{property.bedrooms}</strong>
+                           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                              {[
+                                 { label: lang === "en" ? "Bedrooms" : "Recámaras", value: property.bedrooms, icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" },
+                                 { label: lang === "en" ? "Bathrooms" : "Baños", value: property.bathrooms, icon: "M22 12h-4l-3 9L9 3l-3 9H2" },
+                                 { label: lang === "en" ? "Parking" : "Estacionamiento", value: property.parkingSpaces, icon: "M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" },
+                                 { label: lang === "en" ? "Built area" : "Área construida", value: property.builtArea ? `${property.builtArea} m²` : null, icon: "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" },
+                                 { label: lang === "en" ? "Land area" : "Área terreno", value: property.totalArea ? `${property.totalArea} m²` : null, icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" },
+                              ].filter(i => i.value != null).map((item, idx, arr) => (
+                                 <div key={item.label} style={{
+                                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                                    padding: "13px 0",
+                                    borderBottom: idx < arr.length - 1 ? "1px solid rgba(24,45,64,0.06)" : "none",
+                                 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                       <div style={{ width: 32, height: 32, borderRadius: 3, background: "#F2F2F2", display: "flex", alignItems: "center", justifyContent: "center", color: "#325573" }}>
+                                          <Icon d={item.icon} size={14} />
+                                       </div>
+                                       <span style={{ fontSize: 13, color: "rgba(24,45,64,0.55)" }}>{item.label}</span>
+                                    </div>
+                                    <strong style={{ fontSize: 15, fontWeight: 800, color: "#182D40" }}>{String(item.value)}</strong>
                                  </div>
-                              )}
-                              {property.bathrooms != null && (
-                                 <div className="d-flex justify-content-between">
-                                    <span style={{ opacity: 0.6, fontSize: 14 }}>{lang === "en" ? "Bathrooms" : "Baños"}</span>
-                                    <strong>{property.bathrooms}</strong>
-                                 </div>
-                              )}
-                              {property.parkingSpaces != null && (
-                                 <div className="d-flex justify-content-between">
-                                    <span style={{ opacity: 0.6, fontSize: 14 }}>{lang === "en" ? "Parking" : "Estacionamiento"}</span>
-                                    <strong>{property.parkingSpaces}</strong>
-                                 </div>
-                              )}
-                              {property.builtArea != null && (
-                                 <div className="d-flex justify-content-between">
-                                    <span style={{ opacity: 0.6, fontSize: 14 }}>{lang === "en" ? "Built area" : "Área construida"}</span>
-                                    <strong>{property.builtArea} m²</strong>
-                                 </div>
-                              )}
+                              ))}
                            </div>
                         </div>
+
+                        {/* Agente */}
+                        {property.creator && (
+                           <div style={{ background: "#fff", borderRadius: 4, padding: "24px 28px", border: "1px solid rgba(24,45,64,0.06)" }}>
+                              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#D9A76A", marginBottom: 14 }}>
+                                 {lang === "en" ? "Listed by" : "Publicado por"}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                                 <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#182D40", display: "flex", alignItems: "center", justifyContent: "center", color: "#D9A76A", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
+                                    {property.creator.name.charAt(0).toUpperCase()}
+                                 </div>
+                                 <div>
+                                    <div style={{ fontWeight: 700, fontSize: 15, color: "#182D40" }}>{property.creator.name}</div>
+                                    <div style={{ fontSize: 12, color: "rgba(24,45,64,0.4)", marginTop: 2 }}>NUBIA Inmobiliaria</div>
+                                 </div>
+                              </div>
+                           </div>
+                        )}
 
                      </div>
                   </div>

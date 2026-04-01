@@ -44,7 +44,7 @@ const NubiaFooter = () => {
    return (
       <footer
          style={{
-            background: "#0C0C0C",
+            background: "#182D40",
             borderTop: "1px solid rgba(255,255,255,0.08)",
             paddingTop: "100px",
             paddingBottom: "48px",

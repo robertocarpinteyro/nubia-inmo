@@ -36,7 +36,7 @@ const NubiaCtaBanner = () => {
                         placeholder="tu@email.com"
                         style={{
                            flex: 1,
-                           background: "#1F1F1F",
+                           background: "#1D3347",
                            border: "1px solid rgba(255,255,255,0.1)",
                            borderRight: "none",
                            borderRadius: "2px 0 0 2px",
@@ -49,7 +49,7 @@ const NubiaCtaBanner = () => {
                      <button
                         type="submit"
                         style={{
-                           background: "#7B4FFF",
+                           background: "#D9A76A",
                            border: "none",
                            color: "#fff",
                            fontSize: "14px",
@@ -68,7 +68,7 @@ const NubiaCtaBanner = () => {
 
                   <p className="cta-note">
                      También puedes{" "}
-                     <Link href="/contact" style={{ color: "#9D7AFF", textDecoration: "underline" }}>
+                     <Link href="/contact" style={{ color: "#E8C08E", textDecoration: "underline" }}>
                         escribirnos directamente
                      </Link>
                      {" "}o llamarnos al <strong style={{ color: "rgba(255,255,255,0.5)" }}>+52 (81) 1234-5678</strong>

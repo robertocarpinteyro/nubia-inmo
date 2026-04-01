@@ -23,7 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // 📌 API Base URL
-export const API_BASE_URL = "http://localhost:5001/api";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001/api";
 
 // 📌 Auth Provider
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
