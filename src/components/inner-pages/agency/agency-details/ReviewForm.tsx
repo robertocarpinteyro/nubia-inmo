@@ -21,7 +21,7 @@ const ReviewForm = () => {
             </div>
          </div>
 
-         <LoginModal loginModal={loginModal} setLoginModal={setLoginModal} />
+         <LoginModal />
       </>
    )
 }

@@ -99,7 +99,7 @@ const ListingDetailsFourArea = () => {
             </div>
          </div>
 
-         <LoginModal loginModal={loginModal} setLoginModal={setLoginModal} />
+         <LoginModal />
       </>
    )
 }

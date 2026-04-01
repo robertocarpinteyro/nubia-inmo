@@ -17,7 +17,7 @@ const CommonReviewForm = () => {
 
          <AgencyFormOne style={true} />
 
-         <LoginModal loginModal={loginModal} setLoginModal={setLoginModal} />
+         <LoginModal />
       </>
    )
 }

@@ -55,7 +55,7 @@ const BlogForm = () => {
                <button className="btn-five rounded-0">Post Comment</button>
             </form>
          </div>
-         <LoginModal loginModal={loginModal} setLoginModal={setLoginModal} />
+         <LoginModal />
       </>
    )
 }
