@@ -358,7 +358,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
 
                {/* Ver todas */}
                <Link
-                  href="/listing-01"
+                  href="/listing_07"
                   onClick={() => setOffCanvas(false)}
                   style={{
                      display: "flex",
