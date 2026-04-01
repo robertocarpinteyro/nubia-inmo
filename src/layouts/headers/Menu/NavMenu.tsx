@@ -4,7 +4,6 @@ import Link from "next/link.js";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 
