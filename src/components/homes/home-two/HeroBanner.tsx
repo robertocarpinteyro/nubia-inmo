@@ -7,8 +7,9 @@ import { API_BASE_URL } from "@/context/AuthContext"
 
 // ── Secuencia ────────────────────────────────────────────────────
 const TOTAL_FRAMES = 126
+const SUPABASE_STORAGE = "https://fafjujnwwcgijzvouwgb.supabase.co/storage/v1/object/public/hero-sequence"
 const FRAMES = Array.from({ length: TOTAL_FRAMES }, (_, i) =>
-   `/assets/images/hero/casaSequenciaImagenes/Create_time-lapse_day_202603301452${String(i).padStart(3, "0")}.jpg`
+   `${SUPABASE_STORAGE}/Create_time-lapse_day_202603301452${String(i).padStart(3, "0")}.jpg`
 )
 
 interface Suggestion {
