@@ -218,19 +218,19 @@ const HeroBanner = () => {
                      <form onSubmit={e => { e.preventDefault(); navigateToListing(query) }}>
                         <div className="nubia-search-strip">
                            <div className="search-inner">
+
+                              {/* ── Campo de búsqueda ── */}
                               <Combobox value={selected} onChange={handleSelect} nullable>
-                                 <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
-                                    <svg style={{ position: "absolute", left: 18, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.55)", pointerEvents: "none", zIndex: 1 }}
-                                       width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                 <div className="search-input-wrap">
+                                    <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                                     </svg>
                                     {loadingSearch && (
-                                       <div style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", zIndex: 1 }}>
+                                       <div className="search-spinner">
                                           <div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.25)", borderTopColor: "#fff", borderRadius: "50%", animation: "nubia-spin 0.7s linear infinite" }} />
                                        </div>
                                     )}
                                     <Combobox.Input className="search-field"
-                                       style={{ paddingLeft: 46, borderRight: "1px solid rgba(255,255,255,0.15)", width: "100%" }}
                                        placeholder="Buscar por colonia, municipio o ciudad..."
                                        displayValue={(item: Suggestion | null) => item ? item.title : query}
                                        onChange={e => handleQueryChange(e.target.value)}
@@ -238,53 +238,35 @@ const HeroBanner = () => {
                                     />
                                     <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0"
                                        afterLeave={() => { if (!selected) setSuggestions([]) }}>
-                                       <Combobox.Options style={{
-                                          position: "absolute", top: "calc(100% + 8px)", left: -1, right: -1,
-                                          background: "rgba(255,255,255,0.92)", backdropFilter: "blur(20px) saturate(180%)",
-                                          WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                                          border: "1px solid rgba(255,255,255,0.35)", borderRadius: 6, overflow: "hidden",
-                                          zIndex: 9999, boxShadow: "0 16px 40px rgba(24,45,64,0.2)",
-                                          listStyle: "none", margin: 0, padding: 0,
-                                       }}>
+                                       <Combobox.Options className="search-dropdown">
                                           {suggestions.length === 0 && query.length >= 2 && !loadingSearch ? (
-                                             <li style={{ padding: "16px 20px", fontSize: 13, color: "rgba(24,45,64,0.45)", textAlign: "center" }}>
+                                             <li className="search-no-results">
                                                 Sin resultados para &ldquo;{query}&rdquo;
                                              </li>
                                           ) : suggestions.map(s => (
                                              <Combobox.Option key={s.id} value={s} as={Fragment}>
                                                 {({ active }) => (
-                                                   <li style={{
-                                                      display: "flex", alignItems: "center", gap: 14, padding: "13px 18px",
-                                                      background: active ? "rgba(217,167,106,0.12)" : "transparent",
-                                                      borderBottom: "1px solid rgba(24,45,64,0.06)", cursor: "pointer",
-                                                   }}>
-                                                      <div style={{
-                                                         width: 36, height: 36, borderRadius: 3, flexShrink: 0,
-                                                         background: active ? "rgba(217,167,106,0.2)" : "rgba(24,45,64,0.06)",
-                                                         border: `1px solid ${active ? "rgba(217,167,106,0.4)" : "rgba(24,45,64,0.1)"}`,
-                                                         display: "flex", alignItems: "center", justifyContent: "center",
-                                                      }}>
+                                                   <li className={`search-option${active ? " active" : ""}`}>
+                                                      <div className={`search-option-icon${active ? " active" : ""}`}>
                                                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={active ? "#D9A76A" : "#325573"} strokeWidth="1.5">
                                                             <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                                                             <polyline points="9 22 9 12 15 12 15 22" />
                                                          </svg>
                                                       </div>
-                                                      <div style={{ flex: 1, minWidth: 0 }}>
-                                                         <div style={{ fontSize: 14, fontWeight: 600, color: active ? "#182D40" : "rgba(24,45,64,0.85)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                                            {s.title}
-                                                         </div>
-                                                         <div style={{ fontSize: 11, color: "rgba(24,45,64,0.45)", marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
+                                                      <div className="search-option-info">
+                                                         <div className="search-option-title">{s.title}</div>
+                                                         <div className="search-option-meta">
                                                             {(s.city || s.state) && (<>
                                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
                                                                {[s.city, s.state].filter(Boolean).join(", ")}
-                                                               <span style={{ opacity: 0.4 }}>·</span>
+                                                               <span className="sep">·</span>
                                                             </>)}
                                                             <span>{typeLabel[s.propertyType] || s.propertyType}</span>
-                                                            <span style={{ opacity: 0.4 }}>·</span>
+                                                            <span className="sep">·</span>
                                                             <span>{txLabel[s.transactionType] || s.transactionType}</span>
                                                          </div>
                                                       </div>
-                                                      <div style={{ fontSize: 14, fontWeight: 700, color: active ? "#D9A76A" : "#325573", flexShrink: 0 }}>
+                                                      <div className={`search-option-price${active ? " active" : ""}`}>
                                                          {formatPrice(Number(s.price), s.currency || "MXN")}
                                                       </div>
                                                    </li>
@@ -295,22 +277,30 @@ const HeroBanner = () => {
                                     </Transition>
                                  </div>
                               </Combobox>
-                              <select className="search-select" value={propertyType} onChange={e => setPropertyType(e.target.value)}>
-                                 <option value="">Tipo</option>
-                                 <option value="casa">Casa</option>
-                                 <option value="departamento">Departamento</option>
-                                 <option value="terreno">Terreno</option>
-                                 <option value="oficina">Oficina</option>
-                                 <option value="local">Comercial</option>
-                              </select>
-                              <select className="search-select" value={transactionType} onChange={e => setTransactionType(e.target.value)}>
-                                 <option value="">Operación</option>
-                                 <option value="venta">Venta</option>
-                                 <option value="renta">Renta</option>
-                              </select>
-                              <button className="search-btn" type="submit">
-                                 <i className="bi bi-search"></i> Buscar
-                              </button>
+
+                              {/* ── Filtros + botón ── */}
+                              <div className="search-filters">
+                                 <div className="search-selects-row">
+                                    <select className="search-select" value={propertyType} onChange={e => setPropertyType(e.target.value)}>
+                                       <option value="">Tipo</option>
+                                       <option value="casa">Casa</option>
+                                       <option value="departamento">Departamento</option>
+                                       <option value="terreno">Terreno</option>
+                                       <option value="oficina">Oficina</option>
+                                       <option value="local">Comercial</option>
+                                    </select>
+                                    <select className="search-select" value={transactionType} onChange={e => setTransactionType(e.target.value)}>
+                                       <option value="">Operación</option>
+                                       <option value="venta">Venta</option>
+                                       <option value="renta">Renta</option>
+                                    </select>
+                                 </div>
+                                 <button className="search-btn" type="submit">
+                                    <i className="bi bi-search"></i>
+                                    <span className="search-btn-text">Buscar</span>
+                                 </button>
+                              </div>
+
                            </div>
                         </div>
                      </form>
