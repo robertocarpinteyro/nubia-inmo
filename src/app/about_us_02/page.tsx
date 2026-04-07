@@ -1,15 +1,20 @@
-import AboutUsTwo from "@/components/inner-pages/about-us/about-us-two";
-import Wrapper from "@/layouts/Wrapper";
+import AboutUsNubia from "@/components/inner-pages/about-us/about-us-nubia"
+import HeaderTwo from "@/layouts/headers/HeaderTwo"
+import NubiaFooter from "@/components/homes/home-two/NubiaFooter"
+import Wrapper from "@/layouts/Wrapper"
 
 export const metadata = {
-   title: "About Us Two HOZN - Real Estate React Next js",
-};
-const index = () => {
+   title: "Nosotros — NUBIA Inmobiliaria",
+}
+
+const AboutNubiaPage = () => {
    return (
       <Wrapper>
-         <AboutUsTwo />
+         <HeaderTwo style_1={true} style_2={false} />
+         <AboutUsNubia />
+         <NubiaFooter />
       </Wrapper>
    )
 }
 
-export default index
+export default AboutNubiaPage

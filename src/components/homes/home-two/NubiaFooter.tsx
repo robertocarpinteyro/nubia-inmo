@@ -25,7 +25,7 @@ const footerLinks = {
       { label: "Propiedades en Renta", href: "/listing_07" },
    ],
    empresa: [
-      { label: "Quiénes Somos", href: "/about_us_01" },
+      { label: "Quiénes Somos", href: "/about_us_02" },
       { label: "Nuestro Equipo", href: "/agent" },
       { label: "Testimonios", href: "/" },
       { label: "Noticias", href: "/blog_01" },
