@@ -72,7 +72,11 @@ const AddPropertyBody = () => {
          })
 
          const data = await res.json()
-         if (!res.ok) throw new Error(data.message || "Error al crear la propiedad")
+         if (!res.ok) {
+            console.error("Detalles del servidor:", data.details);
+            const detailMsg = data.details?.errors ? data.details.errors.map((e: any) => e.message).join(", ") : JSON.stringify(data.details);
+            throw new Error(data.error ? `${data.error}: ${detailMsg}` : data.message || "Error al crear la propiedad")
+         }
 
          router.push("/dashboard/properties-list")
       } catch (err: any) {
