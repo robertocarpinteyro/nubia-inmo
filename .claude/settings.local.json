@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sort -t_ -k2 -n)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

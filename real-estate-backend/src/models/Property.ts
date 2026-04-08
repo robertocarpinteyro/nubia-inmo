@@ -59,6 +59,12 @@ export class Property extends Model {
   price!: number;
 
   @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: true,
+  })
+  discountPrice?: number;
+
+  @Column({
     type: DataType.STRING,
     allowNull: false,
     defaultValue: "MXN",
@@ -108,10 +114,10 @@ export class Property extends Model {
   bedrooms?: number;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.STRING,
     allowNull: true,
   })
-  bathrooms?: number;
+  bathrooms?: string;
 
   @Column({
     type: DataType.INTEGER,

@@ -8,6 +8,7 @@ import CommonPropertyOverview from "../listing-details-common/CommonPropertyOver
 import CommonPropertyFeatureList from "../listing-details-common/CommonPropertyFeatureList"
 import CommonAmenities from "../listing-details-common/CommonAmenities"
 import CommonPropertyVideoTour from "../listing-details-common/CommonPropertyVideoTour"
+import CommonVirtualTour from "../listing-details-common/CommonVirtualTour"
 import CommonPropertyFloorPlan from "../listing-details-common/CommonPropertyFloorPlan"
 import CommonNearbyList from "../listing-details-common/CommonNearbyList"
 import CommonSimilarProperty from "../listing-details-common/CommonSimilarProperty"
@@ -49,6 +50,7 @@ const ListingDetailsOneArea = () => {
                   <div className="property-video-tour mb-50">
                      <CommonPropertyVideoTour />
                   </div>
+                  <CommonVirtualTour panoramaUrl="/images/virtual-tour/panorama.jpg" />
                   <CommonPropertyFloorPlan style={false} />
                   <div className="property-nearby bg-white shadow4 border-20 p-40 mb-50">
                      <CommonNearbyList />

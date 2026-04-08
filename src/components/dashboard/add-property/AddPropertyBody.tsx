@@ -32,6 +32,8 @@ const AddPropertyBody = () => {
       yearBuilt: "",
       commissionPercentage: "4.0",
       featured: false,
+      discountPrice: "",
+      mediaUrls: "",
    })
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -52,13 +54,15 @@ const AddPropertyBody = () => {
          const payload = {
             ...form,
             price: Number(form.price),
+            discountPrice: form.discountPrice ? Number(form.discountPrice) : null,
             bedrooms: Number(form.bedrooms) || 0,
-            bathrooms: Number(form.bathrooms) || 0,
+            bathrooms: form.bathrooms ? String(form.bathrooms) : "0",
             parkingSpaces: Number(form.parkingSpaces) || 0,
             totalArea: Number(form.totalArea) || 0,
             builtArea: Number(form.builtArea) || 0,
             yearBuilt: Number(form.yearBuilt) || 0,
             commissionPercentage: Number(form.commissionPercentage) || 0,
+            mediaUrls: form.mediaUrls ? form.mediaUrls.split(/[\n,]+/).map((u: string) => u.trim()).filter(Boolean) : [],
          }
 
          const res = await fetch(`${API_BASE_URL}/properties`, {
@@ -158,6 +162,12 @@ const AddPropertyBody = () => {
                </div>
                <div className="col-md-6 col-lg-3">
                   <div className="nubia-form-group">
+                     <label>Precio con Descuento (Opcional)</label>
+                     <input type="number" name="discountPrice" value={form.discountPrice} onChange={handleChange} placeholder="0.00" min="0" />
+                  </div>
+               </div>
+               <div className="col-md-6 col-lg-3">
+                  <div className="nubia-form-group">
                      <label>{t("addProperty.currency")}</label>
                      <select name="currency" value={form.currency} onChange={handleChange}>
                         <option value="MXN">MXN</option>
@@ -175,8 +185,8 @@ const AddPropertyBody = () => {
                </div>
                <div className="col-md-4 col-lg-2">
                   <div className="nubia-form-group">
-                     <label>{t("addProperty.bathrooms")}</label>
-                     <input type="number" name="bathrooms" value={form.bathrooms} onChange={handleChange} min="0" />
+                     <label>{t("addProperty.bathrooms")} <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>(ej. 3.5 o 3 1/2)</span></label>
+                     <input type="text" name="bathrooms" value={form.bathrooms} onChange={handleChange} placeholder="Ej. 3 1/2" />
                   </div>
                </div>
                <div className="col-md-4 col-lg-2">
@@ -188,13 +198,13 @@ const AddPropertyBody = () => {
                <div className="col-md-6 col-lg-3">
                   <div className="nubia-form-group">
                      <label>{t("addProperty.totalArea")}</label>
-                     <input type="number" name="totalArea" value={form.totalArea} onChange={handleChange} min="0" />
+                     <input type="number" name="totalArea" value={form.totalArea} onChange={handleChange} min="0" step="any" />
                   </div>
                </div>
                <div className="col-md-6 col-lg-3">
                   <div className="nubia-form-group">
                      <label>{t("addProperty.builtArea")}</label>
-                     <input type="number" name="builtArea" value={form.builtArea} onChange={handleChange} min="0" />
+                     <input type="number" name="builtArea" value={form.builtArea} onChange={handleChange} min="0" step="any" />
                   </div>
                </div>
 
@@ -243,6 +253,14 @@ const AddPropertyBody = () => {
                      <label className="form-check-label" htmlFor="featuredCheck">
                         {t("addProperty.featured")}
                      </label>
+                  </div>
+               </div>
+
+               {/* ── Imágenes por URL ── */}
+               <div className="col-12 mt-3">
+                  <div className="nubia-form-group">
+                     <label>URLs de Imágenes <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>(separadas por comas o saltos de línea)</span></label>
+                     <textarea name="mediaUrls" value={form.mediaUrls} onChange={handleChange} rows={3} placeholder="https://ejemplo.com/imagen1.jpg&#10;https://ejemplo.com/imagen2.png" />
                   </div>
                </div>
 

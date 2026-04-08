@@ -65,12 +65,31 @@ export const autocompleteProperties = async (req: AuthRequest, res: Response): P
 // 📌 CREATE — Solo admin
 export const createProperty = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const { mediaUrls, ...bodyData } = req.body;
+    
     const propertyData = {
-      ...req.body,
+      ...bodyData,
       createdBy: req.user!.id,
     };
 
     const property = await Property.create(propertyData);
+
+    if (mediaUrls && Array.isArray(mediaUrls) && mediaUrls.length > 0) {
+      const mediaPromises = mediaUrls.map((url: string, index: number) => {
+        if (url.trim()) {
+           return PropertyMedia.create({
+             propertyId: property.id,
+             mediaType: "image",
+             url: url.trim(),
+             title: `Imagen ${index + 1}`,
+             sortOrder: index,
+           });
+        }
+        return null;
+      }).filter(Boolean);
+      await Promise.all(mediaPromises);
+    }
+
     res.status(201).json({ message: "Propiedad creada exitosamente", property });
   } catch (error) {
     console.error("Create Property Error:", error);
