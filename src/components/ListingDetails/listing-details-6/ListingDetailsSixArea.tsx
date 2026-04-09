@@ -24,6 +24,7 @@ interface Property {
    propertyType: string
    transactionType: string
    price: number
+   discountPrice?: number
    currency: string
    address?: string
    city?: string
@@ -210,7 +211,16 @@ const ListingDetailsSixArea = () => {
                            {lang === "en" ? "Listed price" : "Precio de lista"}
                         </div>
                         <div style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#D9A76A", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                           {formatPrice(property.price, property.currency || "MXN")}
+                           {property.discountPrice && property.discountPrice > 0 ? (
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                                 <span style={{ fontSize: "0.55em", color: "rgba(255,255,255,0.4)", textDecoration: "line-through", marginBottom: 4 }}>
+                                    {formatPrice(property.price, property.currency || "MXN")}
+                                 </span>
+                                 <span>{formatPrice(property.discountPrice, property.currency || "MXN")}</span>
+                              </div>
+                           ) : (
+                              formatPrice(property.price, property.currency || "MXN")
+                           )}
                         </div>
                         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>
                            {pStatus}

@@ -16,6 +16,7 @@ interface Property {
    propertyType: string
    transactionType: string
    price: number
+   discountPrice?: number
    currency: string
    address?: string
    city?: string
@@ -221,9 +222,18 @@ const ListingFiveArea = () => {
                                                 </li>
                                              </ul>
                                              <div className="pl-footer top-border bottom-border d-flex align-items-center justify-content-between">
-                                                <strong className="price fw-500 color-dark">
-                                                   {formatPrice(p.price, p.currency || "MXN")}
-                                                </strong>
+                                                <div className="card-price" style={{ fontSize: "1.45rem", fontWeight: 900, color: "#182D40", fontFamily: "Gordita, sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                                                   {p.discountPrice && p.discountPrice > 0 ? (
+                                                      <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+                                                         <span style={{ textDecoration: "line-through", opacity: 0.5, fontSize: "0.7em" }}>
+                                                            {formatPrice(p.price, p.currency || "MXN")}
+                                                         </span>
+                                                         <span>{formatPrice(p.discountPrice, p.currency || "MXN")}</span>
+                                                      </div>
+                                                   ) : (
+                                                      formatPrice(p.price, p.currency || "MXN")
+                                                   )}
+                                                </div>
                                                 <Link href={`/listing_details_06?id=${p.id}`} className="btn-four">
                                                    <i className="bi bi-arrow-up-right"></i>
                                                 </Link>

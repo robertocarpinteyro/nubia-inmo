@@ -10,6 +10,7 @@ interface Property {
    titleEn?: string
    transactionType: string
    price: number
+   discountPrice?: number
    currency: string
    city?: string
    state?: string
@@ -107,7 +108,16 @@ const NubiaProperties = () => {
                               </div>
                               <div className="card-body-inner">
                                  <div className="card-price">
-                                    {formatPrice(p.price, p.currency || "MXN")}
+                                    {p.discountPrice && p.discountPrice > 0 ? (
+                                       <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+                                          <span style={{ textDecoration: "line-through", opacity: 0.5, fontSize: "0.7em" }}>
+                                             {formatPrice(p.price, p.currency || "MXN")}
+                                          </span>
+                                          <span>{formatPrice(p.discountPrice, p.currency || "MXN")}</span>
+                                       </div>
+                                    ) : (
+                                       formatPrice(p.price, p.currency || "MXN")
+                                    )}
                                  </div>
                                  <div className="card-title">{getTitle(p)}</div>
                                  <div className="card-location">

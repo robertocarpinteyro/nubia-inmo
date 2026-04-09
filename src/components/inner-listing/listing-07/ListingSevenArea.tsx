@@ -12,6 +12,7 @@ interface Property {
    propertyType: string
    transactionType: string
    price: number
+   discountPrice?: number
    currency: string
    address?: string
    city?: string
@@ -187,8 +188,17 @@ const PropertyCard = ({ p, lang }: { p: Property; lang: string }) => {
                   <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(24,45,64,0.3)", marginBottom: 3 }}>
                      {isVenta ? (lang === "en" ? "Price" : "Precio") : (lang === "en" ? "Rent/mo" : "Renta/mes")}
                   </div>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: "#182D40", fontFamily: "Gordita, sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
-                     {formatPrice(p.price, p.currency || "MXN")}
+                  <div className="card-price" style={{ fontSize: 20, fontWeight: 900, color: "#182D40", fontFamily: "Gordita, sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                     {p.discountPrice && p.discountPrice > 0 ? (
+                        <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+                           <span style={{ textDecoration: "line-through", opacity: 0.5, fontSize: "0.7em" }}>
+                              {formatPrice(p.price, p.currency || "MXN")}
+                           </span>
+                           <span>{formatPrice(p.discountPrice, p.currency || "MXN")}</span>
+                        </div>
+                     ) : (
+                        formatPrice(p.price, p.currency || "MXN")
+                     )}
                   </div>
                </div>
                <Link href={`/listing_details_nubia?id=${p.id}`} style={{

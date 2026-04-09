@@ -14,7 +14,11 @@ const FRAMES = Array.from({ length: TOTAL_FRAMES }, (_, i) =>
 
 interface Suggestion {
    id: number; title: string; city: string | null; state: string | null
-   propertyType: string; transactionType: string; price: number; currency: string
+   propertyType: string;
+   transactionType: string;
+   price: number;
+   discountPrice?: number;
+   currency: string;
 }
 
 const formatPrice = (price: number, currency: string) =>
@@ -267,7 +271,16 @@ const HeroBanner = () => {
                                                          </div>
                                                       </div>
                                                       <div className={`search-option-price${active ? " active" : ""}`}>
-                                                         {formatPrice(Number(s.price), s.currency || "MXN")}
+                                                         {s.discountPrice && s.discountPrice > 0 ? (
+                                                            <div style={{ display: "flex", gap: "6px", alignItems: "baseline" }}>
+                                                               <span style={{ textDecoration: "line-through", opacity: 0.6, fontSize: "0.8em" }}>
+                                                                  {formatPrice(Number(s.price), s.currency || "MXN")}
+                                                               </span>
+                                                               <span>{formatPrice(Number(s.discountPrice), s.currency || "MXN")}</span>
+                                                            </div>
+                                                         ) : (
+                                                            formatPrice(Number(s.price), s.currency || "MXN")
+                                                         )}
                                                       </div>
                                                    </li>
                                                 )}

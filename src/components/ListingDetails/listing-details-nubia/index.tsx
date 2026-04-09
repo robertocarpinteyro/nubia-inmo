@@ -10,6 +10,7 @@ interface PropertyDetail {
    id: number
    title: string
    price: number
+   discountPrice?: number
    address: string
    propertyType: string
    transactionType: string
@@ -158,7 +159,16 @@ const NubiaPropertyDetail = () => {
                         Precio {isVenta ? "de venta" : "mensual"}
                      </div>
                      <div style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 4vw, 48px)", color: "#7B4FFF", letterSpacing: "-0.02em", lineHeight: 1 }}>
-                        {formatPrice(property.price)}
+                        {property.discountPrice && property.discountPrice > 0 ? (
+                           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                              <span style={{ fontSize: "0.5em", color: "rgba(255,255,255,0.4)", textDecoration: "line-through", marginBottom: "4px" }}>
+                                 {formatPrice(property.price)}
+                              </span>
+                              <span>{formatPrice(property.discountPrice)}</span>
+                           </div>
+                        ) : (
+                           formatPrice(property.price)
+                        )}
                      </div>
                      {!isVenta && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "13px", marginTop: "6px" }}>/mes</div>}
                   </div>
@@ -349,7 +359,16 @@ const NubiaPropertyDetail = () => {
                         <div style={{ background: "#111111", borderRadius: "4px", padding: "32px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.06)" }}>
                            <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Precio {isVenta ? "de venta" : "mensual"}</div>
                            <div style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "36px", color: "#7B4FFF", letterSpacing: "-0.02em", lineHeight: 1, marginBottom: "24px" }}>
-                              {formatPrice(property.price)}
+                              {property.discountPrice && property.discountPrice > 0 ? (
+                                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                                    <span style={{ fontSize: "0.5em", color: "rgba(255,255,255,0.4)", textDecoration: "line-through", marginBottom: "4px" }}>
+                                       {formatPrice(property.price)}
+                                    </span>
+                                    <span>{formatPrice(property.discountPrice)}</span>
+                                 </div>
+                              ) : (
+                                 formatPrice(property.price)
+                              )}
                            </div>
                            <div className="d-flex gap-2">
                               <button className="btn-nubia-primary flex-fill" style={{ textAlign: "center" }}>
