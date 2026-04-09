@@ -154,9 +154,14 @@ const PropertyListBody = () => {
                         </td>
                         <td className="d-flex gap-2">
                            {isAdmin ? (
-                              <button onClick={() => deleteAdminProp(p.id)} className="btn-nubia-sm danger" title="Eliminar del sistema">
-                                 <i className="bi bi-trash"></i>
-                              </button>
+                              <>
+                                 <Link href={`/dashboard/edit-property/${p.id}`} className="btn-nubia-sm primary" title="Editar">
+                                    <i className="bi bi-pencil"></i>
+                                 </Link>
+                                 <button onClick={() => deleteAdminProp(p.id)} className="btn-nubia-sm danger" title="Eliminar del sistema">
+                                    <i className="bi bi-trash"></i>
+                                 </button>
+                              </>
                            ) : (
                               <>
                                  <button onClick={() => updateVendorStatus(p.id, p.status)} className="btn-nubia-sm outline" title="Cambiar Estado">

@@ -1,10 +1,10 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 import { useLanguage } from "@/context/LanguageContext"
 
-const AddPropertyBody = () => {
+const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
    const { getAuthHeaders } = useAuth()
    const { t } = useLanguage()
    const router = useRouter()
@@ -36,6 +36,43 @@ const AddPropertyBody = () => {
       mediaUrls: "",
    })
 
+   useEffect(() => {
+      if (propertyId) {
+         fetch(`${API_BASE_URL}/properties/${propertyId}`, { headers: getAuthHeaders() })
+            .then(res => res.json())
+            .then(data => {
+               if (data && !data.error) {
+                  setForm(prev => ({
+                     ...prev,
+                     title: data.title || "",
+                     titleEn: data.titleEn || "",
+                     description: data.description || "",
+                     descriptionEn: data.descriptionEn || "",
+                     propertyType: data.propertyType || "casa",
+                     transactionType: data.transactionType || "venta",
+                     price: data.price ? String(data.price) : "",
+                     currency: data.currency || "MXN",
+                     address: data.address || "",
+                     city: data.city || "",
+                     state: data.state || "",
+                     zipCode: data.zipCode || "",
+                     bedrooms: data.bedrooms !== null ? String(data.bedrooms) : "",
+                     bathrooms: data.bathrooms ? String(data.bathrooms) : "",
+                     parkingSpaces: data.parkingSpaces !== null ? String(data.parkingSpaces) : "",
+                     totalArea: data.totalArea ? String(data.totalArea) : "",
+                     builtArea: data.builtArea ? String(data.builtArea) : "",
+                     yearBuilt: data.yearBuilt ? String(data.yearBuilt) : "",
+                     commissionPercentage: data.commissionPercentage ? String(data.commissionPercentage) : "4.0",
+                     featured: data.featured || false,
+                     discountPrice: data.discountPrice ? String(data.discountPrice) : "",
+                     mediaUrls: "", // We keep empty so they can append new ones without deleting old
+                  }))
+               }
+            })
+            .catch(console.error);
+      }
+   }, [propertyId]);
+
    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value, type } = e.target as any
       const checked = (e.target as HTMLInputElement).checked
@@ -65,8 +102,11 @@ const AddPropertyBody = () => {
             mediaUrls: form.mediaUrls ? form.mediaUrls.split(/[\n,]+/).map((u: string) => u.trim()).filter(Boolean) : [],
          }
 
-         const res = await fetch(`${API_BASE_URL}/properties`, {
-            method: "POST",
+         const urlEndpoint = propertyId ? `${API_BASE_URL}/properties/${propertyId}` : `${API_BASE_URL}/properties`;
+         const methodReq = propertyId ? "PUT" : "POST";
+
+         const res = await fetch(urlEndpoint, {
+            method: methodReq,
             headers: { "Content-Type": "application/json", ...getAuthHeaders() },
             body: JSON.stringify(payload),
          })
@@ -75,7 +115,7 @@ const AddPropertyBody = () => {
          if (!res.ok) {
             console.error("Detalles del servidor:", data.details);
             const detailMsg = data.details?.errors ? data.details.errors.map((e: any) => e.message).join(", ") : JSON.stringify(data.details);
-            throw new Error(data.error ? `${data.error}: ${detailMsg}` : data.message || "Error al crear la propiedad")
+            throw new Error(data.error ? `${data.error}: ${detailMsg}` : data.message || (propertyId ? "Error al editar" : "Error al crear la propiedad"))
          }
 
          router.push("/dashboard/properties-list")
@@ -89,7 +129,7 @@ const AddPropertyBody = () => {
    return (
       <div className="nubia-dash-card">
          <div className="card-head">
-            <h5 className="card-title">{t("addProperty.title")}</h5>
+            <h5 className="card-title">{propertyId ? "Editar Propiedad" : t("addProperty.title")}</h5>
          </div>
 
          <form onSubmit={handleSubmit} className="card-body-inner">
@@ -270,7 +310,7 @@ const AddPropertyBody = () => {
 
                <div className="col-12 mt-4 text-end">
                   <button type="submit" className="btn-nubia-sm primary" disabled={saving}>
-                     {saving ? t("addProperty.saving") : t("addProperty.save")}
+                     {saving ? t("addProperty.saving") : (propertyId ? "Guardar Cambios" : t("addProperty.save"))}
                   </button>
                </div>
             </div>

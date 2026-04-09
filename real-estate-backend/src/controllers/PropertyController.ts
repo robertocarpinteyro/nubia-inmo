@@ -108,7 +108,26 @@ export const updateProperty = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    await property.update(req.body);
+    const { mediaUrls, ...bodyData } = req.body;
+    await property.update(bodyData);
+
+    if (mediaUrls && Array.isArray(mediaUrls) && mediaUrls.length > 0) {
+      const currentMediaCount = await PropertyMedia.count({ where: { propertyId: property.id } });
+      const mediaPromises = mediaUrls.map((url: string, index: number) => {
+        if (url.trim()) {
+           return PropertyMedia.create({
+             propertyId: property.id,
+             mediaType: "image",
+             url: url.trim(),
+             title: `Imagen Extra ${currentMediaCount + index + 1}`,
+             sortOrder: currentMediaCount + index,
+           });
+        }
+        return null;
+      }).filter(Boolean);
+      await Promise.all(mediaPromises);
+    }
+
     res.json({ message: "Propiedad actualizada exitosamente", property });
   } catch (error) {
     console.error("Update Property Error:", error);
