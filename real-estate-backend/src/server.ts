@@ -39,7 +39,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // 📌 Conexión a base de datos y arranque del servidor
-sequelize.sync({ alter: true }).then(() => {
+sequelize.sync({ alter: { drop: false } }).then(() => {
   console.log("📌 Database connected & synced!");
   app.listen(PORT, () => console.log(`🚀 Nubia API running on port ${PORT}`));
 }).catch((error) => {
