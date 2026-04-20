@@ -181,6 +181,18 @@ export class Property extends Model {
     type: DataType.STRING,
     allowNull: true,
   })
+  videoUrl?: string; // URL única del video de la propiedad (YouTube, Vimeo o MP4 directo)
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  googleMapsUrl?: string; // URL de embed de Google Maps
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
   mediaFolderUrl?: string;
 
   @Column({

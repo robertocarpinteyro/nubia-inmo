@@ -34,6 +34,8 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
       featured: false,
       discountPrice: "",
       mediaUrls: "",
+      videoUrl: "",
+      googleMapsUrl: "",
    })
 
    useEffect(() => {
@@ -66,6 +68,8 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                      featured: data.featured || false,
                      discountPrice: data.discountPrice ? String(data.discountPrice) : "",
                      mediaUrls: "", // We keep empty so they can append new ones without deleting old
+                     videoUrl: data.videoUrl || "",
+                     googleMapsUrl: data.googleMapsUrl || "",
                   }))
                }
             })
@@ -300,11 +304,45 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   </div>
                </div>
 
-               {/* ── Imágenes por URL ── */}
-               <div className="col-12 mt-3">
+               {/* ── Media ── */}
+               <div className="col-12 mt-2">
+                  <div style={{ borderLeft: "3px solid #7B4FFF", paddingLeft: 12, marginBottom: 12 }}>
+                     <span style={{ fontWeight: 600, fontSize: 13, color: "#7B4FFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        Media &amp; Ubicación
+                     </span>
+                  </div>
+               </div>
+
+               <div className="col-12">
                   <div className="nubia-form-group">
                      <label>URLs de Imágenes <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>(separadas por comas o saltos de línea)</span></label>
                      <textarea name="mediaUrls" value={form.mediaUrls} onChange={handleChange} rows={3} placeholder="https://ejemplo.com/imagen1.jpg&#10;https://ejemplo.com/imagen2.png" />
+                  </div>
+               </div>
+
+               <div className="col-md-6">
+                  <div className="nubia-form-group">
+                     <label>URL del Video <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>(YouTube, Vimeo o MP4 directo)</span></label>
+                     <input
+                        type="url"
+                        name="videoUrl"
+                        value={form.videoUrl}
+                        onChange={handleChange}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                     />
+                  </div>
+               </div>
+
+               <div className="col-md-6">
+                  <div className="nubia-form-group">
+                     <label>URL de Google Maps <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>(link de embed o share)</span></label>
+                     <input
+                        type="url"
+                        name="googleMapsUrl"
+                        value={form.googleMapsUrl}
+                        onChange={handleChange}
+                        placeholder="https://maps.google.com/maps?q=..."
+                     />
                   </div>
                </div>
 
