@@ -30,7 +30,7 @@ const FavouriteArea = () => {
          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       })
          .then((r) => r.json())
-         .then((d) => setFavs(Array.isArray(d) ? d : []))
+         .then((d) => setFavs(Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : []))
          .catch(() => setFavs([]))
          .finally(() => setLoading(false))
    }

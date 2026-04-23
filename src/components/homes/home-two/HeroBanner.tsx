@@ -7,6 +7,8 @@ import { API_BASE_URL } from "@/context/AuthContext"
 
 // ── Secuencia ────────────────────────────────────────────────────
 const TOTAL_FRAMES = 126
+// Only preload the first N frames; the rest are loaded on demand as the user scrolls
+const EAGER_FRAMES = 15
 const SUPABASE_STORAGE = "https://fafjujnwwcgijzvouwgb.supabase.co/storage/v1/object/public/hero-sequence"
 const FRAMES = Array.from({ length: TOTAL_FRAMES }, (_, i) =>
    `${SUPABASE_STORAGE}/Create_time-lapse_day_202603301452${String(i).padStart(3, "0")}.jpg`
@@ -74,28 +76,32 @@ const HeroBanner = () => {
       }
    }, [drawFrame])
 
-   // ── Preload all images ───────────────────────────────────────────
+   // ── Load a single frame by index (no-op if already loading/loaded) ─
+   const loadFrame = useCallback((i: number) => {
+      if (images.current[i]?.src) return
+      const img = new window.Image()
+      img.crossOrigin = "anonymous"
+      img.onload = () => {
+         loaded.current[i] = true
+         images.current[i] = img
+         if (i === 0) {
+            fitCanvas()
+            drawFrame(img)
+            lastFrame.current = 0
+         }
+      }
+      img.onerror = () => {
+         if (i === 0) console.error("[Hero] frame 0 failed to load:", FRAMES[i])
+      }
+      img.src = FRAMES[i]
+      images.current[i] = img
+   }, [drawFrame, fitCanvas])
+
+   // ── Preload only the first EAGER_FRAMES frames on mount ─────────
    useEffect(() => {
       fitCanvas()
-      FRAMES.forEach((src, i) => {
-         const img = new window.Image()
-         img.crossOrigin = "anonymous"
-         img.onload = () => {
-            loaded.current[i] = true
-            images.current[i] = img
-            if (i === 0) {
-               fitCanvas()
-               drawFrame(img)
-               lastFrame.current = 0
-            }
-         }
-         img.onerror = () => {
-            if (i === 0) console.error("[Hero] frame 0 failed to load:", src)
-         }
-         img.src = src
-         images.current[i] = img
-      })
-   }, [drawFrame, fitCanvas])
+      for (let i = 0; i < EAGER_FRAMES; i++) loadFrame(i)
+   }, [loadFrame, fitCanvas])
 
    // ── Scroll handler ───────────────────────────────────────────────
    useEffect(() => {
@@ -110,6 +116,12 @@ const HeroBanner = () => {
          const { top, height } = hero.getBoundingClientRect()
          const progress  = Math.max(0, Math.min(1, -top / height))
          const frameIdx  = Math.round(progress * (TOTAL_FRAMES - 1))
+
+         // Eagerly load a window of frames around the current position
+         const preloadRadius = 8
+         for (let j = Math.max(0, frameIdx - preloadRadius); j <= Math.min(TOTAL_FRAMES - 1, frameIdx + preloadRadius); j++) {
+            loadFrame(j)
+         }
 
          if (frameIdx === lastFrame.current) return
          lastFrame.current = frameIdx
@@ -140,7 +152,7 @@ const HeroBanner = () => {
          window.removeEventListener("resize", onScroll)
          if (rafRef.current) cancelAnimationFrame(rafRef.current)
       }
-   }, [drawFrame, fitCanvas])
+   }, [drawFrame, fitCanvas, loadFrame])
 
    // ── Search logic ─────────────────────────────────────────────────
    const fetchSuggestions = useCallback(async (q: string) => {

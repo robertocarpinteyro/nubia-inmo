@@ -211,52 +211,49 @@ export const getAllVendors = async (req: AuthRequest, res: Response): Promise<vo
       order: [["createdAt", "DESC"]],
     });
 
-    // Enriquecer con estadísticas
-    const vendorsWithStats = await Promise.all(
-      vendors.map(async (vendor) => {
-        const vendorData = vendor.toJSON() as any;
+    // Fetch all vendor sales in a single aggregated query instead of N+1
+    const vendorIds = vendors.map((v) => v.id);
+    const salesAgg = await Sale.findAll({
+      where: { vendorId: vendorIds },
+      attributes: [
+        "vendorId",
+        [sequelize.fn("COUNT", sequelize.col("id")), "totalSales"],
+        [sequelize.fn("SUM", sequelize.col("commissionAmount")), "totalCommissions"],
+        [sequelize.fn("SUM", sequelize.col("salePrice")), "totalSalesAmount"],
+      ],
+      group: ["vendorId"],
+      raw: true,
+    });
+    const salesByVendor = new Map(salesAgg.map((s: any) => [s.vendorId, s]));
 
-        // Propiedades activas ofertando
-        const activeProperties = vendorData.vendorProperties?.filter(
-          (vp: any) => vp.status === "activa"
-        ).length || 0;
+    const vendorsWithStats = vendors.map((vendor) => {
+      const vendorData = vendor.toJSON() as any;
+      const stats = salesByVendor.get(vendor.id) as any;
 
-        // Propiedades vendidas (completadas)
-        const soldProperties = vendorData.vendorProperties?.filter(
-          (vp: any) => vp.status === "completada"
-        ).length || 0;
+      const activeProperties = vendorData.vendorProperties?.filter(
+        (vp: any) => vp.status === "activa"
+      ).length || 0;
 
-        // Ventas registradas
-        const salesData = await Sale.findAll({
-          where: { vendorId: vendor.id },
-          attributes: [
-            [sequelize.fn("COUNT", sequelize.col("id")), "totalSales"],
-            [sequelize.fn("SUM", sequelize.col("commissionAmount")), "totalCommissions"],
-            [sequelize.fn("SUM", sequelize.col("salePrice")), "totalSalesAmount"],
-          ],
-          raw: true,
-        });
+      const soldProperties = vendorData.vendorProperties?.filter(
+        (vp: any) => vp.status === "completada"
+      ).length || 0;
 
-        const stats = salesData[0] as any;
+      const hasExclusivity = vendorData.vendorProperties?.some(
+        (vp: any) => vp.isExclusive
+      ) || false;
 
-        // Verificar exclusividad
-        const hasExclusivity = vendorData.vendorProperties?.some(
-          (vp: any) => vp.isExclusive
-        ) || false;
-
-        return {
-          ...vendorData,
-          stats: {
-            activeProperties,
-            soldProperties,
-            totalSales: Number(stats?.totalSales) || 0,
-            totalCommissions: Number(stats?.totalCommissions) || 0,
-            totalSalesAmount: Number(stats?.totalSalesAmount) || 0,
-            hasExclusivity,
-          },
-        };
-      })
-    );
+      return {
+        ...vendorData,
+        stats: {
+          activeProperties,
+          soldProperties,
+          totalSales: Number(stats?.totalSales) || 0,
+          totalCommissions: Number(stats?.totalCommissions) || 0,
+          totalSalesAmount: Number(stats?.totalSalesAmount) || 0,
+          hasExclusivity,
+        },
+      };
+    });
 
     res.json(vendorsWithStats);
   } catch (error) {

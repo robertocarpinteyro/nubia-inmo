@@ -33,7 +33,7 @@ const UserDashboard = () => {
          fetch(`${API_BASE_URL}/visits/me`, { headers: h }).then((r) => r.json()).catch(() => []),
          fetch(`${API_BASE_URL}/reviews/me`, { headers: h }).then((r) => r.json()).catch(() => []),
       ]).then(([f, v, r]) => {
-         setFavs(Array.isArray(f) ? f : [])
+         setFavs(Array.isArray(f) ? f : Array.isArray(f?.data) ? f.data : [])
          setVisits(Array.isArray(v) ? v : [])
          setReviews(Array.isArray(r) ? r : [])
       }).finally(() => setLoading(false))

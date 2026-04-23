@@ -66,8 +66,11 @@ export const removeFavorite = async (req: AuthRequest, res: Response): Promise<v
 export const getMyFavorites = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
 
-    const favorites = await Favorite.findAll({
+    const { count, rows: favorites } = await Favorite.findAndCountAll({
       where: { userId },
       include: [
         {
@@ -78,9 +81,16 @@ export const getMyFavorites = async (req: AuthRequest, res: Response): Promise<v
         },
       ],
       order: [["createdAt", "DESC"]],
+      limit,
+      offset,
     });
 
-    res.json(favorites);
+    res.json({
+      data: favorites,
+      total: count,
+      page,
+      totalPages: Math.ceil(count / limit),
+    });
   } catch (error) {
     console.error("Get Favorites Error:", error);
     res.status(500).json({ error: "Error al obtener favoritos" });
