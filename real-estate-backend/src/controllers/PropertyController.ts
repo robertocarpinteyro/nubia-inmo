@@ -237,9 +237,10 @@ export const getPropertyById = async (req: AuthRequest, res: Response): Promise<
 
     const property = await Property.findByPk(id, {
       include: [
-        { model: PropertyMedia, as: "media", order: [["sortOrder", "ASC"]] },
+        { model: PropertyMedia, as: "media" },
         { model: User, as: "creator", attributes: ["id", "name"] },
       ],
+      order: [[{ model: PropertyMedia, as: "media" }, "sortOrder", "ASC"]],
     });
 
     if (!property) {

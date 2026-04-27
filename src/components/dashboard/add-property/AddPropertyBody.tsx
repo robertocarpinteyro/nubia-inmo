@@ -4,12 +4,21 @@ import { useRouter } from "next/navigation"
 import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 import { useLanguage } from "@/context/LanguageContext"
 
+interface ExistingMedia {
+   id: number
+   url: string
+   mediaType: string
+   title?: string
+}
+
 const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
    const { getAuthHeaders } = useAuth()
    const { t } = useLanguage()
    const router = useRouter()
    const [saving, setSaving] = useState(false)
    const [error, setError] = useState("")
+   const [existingMedia, setExistingMedia] = useState<ExistingMedia[]>([])
+   const [deletingMediaId, setDeletingMediaId] = useState<number | null>(null)
 
    const [form, setForm] = useState({
       title: "",
@@ -67,15 +76,36 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                      commissionPercentage: data.commissionPercentage ? String(data.commissionPercentage) : "4.0",
                      featured: data.featured || false,
                      discountPrice: data.discountPrice ? String(data.discountPrice) : "",
-                     mediaUrls: "", // We keep empty so they can append new ones without deleting old
+                     mediaUrls: "",
                      videoUrl: data.videoUrl || "",
                      googleMapsUrl: data.googleMapsUrl || "",
                   }))
+                  if (Array.isArray(data.media)) {
+                     setExistingMedia(data.media)
+                  }
                }
             })
             .catch(console.error);
       }
    }, [propertyId]);
+
+   const handleDeleteMedia = async (mediaId: number) => {
+      if (!propertyId) return
+      setDeletingMediaId(mediaId)
+      try {
+         const res = await fetch(`${API_BASE_URL}/properties/${propertyId}/media/${mediaId}`, {
+            method: "DELETE",
+            headers: getAuthHeaders(),
+         })
+         if (res.ok) {
+            setExistingMedia(prev => prev.filter(m => m.id !== mediaId))
+         }
+      } catch (err) {
+         console.error("Error al eliminar media:", err)
+      } finally {
+         setDeletingMediaId(null)
+      }
+   }
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value, type } = e.target as any
@@ -313,9 +343,45 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   </div>
                </div>
 
+               {/* ── Imágenes existentes (solo en modo edición) ── */}
+               {propertyId && existingMedia.filter(m => m.mediaType === "image").length > 0 && (
+                  <div className="col-12">
+                     <div className="nubia-form-group">
+                        <label>Imágenes guardadas <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>({existingMedia.filter(m => m.mediaType === "image").length} imagen{existingMedia.filter(m => m.mediaType === "image").length !== 1 ? "es" : ""})</span></label>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 8, marginTop: 8 }}>
+                           {existingMedia.filter(m => m.mediaType === "image").map(media => (
+                              <div key={media.id} style={{ position: "relative", borderRadius: 4, overflow: "hidden", border: "1px solid rgba(123,79,255,0.2)", background: "#0C0C0C" }}>
+                                 <img
+                                    src={media.url}
+                                    alt={media.title || ""}
+                                    style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }}
+                                    onError={e => { (e.currentTarget as HTMLImageElement).style.background = "#1a1a1a"; (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E" }}
+                                 />
+                                 <button
+                                    type="button"
+                                    onClick={() => handleDeleteMedia(media.id)}
+                                    disabled={deletingMediaId === media.id}
+                                    title="Eliminar imagen"
+                                    style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff", lineHeight: 1 }}
+                                 >
+                                    {deletingMediaId === media.id ? "…" : "×"}
+                                 </button>
+                                 <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", padding: "2px 5px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                    {media.url.split("/").pop()}
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
+                     </div>
+                  </div>
+               )}
+
                <div className="col-12">
                   <div className="nubia-form-group">
-                     <label>URLs de Imágenes <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>(separadas por comas o saltos de línea)</span></label>
+                     <label>
+                        {propertyId ? "Agregar más imágenes" : "URLs de Imágenes"}
+                        <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}> (separadas por comas o saltos de línea)</span>
+                     </label>
                      <textarea name="mediaUrls" value={form.mediaUrls} onChange={handleChange} rows={3} placeholder="https://ejemplo.com/imagen1.jpg&#10;https://ejemplo.com/imagen2.png" />
                   </div>
                </div>
@@ -324,12 +390,18 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   <div className="nubia-form-group">
                      <label>URL del Video <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>(YouTube, Vimeo o MP4 directo)</span></label>
                      <input
-                        type="url"
+                        type="text"
                         name="videoUrl"
                         value={form.videoUrl}
                         onChange={handleChange}
                         placeholder="https://www.youtube.com/watch?v=..."
                      />
+                     {form.videoUrl && (
+                        <div style={{ marginTop: 6, fontSize: 11, color: "#7B4FFF", display: "flex", alignItems: "center", gap: 4 }}>
+                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="10 8 16 12 10 16 10 8"/></svg>
+                           Video guardado
+                        </div>
+                     )}
                   </div>
                </div>
 
@@ -337,7 +409,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   <div className="nubia-form-group">
                      <label>URL de Google Maps <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}>(link de embed o share)</span></label>
                      <input
-                        type="url"
+                        type="text"
                         name="googleMapsUrl"
                         value={form.googleMapsUrl}
                         onChange={handleChange}
