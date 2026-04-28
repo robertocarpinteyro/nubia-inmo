@@ -41,8 +41,27 @@ interface Property {
    status: string
    featured: boolean
    landingPageUrl?: string
+   videoUrl?: string
+   googleMapsUrl?: string
    media?: PropertyMedia[]
    creator?: { id: number; name: string }
+}
+
+function parseVideoEmbed(url: string): { type: "youtube" | "vimeo" | "direct"; src: string } | null {
+   if (!url) return null
+   const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]{11})/)
+   if (yt) return { type: "youtube", src: `https://www.youtube.com/embed/${yt[1]}?rel=0&modestbranding=1` }
+   const vm = url.match(/vimeo\.com\/(\d+)/)
+   if (vm) return { type: "vimeo", src: `https://player.vimeo.com/video/${vm[1]}?title=0&byline=0&portrait=0` }
+   return { type: "direct", src: url }
+}
+
+function toMapsEmbed(url: string): string {
+   if (!url) return ""
+   if (url.includes("/embed")) return url
+   const qMatch = url.match(/[?&]q=([^&]+)/)
+   if (qMatch) return `https://maps.google.com/maps?q=${qMatch[1]}&z=15&output=embed`
+   return url
 }
 
 const formatPrice = (price: number, currency: string) =>
@@ -134,7 +153,9 @@ const ListingDetailsSixArea = () => {
    const pStatus = statusLabel[property.status]?.[lang] || property.status
    const mapSrc = property.latitude && property.longitude
       ? `https://maps.google.com/maps?q=${property.latitude},${property.longitude}&z=15&output=embed`
-      : null
+      : property.googleMapsUrl ? toMapsEmbed(property.googleMapsUrl) : null
+
+   const videoEmbed = property.videoUrl ? parseVideoEmbed(property.videoUrl) : null
 
    const details = [
       { label: lang === "en" ? "Type" : "Tipo", value: pType },
@@ -236,6 +257,37 @@ const ListingDetailsSixArea = () => {
                   <MediaGallery media={property.media || []} />
                </div>
             </div>
+
+            {/* ── Video ───────────────────────────────────── */}
+            {videoEmbed && (
+               <div style={{ background: "#fff", borderBottom: "1px solid rgba(24,45,64,0.07)", padding: "40px 0" }}>
+                  <div className="container">
+                     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#D9A76A", marginBottom: 10 }}>
+                        {lang === "en" ? "Video tour" : "Video"}
+                     </div>
+                     <h2 style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", fontWeight: 900, color: "#182D40", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 24 }}>
+                        {lang === "en" ? "Property Video" : "Video de la Propiedad"}
+                     </h2>
+                     <div style={{ position: "relative", aspectRatio: "16/9", borderRadius: 4, overflow: "hidden", border: "1px solid rgba(24,45,64,0.08)", background: "#0a0a0a" }}>
+                        {videoEmbed.type === "youtube" || videoEmbed.type === "vimeo" ? (
+                           <iframe
+                              src={videoEmbed.src}
+                              title={lang === "en" ? "Property video" : "Video de la propiedad"}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                              allowFullScreen
+                              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+                           />
+                        ) : (
+                           <video
+                              controls
+                              src={videoEmbed.src}
+                              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#0a0a0a" }}
+                           />
+                        )}
+                     </div>
+                  </div>
+               </div>
+            )}
 
             {/* ── Main content ─────────────────────────────── */}
             <div className="container" style={{ paddingTop: 48, paddingBottom: 80 }}>
