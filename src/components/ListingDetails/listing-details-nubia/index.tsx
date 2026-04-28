@@ -41,7 +41,7 @@ interface PropertyDetail {
    featured?: boolean
 }
 
-// Detecta si el URL es YouTube, Vimeo o video directo
+// Detecta si el URL es YouTube, Vimeo o video directo — para fondo del hero (muted, sin controles)
 function parseVideoUrl(url: string): { type: "youtube" | "vimeo" | "direct"; embedSrc: string } | null {
    if (!url) return null
    const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]{11})/)
@@ -52,6 +52,21 @@ function parseVideoUrl(url: string): { type: "youtube" | "vimeo" | "direct"; emb
    const vm = url.match(/vimeo\.com\/(\d+)/)
    if (vm) {
       return { type: "vimeo", embedSrc: `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=1&loop=1&background=1` }
+   }
+   return { type: "direct", embedSrc: url }
+}
+
+// Versión del player con controles visibles — para la sección de video
+function parseVideoUrlPlayer(url: string): { type: "youtube" | "vimeo" | "direct"; embedSrc: string } | null {
+   if (!url) return null
+   const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]{11})/)
+   if (yt) {
+      const id = yt[1]
+      return { type: "youtube", embedSrc: `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` }
+   }
+   const vm = url.match(/vimeo\.com\/(\d+)/)
+   if (vm) {
+      return { type: "vimeo", embedSrc: `https://player.vimeo.com/video/${vm[1]}?title=0&byline=0&portrait=0` }
    }
    return { type: "direct", embedSrc: url }
 }
@@ -157,6 +172,7 @@ const NubiaPropertyDetail = () => {
    const statusInfo = statusMap[property.status] || { label: property.status, color: "#7B4FFF" }
    const isVenta = property.transactionType === "venta"
    const videoInfo = property.videoUrl ? parseVideoUrl(property.videoUrl) : null
+   const videoPlayerInfo = property.videoUrl ? parseVideoUrlPlayer(property.videoUrl) : null
    const mapsEmbedUrl = property.googleMapsUrl ? toMapsEmbed(property.googleMapsUrl) : null
 
    const openLightbox = (idx: number) => {
@@ -351,6 +367,36 @@ const NubiaPropertyDetail = () => {
                         ))}
                      </div>
                   )}
+               </div>
+            </div>
+         )}
+
+         {/* ───────────────────────────────────────────
+             SECCIÓN DE VIDEO
+         ─────────────────────────────────────────── */}
+         {videoPlayerInfo && (
+            <div style={{ padding: "64px 0 0" }}>
+               <div className="container">
+                  <h2 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "22px", color: "#F5F5F2", letterSpacing: "-0.02em", marginBottom: "24px" }}>
+                     Video
+                  </h2>
+                  <div style={{ position: "relative", borderRadius: "4px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)", background: "#0C0C0C", aspectRatio: "16/9" }}>
+                     {videoPlayerInfo.type === "youtube" || videoPlayerInfo.type === "vimeo" ? (
+                        <iframe
+                           src={videoPlayerInfo.embedSrc}
+                           title="Video de la propiedad"
+                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                           allowFullScreen
+                           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+                        />
+                     ) : (
+                        <video
+                           controls
+                           src={videoPlayerInfo.embedSrc}
+                           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#0C0C0C" }}
+                        />
+                     )}
+                  </div>
                </div>
             </div>
          )}
