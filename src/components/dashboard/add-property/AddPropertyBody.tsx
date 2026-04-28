@@ -12,7 +12,7 @@ interface ExistingMedia {
 }
 
 const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
-   const { getAuthHeaders } = useAuth()
+   const { getAuthHeaders, logout } = useAuth()
    const { t } = useLanguage()
    const router = useRouter()
    const [saving, setSaving] = useState(false)
@@ -147,9 +147,17 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
 
          const data = await res.json()
          if (!res.ok) {
-            console.error("Detalles del servidor:", data.details);
-            const detailMsg = data.details?.errors ? data.details.errors.map((e: any) => e.message).join(", ") : JSON.stringify(data.details);
-            throw new Error(data.error ? `${data.error}: ${detailMsg}` : data.message || (propertyId ? "Error al editar" : "Error al crear la propiedad"))
+            // Token expirado o inválido — cerrar sesión y volver al inicio
+            if (res.status === 401 || (res.status === 400 && (data.error === "Invalid token" || data.error?.includes("token") || data.error?.includes("Access denied")))) {
+               logout()
+               return
+            }
+            const detailMsg = data.details?.errors
+               ? data.details.errors.map((e: any) => e.message).join(", ")
+               : data.details ? JSON.stringify(data.details) : ""
+            throw new Error(data.error
+               ? detailMsg ? `${data.error}: ${detailMsg}` : data.error
+               : data.message || (propertyId ? "Error al editar" : "Error al crear la propiedad"))
          }
 
          router.push("/dashboard/properties-list")
