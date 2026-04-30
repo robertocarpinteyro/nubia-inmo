@@ -95,7 +95,7 @@ const NubiaProperties = () => {
                      const cover = getCover(p)
                      return (
                         <div key={p.id} className="col-lg-4 col-md-6">
-                           <Link href={`/listing_details_06?id=${p.id}`} className="nubia-property-card d-block text-decoration-none">
+                           <Link href={`/listing_details_nubia?id=${p.id}`} className="nubia-property-card d-block text-decoration-none">
                               <div className="card-thumb" style={{ position: "relative", background: "#1a1a1a", overflow: "hidden" }}>
                                  {cover ? (
                                     <img src={cover} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }} />

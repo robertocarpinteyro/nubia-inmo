@@ -65,8 +65,8 @@ export const autocompleteProperties = async (req: AuthRequest, res: Response): P
 // 📌 CREATE — Solo admin
 export const createProperty = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { mediaUrls, ...bodyData } = req.body;
-    
+    const { mediaUrls, renderUrls, ...bodyData } = req.body;
+
     const propertyData = {
       ...bodyData,
       createdBy: req.user!.id,
@@ -90,6 +90,22 @@ export const createProperty = async (req: AuthRequest, res: Response): Promise<v
       await Promise.all(mediaPromises);
     }
 
+    if (renderUrls && Array.isArray(renderUrls) && renderUrls.length > 0) {
+      const renderPromises = renderUrls.map((url: string, index: number) => {
+        if (url.trim()) {
+           return PropertyMedia.create({
+             propertyId: property.id,
+             mediaType: "render",
+             url: url.trim(),
+             title: `Render ${index + 1}`,
+             sortOrder: index,
+           });
+        }
+        return null;
+      }).filter(Boolean);
+      await Promise.all(renderPromises);
+    }
+
     res.status(201).json({ message: "Propiedad creada exitosamente", property });
   } catch (error) {
     console.error("Create Property Error:", error);
@@ -108,7 +124,7 @@ export const updateProperty = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    const { mediaUrls, ...bodyData } = req.body;
+    const { mediaUrls, renderUrls, ...bodyData } = req.body;
     await property.update(bodyData);
 
     if (mediaUrls && Array.isArray(mediaUrls) && mediaUrls.length > 0) {
@@ -126,6 +142,23 @@ export const updateProperty = async (req: AuthRequest, res: Response): Promise<v
         return null;
       }).filter(Boolean);
       await Promise.all(mediaPromises);
+    }
+
+    if (renderUrls && Array.isArray(renderUrls) && renderUrls.length > 0) {
+      const currentRenderCount = await PropertyMedia.count({ where: { propertyId: property.id, mediaType: "render" } });
+      const renderPromises = renderUrls.map((url: string, index: number) => {
+        if (url.trim()) {
+           return PropertyMedia.create({
+             propertyId: property.id,
+             mediaType: "render",
+             url: url.trim(),
+             title: `Render Extra ${currentRenderCount + index + 1}`,
+             sortOrder: currentRenderCount + index,
+           });
+        }
+        return null;
+      }).filter(Boolean);
+      await Promise.all(renderPromises);
     }
 
     res.json({ message: "Propiedad actualizada exitosamente", property });

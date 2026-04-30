@@ -52,7 +52,7 @@ const CommonSimilarProperty = () => {
                         <div className="position-relative border-20 overflow-hidden">
                            <div className="tag bg-white text-dark fw-500 border-20">{item.tag}</div>
                            <Image src={item.thumb ? item.thumb : ""} className="w-100 border-20" alt="..." />
-                           <Link href="/listing_details_06"
+                           <Link href="/listing_details_nubia"
                               className="btn-four inverse rounded-circle position-absolute"><i
                                  className="bi bi-arrow-up-right"></i></Link>
                            <div className="img-slider-btn">
@@ -72,7 +72,7 @@ const CommonSimilarProperty = () => {
                         </div>
                      </div>
                      <div className="property-info pe-4 ps-4">
-                        <Link href="/listing_details_06" className="title tran3s">{item.title}</Link>
+                        <Link href="/listing_details_nubia" className="title tran3s">{item.title}</Link>
                         <div className="address m0 pb-5">{item.address}</div>
                         <div className="pl-footer m0 d-flex align-items-center justify-content-between">
                            <strong className="price fw-500 color-dark">${item.price}</strong>

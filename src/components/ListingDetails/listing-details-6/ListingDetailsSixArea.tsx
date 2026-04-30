@@ -6,6 +6,7 @@ import MediaGallery from "./MediaGallery"
 import LoginModal from "@/modals/LoginModal"
 import { API_BASE_URL } from "@/context/AuthContext"
 import { useLanguage } from "@/context/LanguageContext"
+import BeforeAfterSlider from "@/components/common/BeforeAfterSlider"
 
 interface PropertyMedia {
    id: number
@@ -156,6 +157,9 @@ const ListingDetailsSixArea = () => {
       : property.googleMapsUrl ? toMapsEmbed(property.googleMapsUrl) : null
 
    const videoEmbed = property.videoUrl ? parseVideoEmbed(property.videoUrl) : null
+   const isLote = property.propertyType === "lote"
+   const beforeImg = property.media?.find(m => m.mediaType === "image")?.url || null
+   const afterImg  = property.media?.find(m => m.mediaType === "render")?.url || null
 
    const details = [
       { label: lang === "en" ? "Type" : "Tipo", value: pType },
@@ -257,6 +261,26 @@ const ListingDetailsSixArea = () => {
                   <MediaGallery media={property.media || []} />
                </div>
             </div>
+
+            {/* ── Before / After slider (lotes) ──────────── */}
+            {isLote && beforeImg && afterImg && (
+               <div style={{ background: "#fff", borderBottom: "1px solid rgba(24,45,64,0.07)", padding: "40px 0" }}>
+                  <div className="container">
+                     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#D9A76A", marginBottom: 10 }}>
+                        {lang === "en" ? "Before & After" : "Antes y Después"}
+                     </div>
+                     <h2 style={{ fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)", fontWeight: 900, color: "#182D40", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 24 }}>
+                        {lang === "en" ? "Current state vs. Render" : "Estado actual vs. Proyección"}
+                     </h2>
+                     <BeforeAfterSlider
+                        before={beforeImg}
+                        after={afterImg}
+                        labelBefore={lang === "en" ? "CURRENT" : "ACTUAL"}
+                        labelAfter="RENDER"
+                     />
+                  </div>
+               </div>
+            )}
 
             {/* ── Video ───────────────────────────────────── */}
             {videoEmbed && (

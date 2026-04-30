@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Nubia Inmobiliaria — Identidad (Print)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f0ebe3;
+    --paper-2: #e6e0d4;
+    --ink: #1a1612;
+    --ink-2: #2c2620;
+    --ink-soft: #6b6258;
+    --terracotta: #b85c3c;
+    --terracotta-deep: #8e3f24;
+    --ocre: #c89968;
+    --salvia: #8a8779;
+    --line: rgba(26,22,18,.18);
+    --line-soft: rgba(26,22,18,.10);
+  }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  html, body { margin:0; background: var(--paper); color: var(--ink); font-family: 'Geist', system-ui, sans-serif; }
+  body { font-feature-settings: 'ss01', 'cv11'; }
+  .serif { font-family: 'Instrument Serif', 'Fraunces', Georgia, serif; font-weight: 400; }
+  .display { font-family: 'Fraunces', Georgia, serif; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .sans { font-family: 'Geist', system-ui, sans-serif; }
+  .italic { font-style: italic; }
+  .note { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .04em; color: var(--ink-soft); text-transform: uppercase; }
+  .stamp { display:inline-block; padding:3px 8px; border:1px solid var(--line); border-radius:99px; font-family: 'JetBrains Mono', monospace; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color: var(--ink-soft); }
+
+  /* Print page layout — each .page is its own A4 landscape sheet */
+  @page { size: A4 landscape; margin: 0; }
+  .page {
+    width: 297mm; height: 210mm;
+    box-sizing: border-box;
+    padding: 14mm 16mm;
+    background: var(--paper);
+    page-break-after: always;
+    break-after: page;
+    break-inside: avoid;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .page-header { display:flex; justify-content:space-between; align-items:baseline; border-bottom: 1px solid var(--line); padding-bottom: 6mm; margin-bottom: 8mm; }
+  .page-title { font-family: 'Fraunces', serif; font-weight: 400; font-size: 22px; }
+  .page-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .22em; color: var(--terracotta); text-transform: uppercase; }
+  .page-num { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .14em; color: var(--ink-soft); }
+  .page-body { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .grid-2 { display:grid; grid-template-columns: 1fr 1fr; gap: 18mm; width: 100%; align-items: center; }
+  .grid-3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10mm; width: 100%; }
+
+  /* Hide the pan/zoom canvas's UI; we won't load it */
+  @media screen {
+    body { padding: 30px; }
+    .page { box-shadow: 0 6px 20px rgba(0,0,0,.08); margin: 0 auto 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="logos.jsx"></script>
+<script type="text/babel" src="system.jsx"></script>
+<script type="text/babel" src="apps.jsx"></script>
+<script type="text/babel" src="print.jsx"></script>
+
+<script type="text/babel">
+  (async () => {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 800));
+    window.print();
+  })();
+</script>
+
+</body>
+</html>

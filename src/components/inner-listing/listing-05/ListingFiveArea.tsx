@@ -184,18 +184,18 @@ const ListingFiveArea = () => {
                                                 <div className="tag fw-500">{transLabel(p.transactionType)}</div>
                                                 <Link href="#" className="fav-btn tran3s"><i className="fa-light fa-heart"></i></Link>
                                                 {cover ? (
-                                                   <Link href={`/listing_details_06?id=${p.id}`}>
+                                                   <Link href={`/listing_details_nubia?id=${p.id}`}>
                                                       <img src={cover} className="w-100" alt={p.title} style={{ objectFit: "cover", height: 210, display: "block" }} />
                                                    </Link>
                                                 ) : (
-                                                   <Link href={`/listing_details_06?id=${p.id}`} className="d-flex align-items-center justify-content-center" style={{ height: 210, opacity: 0.25, fontSize: 13 }}>
+                                                   <Link href={`/listing_details_nubia?id=${p.id}`} className="d-flex align-items-center justify-content-center" style={{ height: 210, opacity: 0.25, fontSize: 13 }}>
                                                       {lang === "en" ? "No image" : "Sin imagen"}
                                                    </Link>
                                                 )}
                                              </div>
                                           </div>
                                           <div className="property-info pt-20">
-                                             <Link href={`/listing_details_06?id=${p.id}`} className="title tran3s">
+                                             <Link href={`/listing_details_nubia?id=${p.id}`} className="title tran3s">
                                                 {getTitle(p)}
                                              </Link>
                                              <div className="address">
@@ -234,7 +234,7 @@ const ListingFiveArea = () => {
                                                       formatPrice(p.price, p.currency || "MXN")
                                                    )}
                                                 </div>
-                                                <Link href={`/listing_details_06?id=${p.id}`} className="btn-four">
+                                                <Link href={`/listing_details_nubia?id=${p.id}`} className="btn-four">
                                                    <i className="bi bi-arrow-up-right"></i>
                                                 </Link>
                                              </div>

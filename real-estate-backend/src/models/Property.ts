@@ -41,7 +41,7 @@ export class Property extends Model {
   descriptionEn?: string;
 
   @Column({
-    type: DataType.ENUM("casa", "departamento", "terreno", "oficina", "local"),
+    type: DataType.ENUM("casa", "departamento", "terreno", "oficina", "local", "lote"),
     allowNull: false,
   })
   propertyType!: string;

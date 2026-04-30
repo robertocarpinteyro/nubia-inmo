@@ -1,11 +1,35 @@
 "use client"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
+import MediaGallery from "@/components/ListingDetails/listing-details-6/MediaGallery"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { API_BASE_URL } from "@/context/AuthContext"
 import HeaderTwo from "@/layouts/headers/HeaderTwo"
 import NubiaFooter from "@/components/homes/home-two/NubiaFooter"
+import BeforeAfterSlider from "@/components/common/BeforeAfterSlider"
 
+// ── Nubia design tokens ────────────────────────────────────────
+const N = {
+   paper:    "#f0ebe3",
+   paper2:   "#e6e0d4",
+   ink:      "#1a1612",
+   ink2:     "#2c2620",
+   inkSoft:  "#6b6258",
+   terra:    "#b85c3c",
+   terraDeep:"#8e3f24",
+   ocre:     "#c89968",
+   salvia:   "#8a8779",
+   line:     "rgba(26,22,18,0.18)",
+   lineSoft: "rgba(26,22,18,0.10)",
+}
+
+const F = {
+   display: "'Fraunces', Georgia, serif",
+   sans:    "'Geist', system-ui, sans-serif",
+   mono:    "'JetBrains Mono', ui-monospace, monospace",
+}
+
+// ── Interfaces ────────────────────────────────────────────────
 interface MediaItem {
    id: number
    mediaType: string
@@ -41,7 +65,7 @@ interface PropertyDetail {
    featured?: boolean
 }
 
-// Detecta si el URL es YouTube, Vimeo o video directo — para fondo del hero (muted, sin controles)
+// ── Video helpers ─────────────────────────────────────────────
 function parseVideoUrl(url: string): { type: "youtube" | "vimeo" | "direct"; embedSrc: string } | null {
    if (!url) return null
    const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]{11})/)
@@ -50,13 +74,10 @@ function parseVideoUrl(url: string): { type: "youtube" | "vimeo" | "direct"; emb
       return { type: "youtube", embedSrc: `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3` }
    }
    const vm = url.match(/vimeo\.com\/(\d+)/)
-   if (vm) {
-      return { type: "vimeo", embedSrc: `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=1&loop=1&background=1` }
-   }
+   if (vm) return { type: "vimeo", embedSrc: `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=1&loop=1&background=1` }
    return { type: "direct", embedSrc: url }
 }
 
-// Versión del player con controles visibles — para la sección de video
 function parseVideoUrlPlayer(url: string): { type: "youtube" | "vimeo" | "direct"; embedSrc: string } | null {
    if (!url) return null
    const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]{11})/)
@@ -65,33 +86,27 @@ function parseVideoUrlPlayer(url: string): { type: "youtube" | "vimeo" | "direct
       return { type: "youtube", embedSrc: `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1` }
    }
    const vm = url.match(/vimeo\.com\/(\d+)/)
-   if (vm) {
-      return { type: "vimeo", embedSrc: `https://player.vimeo.com/video/${vm[1]}?title=0&byline=0&portrait=0` }
-   }
+   if (vm) return { type: "vimeo", embedSrc: `https://player.vimeo.com/video/${vm[1]}?title=0&byline=0&portrait=0` }
    return { type: "direct", embedSrc: url }
 }
 
-// Convierte URL de Google Maps share a embed
 function toMapsEmbed(url: string): string {
    if (!url) return ""
    if (url.includes("/embed")) return url
-   // Si viene de maps.google.com o google.com/maps, convertir a embed
    const qMatch = url.match(/[?&]q=([^&]+)/)
    if (qMatch) return `https://maps.google.com/maps?q=${qMatch[1]}&z=15&output=embed`
    return url
 }
 
+// ── Component ─────────────────────────────────────────────────
 const NubiaPropertyDetail = () => {
    const searchParams = useSearchParams()
    const id = searchParams.get("id")
    const [property, setProperty] = useState<PropertyDetail | null>(null)
    const [loading, setLoading] = useState(true)
-   const [lightboxOpen, setLightboxOpen] = useState(false)
-   const [lightboxIdx, setLightboxIdx] = useState(0)
    const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", message: "" })
    const [sent, setSent] = useState(false)
 
-   // Imágenes computadas a nivel de componente para que useCallback tenga acceso
    const images = property?.media
       ? property.media.filter(m => m.mediaType === "image").sort((a, b) => a.sortOrder - b.sortOrder).map(m => m.url)
       : []
@@ -105,25 +120,6 @@ const NubiaPropertyDetail = () => {
          .finally(() => setLoading(false))
    }, [id])
 
-   // Keyboard navigation para lightbox
-   const handleKey = useCallback((e: KeyboardEvent) => {
-      if (!lightboxOpen) return
-      if (e.key === "Escape") setLightboxOpen(false)
-      if (e.key === "ArrowRight") setLightboxIdx(i => (i + 1) % images.length)
-      if (e.key === "ArrowLeft") setLightboxIdx(i => (i - 1 + images.length) % images.length)
-   }, [lightboxOpen, images.length])
-
-   useEffect(() => {
-      window.addEventListener("keydown", handleKey)
-      return () => window.removeEventListener("keydown", handleKey)
-   }, [handleKey])
-
-   // Bloquear scroll cuando lightbox está abierto
-   useEffect(() => {
-      document.body.style.overflow = lightboxOpen ? "hidden" : ""
-      return () => { document.body.style.overflow = "" }
-   }, [lightboxOpen])
-
    const handleContact = (e: React.FormEvent) => {
       e.preventDefault()
       setSent(true)
@@ -134,591 +130,522 @@ const NubiaPropertyDetail = () => {
    const formatPrice = (p: number, currency = "MXN") =>
       new Intl.NumberFormat("es-MX", { style: "currency", currency, maximumFractionDigits: 0 }).format(p)
 
-   const statusMap: Record<string, { label: string; color: string }> = {
-      disponible: { label: "Disponible", color: "#22C55E" },
-      vendida: { label: "Vendida", color: "#EF4444" },
-      rentada: { label: "Rentada", color: "#F59E0B" },
-      en_proceso: { label: "En Proceso", color: "#7B4FFF" },
-      available: { label: "Disponible", color: "#22C55E" },
-      sold: { label: "Vendida", color: "#EF4444" },
-      rented: { label: "Rentada", color: "#F59E0B" },
+   const statusMap: Record<string, { label: string; color: string; border: string }> = {
+      disponible:  { label: "En venta",    color: N.terra,   border: N.terra },
+      available:   { label: "En venta",    color: N.terra,   border: N.terra },
+      vendida:     { label: "Vendida",     color: N.inkSoft, border: N.line },
+      sold:        { label: "Vendida",     color: N.inkSoft, border: N.line },
+      rentada:     { label: "Rentada",     color: N.ocre,    border: N.ocre },
+      rented:      { label: "Rentada",     color: N.ocre,    border: N.ocre },
+      en_proceso:  { label: "En proceso",  color: N.salvia,  border: N.salvia },
    }
 
+   // ── Loading ──────────────────────────────────────────────
    if (loading) {
       return (
-         <div style={{ minHeight: "100vh", background: "#0C0C0C", display: "flex", alignItems: "center", justifyContent: "center" }}>
+         <div style={{ minHeight: "100vh", background: N.paper, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div style={{ textAlign: "center" }}>
-               <div className="nubia-loader" />
-               <p style={{ color: "rgba(255,255,255,0.4)", marginTop: "24px", fontSize: "13px", letterSpacing: "0.2em", textTransform: "uppercase" }}>
-                  Cargando propiedad
+               <div className="nb-loader" />
+               <p style={{ fontFamily: F.mono, fontSize: "10px", letterSpacing: "0.2em", textTransform: "uppercase", color: N.inkSoft, marginTop: "24px" }}>
+                  Cargando
                </p>
             </div>
          </div>
       )
    }
 
+   // ── Not found ────────────────────────────────────────────
    if (!property) {
       return (
-         <div style={{ minHeight: "100vh", background: "#0C0C0C", display: "flex", alignItems: "center", justifyContent: "center" }}>
+         <div style={{ minHeight: "100vh", background: N.paper, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div style={{ textAlign: "center" }}>
-               <p style={{ color: "rgba(255,255,255,0.08)", fontSize: "120px", fontWeight: 900, lineHeight: 1, fontFamily: "Gordita, sans-serif" }}>404</p>
-               <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "16px", letterSpacing: "0.1em", marginBottom: "32px" }}>Propiedad no encontrada</p>
-               <Link href="/" className="btn-nubia-primary">Volver al inicio</Link>
+               <div style={{ fontFamily: F.display, fontSize: "120px", fontWeight: 300, lineHeight: 1, color: N.lineSoft }}>404</div>
+               <p style={{ fontFamily: F.sans, fontSize: "14px", color: N.inkSoft, letterSpacing: "0.04em", marginBottom: "32px" }}>Propiedad no encontrada</p>
+               <Link href="/" style={{ fontFamily: F.mono, fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase", color: N.terra, textDecoration: "none", borderBottom: `1px solid ${N.terra}` }}>
+                  Volver al inicio →
+               </Link>
             </div>
          </div>
       )
    }
 
-   const statusInfo = statusMap[property.status] || { label: property.status, color: "#7B4FFF" }
+   const statusInfo = statusMap[property.status] || { label: property.status, color: N.inkSoft, border: N.line }
    const isVenta = property.transactionType === "venta"
    const videoInfo = property.videoUrl ? parseVideoUrl(property.videoUrl) : null
    const videoPlayerInfo = property.videoUrl ? parseVideoUrlPlayer(property.videoUrl) : null
    const mapsEmbedUrl = property.googleMapsUrl ? toMapsEmbed(property.googleMapsUrl) : null
+   const isLote = property.propertyType === "lote"
+   const beforeImg = property.media?.find(m => m.mediaType === "image")?.url || null
+   const afterImg  = property.media?.find(m => m.mediaType === "render")?.url || null
 
-   const openLightbox = (idx: number) => {
-      setLightboxIdx(idx)
-      setLightboxOpen(true)
-   }
+   // ── Specs data ───────────────────────────────────────────
+   const specs = [
+      { value: property.propertyType,                                        label: "Tipo" },
+      { value: property.bedrooms != null ? String(property.bedrooms) : null, label: "Recámaras" },
+      { value: property.bathrooms || null,                                   label: "Baños" },
+      { value: property.totalArea ? `${property.totalArea}` : null,          label: "M² totales" },
+      { value: property.builtArea ? `${property.builtArea}` : null,          label: "M² construidos" },
+      { value: property.parkingSpaces ? String(property.parkingSpaces) : null, label: "Estacionam." },
+      { value: property.yearBuilt ? String(property.yearBuilt) : null,       label: "Año" },
+   ].filter(s => s.value !== null) as { value: string; label: string }[]
 
    return (
-      <div className="nubia-home nubia-pdp" style={{ background: "#0C0C0C", minHeight: "100vh" }}>
+      <div className="nb-pdp" style={{ background: N.paper, minHeight: "100vh" }}>
 
-         {/* ───────────────────────────────────────────
-             HERO — VIDEO DE FONDO / IMAGEN PRINCIPAL
-         ─────────────────────────────────────────── */}
-         <div style={{ position: "relative", height: "100vh", minHeight: "600px", overflow: "hidden", background: "#0C0C0C" }}>
+         {/* ══════════════════════════════════════════════════
+             HERO — video / imagen full-screen
+         ══════════════════════════════════════════════════ */}
+         <div style={{ position: "relative", height: "100vh", minHeight: "600px", overflow: "hidden", background: N.ink2 }}>
 
-            {/* Video background */}
+            {/* Video o imagen de fondo */}
             {videoInfo && (videoInfo.type === "youtube" || videoInfo.type === "vimeo") && (
-               <iframe
-                  src={videoInfo.embedSrc}
-                  title="Property Video"
-                  allow="autoplay; fullscreen"
-                  style={{
-                     position: "absolute",
-                     top: "50%", left: "50%",
-                     width: "100vw",
-                     height: "56.25vw",
-                     minHeight: "100vh",
-                     minWidth: "177.78vh",
-                     transform: "translate(-50%,-50%)",
-                     border: "none",
-                     pointerEvents: "none",
-                  }}
-               />
+               <iframe src={videoInfo.embedSrc} title="Property Video" allow="autoplay; fullscreen"
+                  style={{ position: "absolute", top: "50%", left: "50%", width: "100vw", height: "56.25vw", minHeight: "100vh", minWidth: "177.78vh", transform: "translate(-50%,-50%)", border: "none", pointerEvents: "none" }} />
             )}
             {videoInfo?.type === "direct" && (
-               <video
-                  autoPlay muted loop playsInline
-                  src={videoInfo.embedSrc}
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-               />
+               <video autoPlay muted loop playsInline src={videoInfo.embedSrc}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
             )}
-
-            {/* Fallback: primera imagen */}
             {!videoInfo && images.length > 0 && (
-               <img
-                  src={images[0]}
-                  alt={property.title}
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-               />
+               <img src={images[0]} alt={property.title}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
             )}
 
-            {/* Gradient overlays */}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(12,12,12,0.97) 0%, rgba(12,12,12,0.55) 45%, rgba(12,12,12,0.25) 100%)" }} />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(12,12,12,0.4) 0%, transparent 60%)" }} />
+            {/* Overlays */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(26,22,18,0.94) 0%, rgba(26,22,18,0.45) 50%, rgba(26,22,18,0.20) 100%)" }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(26,22,18,0.35) 0%, transparent 60%)" }} />
 
             {/* Header */}
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20 }}>
                <HeaderTwo style_1={false} style_2={false} nubia={true} />
             </div>
 
-            {/* Hero content */}
+            {/* Hero content — bottom */}
             <div style={{ position: "absolute", bottom: "96px", left: 0, right: 0, zIndex: 20 }}>
                <div className="container">
+
                   {/* Breadcrumb */}
-                  <div className="d-flex align-items-center gap-2 mb-24" style={{ fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)" }}>
+                  <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(240,235,227,0.45)", marginBottom: "24px", display: "flex", alignItems: "center", gap: "10px" }}>
                      <Link href="/" style={{ color: "inherit", textDecoration: "none" }}>Inicio</Link>
-                     <span>/</span>
-                     <Link href="/listing-01" style={{ color: "inherit", textDecoration: "none" }}>Propiedades</Link>
-                     <span>/</span>
-                     <span style={{ color: "rgba(255,255,255,0.55)" }}>{property.title}</span>
+                     <span>·</span>
+                     <Link href="/listing_07" style={{ color: "inherit", textDecoration: "none" }}>Propiedades</Link>
+                     <span>·</span>
+                     <span style={{ color: N.ocre }}>{[property.city, property.state].filter(Boolean).join(", ") || "Querétaro"}</span>
                   </div>
 
                   {/* Badges */}
-                  <div className="d-flex align-items-center gap-2 mb-20">
-                     <span style={{ background: isVenta ? "#7B4FFF" : "transparent", color: "#fff", fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", padding: "6px 14px", borderRadius: "2px", border: isVenta ? "none" : "1px solid rgba(255,255,255,0.25)" }}>
-                        {isVenta ? "Venta" : "Renta"}
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "18px" }}>
+                     <span style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.ocre }}>
+                        {isVenta ? "En venta" : "En renta"}
                      </span>
-                     <span style={{ background: "transparent", color: statusInfo.color, fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", padding: "6px 14px", borderRadius: "2px", border: `1px solid ${statusInfo.color}60` }}>
+                     <span style={{ color: "rgba(240,235,227,0.25)", fontSize: "10px" }}>·</span>
+                     <span style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: statusInfo.color }}>
                         {statusInfo.label}
                      </span>
                      {property.featured && (
-                        <span style={{ background: "rgba(123,79,255,0.15)", color: "#7B4FFF", fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", padding: "6px 14px", borderRadius: "2px", border: "1px solid rgba(123,79,255,0.3)" }}>
-                           Destacada
-                        </span>
+                        <>
+                           <span style={{ color: "rgba(240,235,227,0.25)", fontSize: "10px" }}>·</span>
+                           <span style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.terra }}>Destacada</span>
+                        </>
                      )}
                   </div>
 
                   <div className="row align-items-end g-4">
                      <div className="col-lg-8">
-                        <h1 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "clamp(2.2rem, 5.5vw, 64px)", color: "#F5F5F2", letterSpacing: "-0.03em", lineHeight: 1.0, marginBottom: "20px" }}>
+                        <h1 style={{ fontFamily: F.display, fontWeight: 300, fontSize: "clamp(2.4rem, 6vw, 72px)", color: N.paper, letterSpacing: "-0.02em", lineHeight: 0.97, marginBottom: "18px" }}>
                            {property.title}
                         </h1>
-                        <div className="d-flex align-items-center gap-2" style={{ color: "rgba(255,255,255,0.45)", fontSize: "15px" }}>
-                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <div style={{ fontFamily: F.sans, fontSize: "14px", color: "rgba(240,235,227,0.55)", display: "flex", alignItems: "center", gap: "8px" }}>
+                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21c-4-5-7-8-7-12a7 7 0 0114 0c0 4-3 7-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
                            {[property.address, property.city, property.state].filter(Boolean).join(", ")}
                         </div>
                      </div>
                      <div className="col-lg-4 text-lg-end">
-                        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>
+                        <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,235,227,0.35)", marginBottom: "6px" }}>
                            Precio {isVenta ? "de venta" : "mensual"}
                         </div>
-                        <div style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "clamp(2rem, 4.5vw, 52px)", color: "#7B4FFF", letterSpacing: "-0.02em", lineHeight: 1 }}>
-                           {property.discountPrice && property.discountPrice > 0 ? (
-                              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                                 <span style={{ fontSize: "0.45em", color: "rgba(255,255,255,0.35)", textDecoration: "line-through", marginBottom: "2px" }}>
-                                    {formatPrice(property.price, property.currency)}
-                                 </span>
-                                 <span>{formatPrice(property.discountPrice, property.currency)}</span>
-                              </div>
-                           ) : formatPrice(property.price, property.currency)}
-                        </div>
-                        {!isVenta && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "13px", marginTop: "4px" }}>/mes</div>}
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-            {/* Scroll indicator */}
-            <div style={{ position: "absolute", bottom: "32px", left: "50%", transform: "translateX(-50%)", zIndex: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-               <div style={{ width: "1px", height: "40px", background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.3))" }} />
-               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-         </div>
-
-         {/* ───────────────────────────────────────────
-             GALERÍA DE FOTOS
-         ─────────────────────────────────────────── */}
-         {images.length > 0 && (
-            <div style={{ padding: "64px 0 0" }}>
-               <div className="container">
-                  <div className="d-flex align-items-center justify-content-between mb-24">
-                     <h2 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "22px", color: "#F5F5F2", letterSpacing: "-0.02em", margin: 0 }}>
-                        Galería
-                     </h2>
-                     {images.length > 5 && (
-                        <button
-                           onClick={() => openLightbox(0)}
-                           style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "2px", padding: "8px 18px", color: "rgba(255,255,255,0.5)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", transition: "all 0.2s" }}
-                           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#7B4FFF"; (e.currentTarget as HTMLElement).style.color = "#7B4FFF" }}
-                           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.12)"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)" }}
-                        >
-                           Ver todas ({images.length})
-                        </button>
-                     )}
-                  </div>
-
-                  {/* Grid tipo Airbnb */}
-                  {images.length === 1 && (
-                     <div style={{ borderRadius: "4px", overflow: "hidden", aspectRatio: "16/9", maxHeight: "560px", cursor: "pointer" }} onClick={() => openLightbox(0)}>
-                        <img src={images[0]} alt={property.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                     </div>
-                  )}
-
-                  {images.length >= 2 && images.length <= 3 && (
-                     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "8px", borderRadius: "4px", overflow: "hidden" }}>
-                        {images.slice(0, 3).map((img, i) => (
-                           <div key={i} onClick={() => openLightbox(i)} style={{ aspectRatio: i === 0 ? "4/3" : "4/3", overflow: "hidden", cursor: "pointer", gridRow: i === 0 ? "1 / 3" : "auto", position: "relative" }}>
-                              <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.04)" }}
-                                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)" }}
-                              />
-                           </div>
-                        ))}
-                     </div>
-                  )}
-
-                  {images.length >= 4 && (
-                     <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gridTemplateRows: "1fr 1fr", gap: "8px", height: "560px", borderRadius: "4px", overflow: "hidden" }}>
-                        {/* Imagen principal */}
-                        <div onClick={() => openLightbox(0)} style={{ gridRow: "1 / 3", overflow: "hidden", cursor: "pointer", position: "relative" }}>
-                           <img src={images[0]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.04)" }}
-                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)" }}
-                           />
-                        </div>
-                        {/* 2x2 grid derecho */}
-                        {images.slice(1, 5).map((img, i) => (
-                           <div key={i} onClick={() => openLightbox(i + 1)} style={{ overflow: "hidden", cursor: "pointer", position: "relative" }}>
-                              <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.06)" }}
-                                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)" }}
-                              />
-                              {/* Overlay "ver más" en la última imagen si hay más de 5 */}
-                              {i === 3 && images.length > 5 && (
-                                 <div style={{ position: "absolute", inset: 0, background: "rgba(12,12,12,0.75)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" style={{ marginBottom: "8px" }}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                    <span style={{ color: "#fff", fontFamily: "Gordita, sans-serif", fontWeight: 700, fontSize: "18px" }}>+{images.length - 5}</span>
-                                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", marginTop: "2px" }}>más fotos</span>
-                                 </div>
-                              )}
-                           </div>
-                        ))}
-                     </div>
-                  )}
-               </div>
-            </div>
-         )}
-
-         {/* ───────────────────────────────────────────
-             SECCIÓN DE VIDEO
-         ─────────────────────────────────────────── */}
-         {videoPlayerInfo && (
-            <div style={{ padding: "64px 0 0" }}>
-               <div className="container">
-                  <h2 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "22px", color: "#F5F5F2", letterSpacing: "-0.02em", marginBottom: "24px" }}>
-                     Video
-                  </h2>
-                  <div style={{ position: "relative", borderRadius: "4px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)", background: "#0C0C0C", aspectRatio: "16/9" }}>
-                     {videoPlayerInfo.type === "youtube" || videoPlayerInfo.type === "vimeo" ? (
-                        <iframe
-                           src={videoPlayerInfo.embedSrc}
-                           title="Video de la propiedad"
-                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                           allowFullScreen
-                           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
-                        />
-                     ) : (
-                        <video
-                           controls
-                           src={videoPlayerInfo.embedSrc}
-                           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#0C0C0C" }}
-                        />
-                     )}
-                  </div>
-               </div>
-            </div>
-         )}
-
-         {/* ───────────────────────────────────────────
-             SPECS BAR
-         ─────────────────────────────────────────── */}
-         <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "#111111", marginTop: "48px" }}>
-            <div className="container">
-               <div className="row g-0">
-                  {[
-                     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FFF" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Tipo", value: property.propertyType },
-                     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FFF" strokeWidth="1.5"><path d="M2 4v16M22 4v16M2 12h20M12 4v16"/></svg>, label: "Recámaras", value: property.bedrooms != null ? String(property.bedrooms) : "—" },
-                     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FFF" strokeWidth="1.5"><path d="M4 12h16M4 6h16M4 18h7"/></svg>, label: "Baños", value: property.bathrooms || "—" },
-                     { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FFF" strokeWidth="1.5"><path d="M21 3H3v18h18V3z"/><path d="M3 9h18M9 21V9"/></svg>, label: "Superficie", value: property.totalArea ? `${property.totalArea} m²` : "—" },
-                     ...(property.parkingSpaces ? [{ icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FFF" strokeWidth="1.5"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 6V4M16 6V4"/></svg>, label: "Estacionamientos", value: String(property.parkingSpaces) }] : []),
-                  ].map((spec, i, arr) => (
-                     <div key={i} className="col-6 col-md" style={{ padding: "28px 24px", borderRight: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                        <div className="d-flex align-items-center gap-3">
-                           {spec.icon}
+                        {property.discountPrice && property.discountPrice > 0 ? (
                            <div>
-                              <div style={{ fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: "4px" }}>{spec.label}</div>
-                              <div style={{ fontSize: "18px", fontWeight: 700, color: "#F5F5F2", fontFamily: "Gordita, sans-serif", textTransform: "capitalize" }}>{spec.value}</div>
-                           </div>
-                        </div>
-                     </div>
-                  ))}
-               </div>
-            </div>
-         </div>
-
-         {/* ───────────────────────────────────────────
-             CONTENIDO PRINCIPAL + SIDEBAR
-         ─────────────────────────────────────────── */}
-         <div style={{ padding: "64px 0 120px" }}>
-            <div className="container">
-               <div className="row g-5">
-
-                  {/* ── COLUMNA IZQUIERDA ── */}
-                  <div className="col-xl-8">
-
-                     {/* Descripción */}
-                     <div style={{ background: "#111111", borderRadius: "4px", padding: "40px", marginBottom: "24px", border: "1px solid rgba(255,255,255,0.06)" }}>
-                        <h3 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "22px", color: "#F5F5F2", letterSpacing: "-0.02em", marginBottom: "20px" }}>
-                           Descripción
-                        </h3>
-                        <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "16px", lineHeight: 1.85, margin: 0, whiteSpace: "pre-wrap" }}>
-                           {property.description || `Esta propiedad en ${property.address} ofrece una excelente oportunidad en el mercado inmobiliario. Con ${property.totalArea} m² de superficie${property.bedrooms ? `, ${property.bedrooms} recámaras` : ""}${property.bathrooms ? ` y ${property.bathrooms} baños` : ""}, está pensada para quienes buscan comodidad y calidad de vida. Contáctanos para más información o para agendar una visita.`}
-                        </p>
-                     </div>
-
-                     {/* Detalles */}
-                     <div style={{ background: "#111111", borderRadius: "4px", padding: "40px", marginBottom: "24px", border: "1px solid rgba(255,255,255,0.06)" }}>
-                        <h3 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "22px", color: "#F5F5F2", letterSpacing: "-0.02em", marginBottom: "28px" }}>
-                           Detalles de la propiedad
-                        </h3>
-                        <div className="row g-3">
-                           {[
-                              { label: "Tipo de propiedad", value: property.propertyType },
-                              { label: "Transacción", value: isVenta ? "Venta" : "Renta" },
-                              ...(property.bedrooms != null ? [{ label: "Recámaras", value: property.bedrooms }] : []),
-                              ...(property.bathrooms ? [{ label: "Baños", value: property.bathrooms }] : []),
-                              ...(property.totalArea ? [{ label: "Superficie total", value: `${property.totalArea} m²` }] : []),
-                              ...(property.builtArea ? [{ label: "Superficie construida", value: `${property.builtArea} m²` }] : []),
-                              ...(property.parkingSpaces ? [{ label: "Estacionamientos", value: property.parkingSpaces }] : []),
-                              ...(property.yearBuilt ? [{ label: "Año de construcción", value: property.yearBuilt }] : []),
-                              { label: "Estado", value: statusInfo.label },
-                              ...(property.currency && property.currency !== "MXN" ? [{ label: "Moneda", value: property.currency }] : []),
-                           ].map((d, i) => (
-                              <div key={i} className="col-6 col-md-4">
-                                 <div style={{ padding: "16px", background: "#0C0C0C", borderRadius: "2px", border: "1px solid rgba(255,255,255,0.06)" }}>
-                                    <div style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: "6px" }}>{d.label}</div>
-                                    <div style={{ fontSize: "15px", fontWeight: 600, color: "#F5F5F2", textTransform: "capitalize" }}>{String(d.value)}</div>
-                                 </div>
+                              <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "clamp(1rem, 2vw, 20px)", color: "rgba(240,235,227,0.35)", textDecoration: "line-through", fontStyle: "italic", marginBottom: "4px" }}>
+                                 {formatPrice(property.price, property.currency)}
                               </div>
-                           ))}
-                        </div>
-                     </div>
-
-                     {/* Ubicación */}
-                     <div style={{ background: "#111111", borderRadius: "4px", padding: "40px", border: "1px solid rgba(255,255,255,0.06)" }}>
-                        <h3 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "22px", color: "#F5F5F2", letterSpacing: "-0.02em", marginBottom: "16px" }}>
-                           Ubicación
-                        </h3>
-                        <div className="d-flex align-items-center gap-2 mb-24" style={{ color: "rgba(255,255,255,0.4)", fontSize: "14px" }}>
-                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                           {[property.address, property.city, property.state].filter(Boolean).join(", ")}
-                        </div>
-
-                        {mapsEmbedUrl ? (
-                           <div style={{ borderRadius: "4px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
-                              <iframe
-                                 src={mapsEmbedUrl}
-                                 width="100%"
-                                 height="320"
-                                 style={{ border: 0, display: "block", filter: "grayscale(1) invert(0.92) contrast(0.85)" }}
-                                 allowFullScreen
-                                 loading="lazy"
-                                 referrerPolicy="no-referrer-when-downgrade"
-                                 title="Ubicación de la propiedad"
-                              />
+                              <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "clamp(2rem, 4.5vw, 52px)", color: N.ocre, fontStyle: "italic", letterSpacing: "-0.02em", lineHeight: 1 }}>
+                                 {formatPrice(property.discountPrice, property.currency)}
+                              </div>
                            </div>
                         ) : (
-                           <div style={{ background: "#0C0C0C", borderRadius: "2px", height: "240px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.06)" }}>
-                              <div style={{ textAlign: "center" }}>
-                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(123,79,255,0.3)" strokeWidth="1.5" style={{ display: "block", margin: "0 auto 12px" }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                 <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "12px", letterSpacing: "0.15em", textTransform: "uppercase", margin: 0 }}>Mapa no disponible</p>
-                              </div>
+                           <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "clamp(2rem, 4.5vw, 52px)", color: N.ocre, fontStyle: "italic", letterSpacing: "-0.02em", lineHeight: 1 }}>
+                              {formatPrice(property.price, property.currency)}
                            </div>
                         )}
-                     </div>
-                  </div>
-
-                  {/* ── SIDEBAR ── */}
-                  <div className="col-xl-4">
-                     <div style={{ position: "sticky", top: "100px" }}>
-
-                        {/* Precio */}
-                        <div style={{ background: "#111111", borderRadius: "4px", padding: "32px", marginBottom: "16px", border: "1px solid rgba(255,255,255,0.06)" }}>
-                           <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
-                              Precio {isVenta ? "de venta" : "mensual"}
-                           </div>
-                           <div style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: "36px", color: "#7B4FFF", letterSpacing: "-0.02em", lineHeight: 1, marginBottom: "24px" }}>
-                              {property.discountPrice && property.discountPrice > 0 ? (
-                                 <div>
-                                    <div style={{ fontSize: "0.45em", color: "rgba(255,255,255,0.35)", textDecoration: "line-through", marginBottom: "4px" }}>
-                                       {formatPrice(property.price, property.currency)}
-                                    </div>
-                                    <div>{formatPrice(property.discountPrice, property.currency)}</div>
-                                 </div>
-                              ) : formatPrice(property.price, property.currency)}
-                           </div>
-                           {!isVenta && <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", marginTop: "-18px", marginBottom: "24px" }}>/mes</div>}
-                           <div className="d-flex gap-2">
-                              <button className="btn-nubia-primary flex-fill" style={{ textAlign: "center" }}>
-                                 Agendar visita
-                              </button>
-                              <button
-                                 className="btn-nubia-heart"
-                                 title="Guardar"
-                              >
-                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                              </button>
-                           </div>
-                        </div>
-
-                        {/* Formulario de contacto */}
-                        <div style={{ background: "#111111", borderRadius: "4px", padding: "32px", border: "1px solid rgba(255,255,255,0.06)" }}>
-                           <h5 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 700, fontSize: "14px", color: "#F5F5F2", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "24px" }}>
-                              Solicitar información
-                           </h5>
-
-                           {sent ? (
-                              <div style={{ textAlign: "center", padding: "32px 0" }}>
-                                 <div style={{ width: "48px", height: "48px", background: "rgba(123,79,255,0.1)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7B4FFF" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
-                                 </div>
-                                 <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "14px", margin: 0 }}>Mensaje enviado.<br />Te contactaremos pronto.</p>
-                              </div>
-                           ) : (
-                              <form onSubmit={handleContact}>
-                                 {[
-                                    { placeholder: "Tu nombre", key: "name", type: "text" },
-                                    { placeholder: "Correo electrónico", key: "email", type: "email" },
-                                    { placeholder: "Teléfono (opcional)", key: "phone", type: "tel" },
-                                 ].map(({ placeholder, key, type }) => (
-                                    <input
-                                       key={key}
-                                       type={type}
-                                       placeholder={placeholder}
-                                       value={contactForm[key as keyof typeof contactForm]}
-                                       onChange={e => setContactForm(f => ({ ...f, [key]: e.target.value }))}
-                                       required={key !== "phone"}
-                                       className="nubia-pdp-input"
-                                    />
-                                 ))}
-                                 <textarea
-                                    placeholder="¿Qué te interesa saber sobre esta propiedad?"
-                                    rows={4}
-                                    value={contactForm.message}
-                                    onChange={e => setContactForm(f => ({ ...f, message: e.target.value }))}
-                                    required
-                                    className="nubia-pdp-input"
-                                    style={{ resize: "vertical", fontFamily: "inherit" }}
-                                 />
-                                 <button type="submit" className="btn-nubia-primary w-100" style={{ textAlign: "center" }}>
-                                    Enviar mensaje
-                                 </button>
-                              </form>
-                           )}
-                        </div>
-
+                        {!isVenta && <div style={{ fontFamily: F.mono, fontSize: "10px", letterSpacing: "0.14em", color: "rgba(240,235,227,0.35)", marginTop: "4px" }}>/mes</div>}
                      </div>
                   </div>
                </div>
             </div>
+
+            {/* Scroll cue */}
+            <div style={{ position: "absolute", bottom: "32px", left: "50%", transform: "translateX(-50%)", zIndex: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+               <div style={{ width: "1px", height: "40px", background: `linear-gradient(to bottom, transparent, rgba(240,235,227,0.25))` }} />
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(240,235,227,0.3)" strokeWidth="1.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
          </div>
 
-         <NubiaFooter />
-
-         {/* ───────────────────────────────────────────
-             LIGHTBOX
-         ─────────────────────────────────────────── */}
-         {lightboxOpen && images.length > 0 && (
-            <div
-               onClick={() => setLightboxOpen(false)}
-               style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.96)", display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-               {/* Imagen */}
-               <div onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <img
-                     src={images[lightboxIdx]}
-                     alt=""
-                     style={{ maxWidth: "90vw", maxHeight: "88vh", objectFit: "contain", borderRadius: "2px", display: "block" }}
-                  />
-               </div>
-
-               {/* Cerrar */}
-               <button
-                  onClick={() => setLightboxOpen(false)}
-                  style={{ position: "fixed", top: "24px", right: "24px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "50%", width: "44px", height: "44px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}
-               >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-               </button>
-
-               {/* Anterior */}
-               {images.length > 1 && (
-                  <button
-                     onClick={e => { e.stopPropagation(); setLightboxIdx(i => (i - 1 + images.length) % images.length) }}
-                     style={{ position: "fixed", left: "24px", top: "50%", transform: "translateY(-50%)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "50%", width: "52px", height: "52px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}
-                  >
-                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-                  </button>
-               )}
-
-               {/* Siguiente */}
-               {images.length > 1 && (
-                  <button
-                     onClick={e => { e.stopPropagation(); setLightboxIdx(i => (i + 1) % images.length) }}
-                     style={{ position: "fixed", right: "24px", top: "50%", transform: "translateY(-50%)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "50%", width: "52px", height: "52px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}
-                  >
-                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-                  </button>
-               )}
-
-               {/* Contador + thumbnails */}
-               <div style={{ position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }} onClick={e => e.stopPropagation()}>
-                  <div style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", borderRadius: "20px", padding: "6px 16px", fontSize: "13px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.1em" }}>
-                     {lightboxIdx + 1} / {images.length}
+         {/* ══════════════════════════════════════════════════
+             GALERÍA
+         ══════════════════════════════════════════════════ */}
+         {images.length > 0 && (
+            <div style={{ background: N.paper, padding: "56px 0 0" }}>
+               <div className="container">
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: `1px solid ${N.line}`, paddingBottom: "14px", marginBottom: "24px" }}>
+                     <div>
+                        <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.terra, marginBottom: "4px" }}>
+                           Fotografías
+                        </div>
+                        <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "28px", color: N.ink, lineHeight: 1 }}>
+                           Galería
+                        </div>
+                     </div>
+                     <span style={{ fontFamily: F.mono, fontSize: "10px", letterSpacing: "0.16em", color: N.inkSoft }}>
+                        {images.length} {images.length === 1 ? "imagen" : "imágenes"}
+                     </span>
                   </div>
-                  <div className="d-flex gap-2" style={{ maxWidth: "80vw", overflowX: "auto", scrollbarWidth: "none", padding: "4px 0" }}>
-                     {images.map((img, i) => (
-                        <button
-                           key={i}
-                           onClick={() => setLightboxIdx(i)}
-                           style={{ flexShrink: 0, width: "56px", height: "40px", borderRadius: "2px", overflow: "hidden", border: `2px solid ${lightboxIdx === i ? "#7B4FFF" : "transparent"}`, padding: 0, cursor: "pointer", opacity: lightboxIdx === i ? 1 : 0.45, transition: "all 0.2s" }}
-                        >
-                           <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        </button>
+                  <MediaGallery media={property.media || []} />
+               </div>
+            </div>
+         )}
+
+         {/* ══════════════════════════════════════════════════
+             ANTES / DESPUÉS — lotes
+         ══════════════════════════════════════════════════ */}
+         {isLote && beforeImg && afterImg && (
+            <div style={{ padding: "56px 0 0" }}>
+               <div className="container">
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "16px", borderBottom: `1px solid ${N.line}`, paddingBottom: "14px", marginBottom: "24px" }}>
+                     <div>
+                        <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.terra, marginBottom: "4px" }}>Proyección</div>
+                        <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "28px", color: N.ink, lineHeight: 1 }}>Estado actual vs. Render</div>
+                     </div>
+                  </div>
+                  <div style={{ border: `1px solid ${N.line}`, overflow: "hidden" }}>
+                     <BeforeAfterSlider before={beforeImg} after={afterImg} />
+                  </div>
+               </div>
+            </div>
+         )}
+
+         {/* ══════════════════════════════════════════════════
+             VIDEO
+         ══════════════════════════════════════════════════ */}
+         {videoPlayerInfo && (
+            <div style={{ padding: "56px 0 0" }}>
+               <div className="container">
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: `1px solid ${N.line}`, paddingBottom: "14px", marginBottom: "24px" }}>
+                     <div>
+                        <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.terra, marginBottom: "4px" }}>Recorrido virtual</div>
+                        <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "28px", color: N.ink, lineHeight: 1 }}>Video</div>
+                     </div>
+                  </div>
+                  <div style={{ position: "relative", border: `1px solid ${N.line}`, overflow: "hidden", aspectRatio: "16/9", background: N.ink }}>
+                     {videoPlayerInfo.type !== "direct" ? (
+                        <iframe src={videoPlayerInfo.embedSrc} title="Video de la propiedad"
+                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                           allowFullScreen
+                           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }} />
+                     ) : (
+                        <video controls src={videoPlayerInfo.embedSrc}
+                           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: N.ink }} />
+                     )}
+                  </div>
+               </div>
+            </div>
+         )}
+
+         {/* ══════════════════════════════════════════════════
+             SPECS BAR
+         ══════════════════════════════════════════════════ */}
+         {specs.length > 0 && (
+            <div style={{ borderTop: `1px solid ${N.line}`, borderBottom: `1px solid ${N.line}`, background: N.paper2, marginTop: "56px" }}>
+               <div className="container">
+                  <div className="row g-0">
+                     {specs.map((spec, i) => (
+                        <div key={i} className="col-6 col-sm-4 col-md"
+                           style={{ padding: "28px 24px", borderRight: i < specs.length - 1 ? `1px solid ${N.line}` : "none" }}>
+                           <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "36px", color: N.ink, lineHeight: 1, textTransform: "capitalize", letterSpacing: "-0.01em" }}>
+                              {spec.value}
+                           </div>
+                           <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: N.inkSoft, marginTop: "6px" }}>
+                              {spec.label}
+                           </div>
+                        </div>
                      ))}
                   </div>
                </div>
             </div>
          )}
 
+         {/* ══════════════════════════════════════════════════
+             CONTENIDO + SIDEBAR
+         ══════════════════════════════════════════════════ */}
+         <div style={{ padding: "64px 0 120px" }}>
+            <div className="container">
+               <div className="row g-5">
+
+                  {/* ── Columna principal ── */}
+                  <div className="col-xl-8">
+
+                     {/* Descripción */}
+                     <section style={{ paddingBottom: "48px", borderBottom: `1px solid ${N.line}`, marginBottom: "48px" }}>
+                        <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.terra, marginBottom: "10px" }}>
+                           Sobre la propiedad
+                        </div>
+                        <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "28px", color: N.ink, lineHeight: 1.05, letterSpacing: "-0.01em", marginBottom: "24px" }}>
+                           Descripción
+                        </div>
+                        {/* Pull quote serif-italic */}
+                        {property.description && property.description.length > 80 && (
+                           <div style={{ fontFamily: F.display, fontStyle: "italic", fontWeight: 300, fontSize: "22px", lineHeight: 1.4, color: N.ink, marginBottom: "20px", paddingLeft: "20px", borderLeft: `2px solid ${N.terra}` }}>
+                              {property.description.slice(0, 120)}{property.description.length > 120 ? "…" : ""}
+                           </div>
+                        )}
+                        <p style={{ fontFamily: F.sans, fontWeight: 300, fontSize: "15px", lineHeight: 1.75, color: N.inkSoft, margin: 0, whiteSpace: "pre-wrap" }}>
+                           {property.description || `Esta propiedad en ${property.address} ofrece una excelente oportunidad en el mercado inmobiliario. Con ${property.totalArea} m² de superficie${property.bedrooms ? `, ${property.bedrooms} recámaras` : ""}${property.bathrooms ? ` y ${property.bathrooms} baños` : ""}, está pensada para quienes buscan comodidad y calidad de vida.`}
+                        </p>
+                     </section>
+
+                     {/* Detalles de la propiedad */}
+                     <section style={{ paddingBottom: "48px", borderBottom: `1px solid ${N.line}`, marginBottom: "48px" }}>
+                        <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.terra, marginBottom: "10px" }}>
+                           Ficha técnica
+                        </div>
+                        <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "28px", color: N.ink, lineHeight: 1.05, letterSpacing: "-0.01em", marginBottom: "28px" }}>
+                           Detalles
+                        </div>
+                        <div className="row g-0">
+                           {[
+                              { label: "Tipo de propiedad", value: property.propertyType },
+                              { label: "Operación",         value: isVenta ? "Venta" : "Renta" },
+                              ...(property.bedrooms != null ? [{ label: "Recámaras", value: String(property.bedrooms) }] : []),
+                              ...(property.bathrooms ? [{ label: "Baños", value: property.bathrooms }] : []),
+                              ...(property.totalArea ? [{ label: "Superficie total", value: `${property.totalArea} m²` }] : []),
+                              ...(property.builtArea ? [{ label: "Sup. construida", value: `${property.builtArea} m²` }] : []),
+                              ...(property.parkingSpaces ? [{ label: "Estacionamientos", value: String(property.parkingSpaces) }] : []),
+                              ...(property.yearBuilt ? [{ label: "Año", value: String(property.yearBuilt) }] : []),
+                              { label: "Estado", value: statusInfo.label },
+                              ...(property.currency && property.currency !== "MXN" ? [{ label: "Moneda", value: property.currency }] : []),
+                           ].map((d, i, arr) => (
+                              <div key={i} className="col-6 col-md-4"
+                                 style={{ padding: "16px 0", borderBottom: `1px dotted ${N.lineSoft}` }}>
+                                 <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.16em", textTransform: "uppercase", color: N.inkSoft, marginBottom: "6px" }}>
+                                    {d.label}
+                                 </div>
+                                 <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "20px", color: N.ink, textTransform: "capitalize" }}>
+                                    {d.value}
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
+                     </section>
+
+                     {/* Ubicación */}
+                     <section>
+                        <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.terra, marginBottom: "10px" }}>
+                           Localización
+                        </div>
+                        <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "28px", color: N.ink, lineHeight: 1.05, letterSpacing: "-0.01em", marginBottom: "8px" }}>
+                           Ubicación
+                        </div>
+                        <div style={{ fontFamily: F.sans, fontSize: "13px", color: N.inkSoft, marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
+                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21c-4-5-7-8-7-12a7 7 0 0114 0c0 4-3 7-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                           {[property.address, property.city, property.state].filter(Boolean).join(", ")}
+                        </div>
+
+                        {mapsEmbedUrl ? (
+                           <div style={{ border: `1px solid ${N.line}`, overflow: "hidden" }}>
+                              <iframe src={mapsEmbedUrl} width="100%" height="300"
+                                 style={{ border: 0, display: "block", filter: "sepia(0.35) contrast(0.9) saturate(0.7)" }}
+                                 allowFullScreen loading="lazy"
+                                 referrerPolicy="no-referrer-when-downgrade"
+                                 title="Ubicación de la propiedad" />
+                           </div>
+                        ) : (
+                           <div style={{ border: `1px solid ${N.line}`, height: "220px", display: "flex", alignItems: "center", justifyContent: "center", background: N.paper2 }}>
+                              <div style={{ textAlign: "center" }}>
+                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={N.salvia} strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", margin: "0 auto 10px" }}><path d="M12 21c-4-5-7-8-7-12a7 7 0 0114 0c0 4-3 7-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                                 <p style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: N.salvia, margin: 0 }}>Mapa no disponible</p>
+                              </div>
+                           </div>
+                        )}
+                     </section>
+
+                  </div>
+
+                  {/* ── Sidebar ── */}
+                  <div className="col-xl-4">
+                     <div style={{ position: "sticky", top: "100px" }}>
+
+                        {/* Precio + CTA — bloque oscuro */}
+                        <div style={{ background: N.ink, color: N.paper, padding: "32px", marginBottom: "12px" }}>
+                           <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: N.ocre, marginBottom: "8px" }}>
+                              Precio {isVenta ? "de venta" : "mensual"}
+                           </div>
+                           {property.discountPrice && property.discountPrice > 0 ? (
+                              <div>
+                                 <div style={{ fontFamily: F.display, fontWeight: 300, fontStyle: "italic", fontSize: "16px", color: "rgba(240,235,227,0.35)", textDecoration: "line-through", marginBottom: "4px" }}>
+                                    {formatPrice(property.price, property.currency)}
+                                 </div>
+                                 <div style={{ fontFamily: F.display, fontWeight: 300, fontStyle: "italic", fontSize: "44px", color: N.ocre, letterSpacing: "-0.02em", lineHeight: 1, marginBottom: "4px" }}>
+                                    {formatPrice(property.discountPrice, property.currency)}
+                                 </div>
+                              </div>
+                           ) : (
+                              <div style={{ fontFamily: F.display, fontWeight: 300, fontStyle: "italic", fontSize: "44px", color: N.ocre, letterSpacing: "-0.02em", lineHeight: 1, marginBottom: "4px" }}>
+                                 {formatPrice(property.price, property.currency)}
+                              </div>
+                           )}
+                           {!isVenta && (
+                              <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.16em", color: "rgba(240,235,227,0.45)", marginBottom: "24px" }}>/mes</div>
+                           )}
+
+                           {/* Formulario de contacto — bloque terracota */}
+                           <div style={{ background: N.terra, padding: "24px", marginTop: "24px" }}>
+                              <div style={{ fontFamily: F.display, fontWeight: 300, fontSize: "20px", color: N.paper, marginBottom: "18px", lineHeight: 1 }}>
+                                 Solicitar visita
+                              </div>
+                              {sent ? (
+                                 <div style={{ textAlign: "center", padding: "20px 0" }}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={N.paper} strokeWidth="1.5" strokeLinecap="round" style={{ display: "block", margin: "0 auto 12px" }}><polyline points="20 6 9 17 4 12"/></svg>
+                                    <p style={{ fontFamily: F.sans, fontSize: "13px", color: N.paper, opacity: 0.85, margin: 0 }}>Mensaje enviado.<br />Te contactaremos pronto.</p>
+                                 </div>
+                              ) : (
+                                 <form onSubmit={handleContact}>
+                                    {[
+                                       { placeholder: "Tu nombre", key: "name",  type: "text" },
+                                       { placeholder: "Correo o WhatsApp", key: "email", type: "email" },
+                                       { placeholder: "Teléfono (opcional)", key: "phone", type: "tel" },
+                                    ].map(({ placeholder, key, type }) => (
+                                       <input key={key} type={type} placeholder={placeholder}
+                                          value={contactForm[key as keyof typeof contactForm]}
+                                          onChange={e => setContactForm(f => ({ ...f, [key]: e.target.value }))}
+                                          required={key !== "phone"}
+                                          className="nb-form-input"
+                                       />
+                                    ))}
+                                    <textarea placeholder="¿Qué te interesa saber de esta propiedad?" rows={3}
+                                       value={contactForm.message}
+                                       onChange={e => setContactForm(f => ({ ...f, message: e.target.value }))}
+                                       required className="nb-form-input"
+                                       style={{ resize: "vertical", fontFamily: "inherit" }}
+                                    />
+                                    <button type="submit" className="nb-form-btn">
+                                       Agendar <span style={{ fontFamily: F.mono, fontSize: "11px", letterSpacing: "0.16em" }}>→</span>
+                                    </button>
+                                 </form>
+                              )}
+                           </div>
+
+                           {/* Datos de contacto */}
+                           <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid rgba(240,235,227,0.12)" }}>
+                              <div style={{ fontFamily: F.mono, fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(240,235,227,0.45)", marginBottom: "10px" }}>
+                                 Nubia Inmobiliaria
+                              </div>
+                              <div style={{ fontFamily: F.sans, fontSize: "13px", color: "rgba(240,235,227,0.7)", lineHeight: 1.6 }}>
+                                 Av. Constituyentes 218<br />
+                                 Querétaro, Qro. · 442 318 04 22
+                              </div>
+                           </div>
+                        </div>
+
+                        {/* Accesos rápidos */}
+                        <div style={{ display: "flex", gap: "8px" }}>
+                           <button className="nb-action-btn" style={{ flex: 1 }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                              Guardar
+                           </button>
+                           <button className="nb-action-btn" style={{ flex: 1 }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                              Compartir
+                           </button>
+                        </div>
+
+                     </div>
+                  </div>
+
+               </div>
+            </div>
+         </div>
+
+         <NubiaFooter />
+
+         {/* ── Estilos locales ──────────────────────────────── */}
          <style>{`
-            .nubia-pdp .btn-nubia-primary {
-               display: inline-block;
-               background: #7B4FFF;
-               color: #fff;
-               font-size: 12px;
-               font-weight: 700;
-               letter-spacing: 0.15em;
-               text-transform: uppercase;
-               padding: 13px 24px;
-               border-radius: 2px;
-               border: none;
-               cursor: pointer;
-               text-decoration: none;
-               transition: background 0.2s;
+            .nb-pdp * { box-sizing: border-box; }
+
+            .nb-loader {
+               width: 24px;
+               height: 24px;
+               border: 1.5px solid rgba(26,22,18,0.12);
+               border-top-color: ${N.terra};
+               border-radius: 50%;
+               animation: nb-spin 0.9s linear infinite;
+               margin: 0 auto;
             }
-            .nubia-pdp .btn-nubia-primary:hover { background: #9D7AFF; color: #fff; }
-            .nubia-pdp .btn-nubia-heart {
-               width: 46px;
-               height: 46px;
-               flex-shrink: 0;
-               background: transparent;
-               border: 1px solid rgba(255,255,255,0.12);
-               border-radius: 2px;
-               display: flex;
-               align-items: center;
-               justify-content: center;
-               cursor: pointer;
-               color: rgba(255,255,255,0.4);
-               transition: all 0.2s;
-            }
-            .nubia-pdp .btn-nubia-heart:hover { border-color: #7B4FFF; color: #7B4FFF; }
-            .nubia-pdp .nubia-pdp-input {
+            @keyframes nb-spin { to { transform: rotate(360deg); } }
+
+            .nb-form-input {
                width: 100%;
-               background: #0C0C0C;
-               border: 1px solid rgba(255,255,255,0.08);
-               border-radius: 2px;
-               padding: 12px 16px;
-               color: #F5F5F2;
-               font-size: 14px;
-               margin-bottom: 10px;
+               background: rgba(240,235,227,0.15);
+               border: none;
+               border-bottom: 1px solid rgba(240,235,227,0.3);
+               padding: 10px 0;
+               color: #f0ebe3;
+               font-family: 'Geist', system-ui, sans-serif;
+               font-size: 13px;
+               margin-bottom: 12px;
                outline: none;
                display: block;
                transition: border-color 0.2s;
             }
-            .nubia-pdp .nubia-pdp-input::placeholder { color: rgba(255,255,255,0.2); }
-            .nubia-pdp .nubia-pdp-input:focus { border-color: rgba(123,79,255,0.5); }
-            .nubia-loader {
-               width: 32px;
-               height: 32px;
-               border: 2px solid rgba(123,79,255,0.15);
-               border-top-color: #7B4FFF;
-               border-radius: 50%;
-               animation: spin 0.8s linear infinite;
-               margin: 0 auto;
+            .nb-form-input::placeholder { color: rgba(240,235,227,0.45); }
+            .nb-form-input:focus { border-bottom-color: rgba(240,235,227,0.8); }
+
+            .nb-form-btn {
+               width: 100%;
+               background: #f0ebe3;
+               color: #1a1612;
+               font-family: 'Fraunces', Georgia, serif;
+               font-weight: 300;
+               font-style: italic;
+               font-size: 18px;
+               padding: 14px 24px;
+               border: none;
+               cursor: pointer;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               gap: 10px;
+               transition: background 0.2s, color 0.2s;
+               margin-top: 4px;
             }
-            @keyframes spin { to { transform: rotate(360deg); } }
+            .nb-form-btn:hover { background: #1a1612; color: #f0ebe3; }
+
+            .nb-action-btn {
+               background: transparent;
+               border: 1px solid ${N.line};
+               padding: 10px 16px;
+               font-family: 'JetBrains Mono', ui-monospace, monospace;
+               font-size: 9px;
+               letter-spacing: 0.16em;
+               text-transform: uppercase;
+               color: ${N.inkSoft};
+               cursor: pointer;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               gap: 8px;
+               transition: border-color 0.2s, color 0.2s;
+            }
+            .nb-action-btn:hover { border-color: ${N.terra}; color: ${N.terra}; }
          `}</style>
       </div>
    )

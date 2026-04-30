@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(sort -t_ -k2 -n)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx skills *)",
+      "Bash(npx autoskills *)",
+      "Bash(nvm version *)",
+      "Bash(fnm --version)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }

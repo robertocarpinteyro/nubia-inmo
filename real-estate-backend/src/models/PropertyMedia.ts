@@ -18,7 +18,7 @@ export class PropertyMedia extends Model {
   propertyId!: number;
 
   @Column({
-    type: DataType.ENUM("image", "video", "document", "floorplan"),
+    type: DataType.ENUM("image", "video", "document", "floorplan", "render"),
     allowNull: false,
   })
   mediaType!: string;

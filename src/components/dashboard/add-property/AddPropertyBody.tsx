@@ -43,6 +43,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
       featured: false,
       discountPrice: "",
       mediaUrls: "",
+      renderUrls: "",
       videoUrl: "",
       googleMapsUrl: "",
    })
@@ -77,6 +78,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                      featured: data.featured || false,
                      discountPrice: data.discountPrice ? String(data.discountPrice) : "",
                      mediaUrls: "",
+                     renderUrls: "",
                      videoUrl: data.videoUrl || "",
                      googleMapsUrl: data.googleMapsUrl || "",
                   }))
@@ -134,6 +136,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
             yearBuilt: Number(form.yearBuilt) || 0,
             commissionPercentage: Number(form.commissionPercentage) || 0,
             mediaUrls: form.mediaUrls ? form.mediaUrls.split(/[\n,]+/).map((u: string) => u.trim()).filter(Boolean) : [],
+            renderUrls: form.renderUrls ? form.renderUrls.split(/[\n,]+/).map((u: string) => u.trim()).filter(Boolean) : [],
          }
 
          const urlEndpoint = propertyId ? `${API_BASE_URL}/properties/${propertyId}` : `${API_BASE_URL}/properties`;
@@ -228,6 +231,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                         <option value="terreno">{t("addProperty.types.terreno")}</option>
                         <option value="oficina">{t("addProperty.types.oficina")}</option>
                         <option value="local">{t("addProperty.types.local")}</option>
+                        <option value="lote">Lote</option>
                      </select>
                   </div>
                </div>
@@ -393,6 +397,61 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                      <textarea name="mediaUrls" value={form.mediaUrls} onChange={handleChange} rows={3} placeholder="https://ejemplo.com/imagen1.jpg&#10;https://ejemplo.com/imagen2.png" />
                   </div>
                </div>
+
+               {/* ── Renders / Proyecciones (solo para lotes) ── */}
+               {form.propertyType === "lote" && (
+                  <>
+                     <div className="col-12">
+                        <div style={{ background: "rgba(123,79,255,0.06)", border: "1px solid rgba(123,79,255,0.2)", borderRadius: 4, padding: "12px 16px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7B4FFF" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                           <span style={{ fontSize: 13, color: "rgba(0,0,0,0.6)", lineHeight: 1.5 }}>
+                              <strong style={{ color: "#7B4FFF" }}>Lote detectado.</strong> Puedes agregar renders o proyecciones — se mostrarán en un slider comparativo <em>Antes / Después</em> junto a las fotos reales.
+                           </span>
+                        </div>
+                     </div>
+                     <div className="col-12">
+                        <div className="nubia-form-group">
+                           <label>
+                              URLs de Renders / Proyecciones
+                              <span style={{ opacity: 0.55, fontSize: 12, fontStyle: "italic" }}> (separadas por comas o saltos de línea)</span>
+                           </label>
+                           <textarea
+                              name="renderUrls"
+                              value={form.renderUrls}
+                              onChange={handleChange}
+                              rows={3}
+                              placeholder={"https://ejemplo.com/render1.jpg\nhttps://ejemplo.com/proyeccion2.png"}
+                           />
+                           {propertyId && existingMedia.filter(m => m.mediaType === "render").length > 0 && (
+                              <div style={{ marginTop: 8 }}>
+                                 <div style={{ fontSize: 11, color: "rgba(0,0,0,0.4)", marginBottom: 6, letterSpacing: "0.05em", textTransform: "uppercase" }}>Renders guardados</div>
+                                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 8 }}>
+                                    {existingMedia.filter(m => m.mediaType === "render").map(media => (
+                                       <div key={media.id} style={{ position: "relative", borderRadius: 4, overflow: "hidden", border: "1px solid rgba(123,79,255,0.3)", background: "#0C0C0C" }}>
+                                          <img
+                                             src={media.url}
+                                             alt=""
+                                             style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }}
+                                             onError={e => { (e.currentTarget as HTMLImageElement).style.opacity = "0.2" }}
+                                          />
+                                          <div style={{ position: "absolute", top: 4, left: 6, fontSize: 8, color: "#7B4FFF", fontWeight: 700, letterSpacing: "0.12em", background: "rgba(0,0,0,0.7)", padding: "2px 5px", borderRadius: 2 }}>RENDER</div>
+                                          <button
+                                             type="button"
+                                             onClick={() => handleDeleteMedia(media.id)}
+                                             disabled={deletingMediaId === media.id}
+                                             style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff" }}
+                                          >
+                                             {deletingMediaId === media.id ? "…" : "×"}
+                                          </button>
+                                       </div>
+                                    ))}
+                                 </div>
+                              </div>
+                           )}
+                        </div>
+                     </div>
+                  </>
+               )}
 
                <div className="col-md-6">
                   <div className="nubia-form-group">

@@ -290,7 +290,7 @@ const Offcanvas = ({ offCanvas, setOffCanvas }: any) => {
                      return (
                         <Link
                            key={p.id}
-                           href={`/listing_details_06?id=${p.id}`}
+                           href={`/listing_details_nubia?id=${p.id}`}
                            onClick={() => setOffCanvas(false)}
                            style={{ textDecoration: "none" }}
                         >

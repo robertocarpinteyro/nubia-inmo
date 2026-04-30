@@ -91,7 +91,7 @@ const ListingSixArea = () => {
                                  </div>
                               </div>
                               <div className="property-info pe-4 ps-4">
-                                 <Link href="/listing_details_06" className="title tran3s mb-15">{item.title}</Link>
+                                 <Link href="/listing_details_nubia" className="title tran3s mb-15">{item.title}</Link>
                                  <div className="address">{item.address}</div>
                                  <div className="feature border-0 mt-45 mb-30">
                                     <ul className="style-none d-flex flex-wrap align-items-center justify-content-between">
@@ -108,7 +108,7 @@ const ListingSixArea = () => {
                                        <li><Link href="#"><i className="fa-light fa-bookmark"></i></Link></li>
                                        <li><Link href="#"><i className="fa-light fa-circle-plus"></i></Link></li>
                                     </ul>
-                                    <Link href="/listing_details_06" className="btn-four">
+                                    <Link href="/listing_details_nubia" className="btn-four">
                                        <i className="bi bi-arrow-up-right"></i>
                                     </Link>
                                  </div>
