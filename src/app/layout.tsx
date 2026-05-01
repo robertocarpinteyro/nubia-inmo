@@ -42,7 +42,7 @@ export default function RootLayout({
         {/* Favicon — isotipo NUBIA */}
         <link rel="icon" href="/assets/images/logo/Nubia_isotipo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/assets/images/logo/Nubia_isotipo.png" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500;600&display=swap" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" />
       </head>
       <body suppressHydrationWarning={true}>
         <div className="main-page-wrapper">
