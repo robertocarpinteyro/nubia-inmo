@@ -1,28 +1,27 @@
 "use client"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { API_BASE_URL } from "@/context/AuthContext"
 import { useLanguage } from "@/context/LanguageContext"
 
 interface Property {
-   id: number
+   id: string
+   propertyId: string
    title: string
-   titleEn?: string
-   transactionType: string
-   price: number
-   discountPrice?: number
+   operation: string
+   price: number | null
    currency: string
-   city?: string
-   state?: string
-   bedrooms?: number
-   bathrooms?: number
-   builtArea?: number
-   totalArea?: number
-   media?: { url: string; mediaType: string; sortOrder: number }[]
+   city?: string | null
+   state?: string | null
+   bedrooms?: number | null
+   bathrooms?: number | null
+   area?: number | null
+   thumb?: string | null
 }
 
-const formatPrice = (price: number, currency: string) =>
-   new Intl.NumberFormat("es-MX", { style: "currency", currency, maximumFractionDigits: 0 }).format(price)
+const formatPrice = (price: number | null, currency: string) =>
+   price == null
+      ? "—"
+      : new Intl.NumberFormat("es-MX", { style: "currency", currency, maximumFractionDigits: 0 }).format(price)
 
 const NubiaProperties = () => {
    const { lang } = useLanguage()
@@ -30,24 +29,18 @@ const NubiaProperties = () => {
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
-      fetch(`${API_BASE_URL}/properties?limit=3&featured=true`)
+      fetch(`/api/properties?featured=true&limit=3`)
          .then(r => r.json())
          .then(data => {
             const list: Property[] = data?.properties || []
             if (list.length > 0) { setProperties(list); return }
-            // fallback: las 3 más recientes
-            return fetch(`${API_BASE_URL}/properties?limit=3`)
+            return fetch(`/api/properties?limit=3`)
                .then(r => r.json())
                .then(d => setProperties(d?.properties || []))
          })
          .catch(() => setProperties([]))
          .finally(() => setLoading(false))
    }, [])
-
-   const getCover = (p: Property) =>
-      p.media?.sort((a, b) => a.sortOrder - b.sortOrder).find(m => m.mediaType === "image")?.url || null
-
-   const getTitle = (p: Property) => lang === "en" && p.titleEn ? p.titleEn : p.title
 
    const transTag = (t: string) =>
       t === "venta" ? (lang === "en" ? "For Sale" : "Venta") : (lang === "en" ? "For Rent" : "Renta")
@@ -91,58 +84,44 @@ const NubiaProperties = () => {
                </div>
             ) : (
                <div className="row g-4">
-                  {properties.map(p => {
-                     const cover = getCover(p)
-                     return (
-                        <div key={p.id} className="col-lg-4 col-md-6">
-                           <Link href={`/listing_details_nubia?id=${p.id}`} className="nubia-property-card d-block text-decoration-none">
-                              <div className="card-thumb" style={{ position: "relative", background: "#1a1a1a", overflow: "hidden" }}>
-                                 {cover ? (
-                                    <img src={cover} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }} />
-                                 ) : (
-                                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.2, fontSize: 13, color: "white" }}>
-                                       {lang === "en" ? "No image" : "Sin imagen"}
-                                    </div>
-                                 )}
-                                 <span className="card-tag">{transTag(p.transactionType)}</span>
+                  {properties.map(p => (
+                     <div key={p.id} className="col-lg-4 col-md-6">
+                        <Link href={`/listing_details_nubia?id=${p.propertyId}`} className="nubia-property-card d-block text-decoration-none">
+                           <div className="card-thumb" style={{ position: "relative", background: "#1a1a1a", overflow: "hidden" }}>
+                              {p.thumb ? (
+                                 <img src={p.thumb} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }} />
+                              ) : (
+                                 <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.2, fontSize: 13, color: "white" }}>
+                                    {lang === "en" ? "No image" : "Sin imagen"}
+                                 </div>
+                              )}
+                              <span className="card-tag">{transTag(p.operation)}</span>
+                           </div>
+                           <div className="card-body-inner">
+                              <div className="card-price">{formatPrice(p.price, p.currency || "MXN")}</div>
+                              <div className="card-title">{p.title}</div>
+                              <div className="card-location">
+                                 <i className="bi bi-geo-alt"></i>
+                                 {[p.city, p.state].filter(Boolean).join(", ") || "—"}
                               </div>
-                              <div className="card-body-inner">
-                                 <div className="card-price">
-                                    {p.discountPrice && p.discountPrice > 0 ? (
-                                       <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-                                          <span style={{ textDecoration: "line-through", opacity: 0.5, fontSize: "0.7em" }}>
-                                             {formatPrice(p.price, p.currency || "MXN")}
-                                          </span>
-                                          <span>{formatPrice(p.discountPrice, p.currency || "MXN")}</span>
-                                       </div>
-                                    ) : (
-                                       formatPrice(p.price, p.currency || "MXN")
-                                    )}
+                              <div className="card-meta">
+                                 <div className="meta-item">
+                                    <i className="bi bi-door-open"></i>
+                                    {p.bedrooms ?? "—"} {lang === "en" ? "Bed" : "Rec"}
                                  </div>
-                                 <div className="card-title">{getTitle(p)}</div>
-                                 <div className="card-location">
-                                    <i className="bi bi-geo-alt"></i>
-                                    {[p.city, p.state].filter(Boolean).join(", ") || "—"}
+                                 <div className="meta-item">
+                                    <i className="bi bi-droplet"></i>
+                                    {p.bathrooms ?? "—"} {lang === "en" ? "Bath" : "Baños"}
                                  </div>
-                                 <div className="card-meta">
-                                    <div className="meta-item">
-                                       <i className="bi bi-door-open"></i>
-                                       {p.bedrooms ?? "—"} {lang === "en" ? "Bed" : "Rec"}
-                                    </div>
-                                    <div className="meta-item">
-                                       <i className="bi bi-droplet"></i>
-                                       {p.bathrooms ?? "—"} {lang === "en" ? "Bath" : "Baños"}
-                                    </div>
-                                    <div className="meta-item">
-                                       <i className="bi bi-aspect-ratio"></i>
-                                       {p.builtArea || p.totalArea || "—"} m²
-                                    </div>
+                                 <div className="meta-item">
+                                    <i className="bi bi-aspect-ratio"></i>
+                                    {p.area || "—"} m²
                                  </div>
                               </div>
-                           </Link>
-                        </div>
-                     )
-                  })}
+                           </div>
+                        </Link>
+                     </div>
+                  ))}
                </div>
             )}
          </div>

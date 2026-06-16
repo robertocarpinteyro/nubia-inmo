@@ -3,7 +3,6 @@ import { useState, useEffect, useRef, useCallback, Fragment } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Combobox, Transition } from "@headlessui/react"
-import { API_BASE_URL } from "@/context/AuthContext"
 
 // ── Secuencia ────────────────────────────────────────────────────
 const TOTAL_FRAMES = 126
@@ -13,7 +12,7 @@ const FRAMES = Array.from({ length: TOTAL_FRAMES }, (_, i) =>
 )
 
 interface Suggestion {
-   id: number; title: string; city: string | null; state: string | null
+   id: string; title: string; city: string | null; state: string | null
    propertyType: string;
    transactionType: string;
    price: number;
@@ -147,8 +146,19 @@ const HeroBanner = () => {
       if (q.length < 2) { setSuggestions([]); return }
       setLoadingSearch(true)
       try {
-         const res = await fetch(`${API_BASE_URL}/properties/autocomplete?q=${encodeURIComponent(q)}`)
-         setSuggestions((await res.json()).suggestions || [])
+         const res = await fetch(`/api/properties?search=${encodeURIComponent(q)}&limit=6`)
+         const data = await res.json()
+         const mapped: Suggestion[] = (data?.properties || []).map((p: any) => ({
+            id: p.propertyId,
+            title: p.title,
+            city: p.city ?? null,
+            state: p.state ?? null,
+            propertyType: p.type,
+            transactionType: p.operation,
+            price: p.price ?? 0,
+            currency: p.currency,
+         }))
+         setSuggestions(mapped)
       } catch { setSuggestions([]) }
       finally { setLoadingSearch(false) }
    }, [])

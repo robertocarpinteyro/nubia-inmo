@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 import MediaGallery from "@/components/ListingDetails/listing-details-6/MediaGallery"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { API_BASE_URL } from "@/context/AuthContext"
 import HeaderTwo from "@/layouts/headers/HeaderTwo"
 import NubiaFooter from "@/components/homes/home-two/NubiaFooter"
 import BeforeAfterSlider from "@/components/common/BeforeAfterSlider"
@@ -36,7 +35,7 @@ interface MediaItem {
 }
 
 interface PropertyDetail {
-   id: number
+   id: string
    title: string
    titleEn?: string
    price: number
@@ -110,9 +109,38 @@ const NubiaPropertyDetail = () => {
 
    useEffect(() => {
       if (!id) return
-      fetch(`${API_BASE_URL}/properties/${id}`)
+      fetch(`/api/properties/${id}`)
          .then(r => r.json())
-         .then(data => setProperty(data?.property || data))
+         .then(data => {
+            if (!data || data.error) { setProperty(null); return }
+            const num = (v: any) => (v === "" || v == null ? undefined : Number(v))
+            const mapped: PropertyDetail = {
+               id: data.id ?? id,
+               title: data.title,
+               price: num(data.price) ?? 0,
+               currency: data.currency,
+               address: data.address,
+               city: data.city,
+               state: data.state,
+               propertyType: data.propertyType,
+               transactionType: data.transactionType,
+               bedrooms: num(data.bedrooms),
+               bathrooms: data.bathrooms || undefined,
+               totalArea: num(data.totalArea),
+               builtArea: num(data.builtArea),
+               parkingSpaces: num(data.parkingSpaces),
+               status: data.status,
+               description: data.description,
+               videoUrl: data.videoUrl,
+               googleMapsUrl: data.googleMapsUrl,
+               featured: data.featured,
+               media: [
+                  ...(Array.isArray(data.images) ? data.images : []).map((url: string, i: number) => ({ id: i, url, mediaType: "image", sortOrder: i })),
+                  ...(Array.isArray(data.floorPlans) ? data.floorPlans : []).map((url: string, i: number) => ({ id: 1000 + i, url, mediaType: "floor_plan", sortOrder: i })),
+               ],
+            }
+            setProperty(mapped)
+         })
          .catch(() => setProperty(null))
          .finally(() => setLoading(false))
    }, [id])
