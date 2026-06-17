@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 import type { Database } from "@/types/supabase"
+import { getSupabaseUrl, getSupabaseAnonKey } from "./env"
 
 /**
  * Cliente de Supabase ligado a la sesión (cookies) para Route Handlers y
@@ -11,9 +12,8 @@ import type { Database } from "@/types/supabase"
 export function createServerSupabase() {
   const cookieStore = cookies()
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)!,
+    getSupabaseUrl(),
+    getSupabaseAnonKey(),
     {
       cookies: {
         getAll() {
@@ -46,7 +46,7 @@ export function createAdminSupabase() {
     )
   }
   return createSupabaseClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    getSupabaseUrl(),
     serviceKey,
     { auth: { persistSession: false, autoRefreshToken: false } }
   )
