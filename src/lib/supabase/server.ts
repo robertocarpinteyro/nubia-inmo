@@ -71,7 +71,15 @@ export type AppRole = "admin" | "vendedor" | "usuario"
  * verdad), NUNCA de user_metadata (que el propio usuario puede editar).
  * Usa service_role para saltar RLS tras validar la sesión. null si no hay sesión.
  */
-export async function getSessionRole(): Promise<{ userId: string; role: AppRole } | null> {
+export interface SessionInfo {
+  /** UUID de auth.users (sesión de Supabase). */
+  userId: string
+  /** id entero de public.users (para FKs como properties.createdBy). */
+  appUserId: number | null
+  role: AppRole
+}
+
+export async function getSessionRole(): Promise<SessionInfo | null> {
   const user = await getSessionUser()
   if (!user) return null
 
@@ -79,19 +87,20 @@ export async function getSessionRole(): Promise<{ userId: string; role: AppRole 
   const { data } = await admin
     // El tipo Database aún describe otro esquema; consulta sin tipar.
     .from("users" as any)
-    .select("role")
+    .select("id, role")
     .eq("auth_id", user.id)
     .maybeSingle()
 
   const role = ((data as any)?.role ?? "usuario") as AppRole
-  return { userId: user.id, role }
+  const appUserId = (data as any)?.id ?? null
+  return { userId: user.id, appUserId, role }
 }
 
 /**
  * Exige que el usuario autenticado sea staff (admin o vendedor).
- * Devuelve el rol si autoriza, o null si debe rechazarse (401/403).
+ * Devuelve la info de sesión si autoriza, o null si debe rechazarse (401/403).
  */
-export async function requireStaff(): Promise<{ userId: string; role: AppRole } | null> {
+export async function requireStaff(): Promise<SessionInfo | null> {
   const session = await getSessionRole()
   if (!session) return null
   if (session.role !== "admin" && session.role !== "vendedor") return null
