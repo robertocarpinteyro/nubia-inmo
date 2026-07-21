@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
 
 interface Visit {
@@ -12,22 +11,20 @@ interface Visit {
 }
 
 const VisitsPage = () => {
-   const { getAuthHeaders } = useAuth()
    const [visits, setVisits] = useState<Visit[]>([])
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
-      fetch(`${API_BASE_URL}/visits/me`, {
-         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-      })
+      fetch(`/api/visits/me`)
          .then((r) => r.json())
          .then((d) => setVisits(Array.isArray(d) ? d : []))
          .catch(() => setVisits([]))
          .finally(() => setLoading(false))
    }, [])
 
-   const statusColor: Record<string, string> = { pending: "amber", confirmed: "green", cancelled: "red", completed: "purple" }
-   const statusLabel: Record<string, string> = { pending: "Pendiente", confirmed: "Confirmada", cancelled: "Cancelada", completed: "Completada" }
+   // La Base A guarda el estado en español (pendiente/confirmada/…).
+   const statusColor: Record<string, string> = { pendiente: "amber", confirmada: "green", cancelada: "red", completada: "purple" }
+   const statusLabel: Record<string, string> = { pendiente: "Pendiente", confirmada: "Confirmada", cancelada: "Cancelada", completada: "Completada" }
 
    return (
       <DashboardLayout title="Mis Visitas" allowedRoles={["usuario"]}>
