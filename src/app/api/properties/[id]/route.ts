@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createServerSupabase, createAdminSupabase, getSessionUser } from "@/lib/supabase/server"
+import { createServerSupabase, createAdminSupabase, getSessionUser, requireStaff } from "@/lib/supabase/server"
 import { formToDbColumns, dbRowToForm, rowToPublic } from "@/lib/properties/mapping"
 
 export const dynamic = "force-dynamic"
@@ -26,8 +26,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 /** PATCH /api/properties/[id] — edita. Requiere sesión. */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const user = await getSessionUser()
-  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  const session = await requireStaff()
+  if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 403 })
 
   let body: any
   try {
@@ -51,8 +51,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 /** DELETE /api/properties/[id] — borra. Requiere sesión. */
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const user = await getSessionUser()
-  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  const session = await requireStaff()
+  if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 403 })
 
   const admin = createAdminSupabase()
   const { error } = await admin

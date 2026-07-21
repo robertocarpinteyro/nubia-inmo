@@ -29,10 +29,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // 📌 API Base URL (legacy Express — solo módulos aún no migrados)
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001/api";
 
-// Mapea un usuario de Supabase al tipo interno.
-const toUser = (u: any): User | null => {
+// Mapea un usuario de Supabase al tipo interno. El rol se resuelve aparte
+// desde public.users (no se confía en user_metadata, que el usuario edita).
+// Default seguro: "usuario" (menor privilegio), nunca "admin".
+const toUser = (u: any, role: User["role"] = "usuario"): User | null => {
   if (!u) return null;
-  const role = (u.user_metadata?.role ?? u.app_metadata?.role ?? "admin") as User["role"];
   return {
     id: u.id,
     email: u.email ?? "",
@@ -51,19 +52,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Lee el rol real desde public.users (RLS permite leer la propia fila).
+    // Si algo falla, cae al menor privilegio: "usuario".
+    const fetchRole = async (authId: string): Promise<User["role"]> => {
+      try {
+        const { data } = await supabase
+          .from("users" as any)
+          .select("role")
+          .eq("auth_id", authId)
+          .maybeSingle();
+        const role = (data as any)?.role;
+        return role === "admin" || role === "vendedor" ? role : "usuario";
+      } catch {
+        return "usuario";
+      }
+    };
+
+    const hydrate = async (session: any) => {
+      const authUser = session?.user;
+      if (!authUser) {
+        if (mounted) {
+          setUser(null);
+          setToken(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+      const role = await fetchRole(authUser.id);
       if (!mounted) return;
-      setUser(toUser(session?.user));
+      setUser(toUser(authUser, role));
       setToken(session?.access_token ?? null);
       setIsLoading(false);
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted) hydrate(session);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(toUser(session?.user));
-      setToken(session?.access_token ?? null);
-      setIsLoading(false);
+      hydrate(session);
     });
 
     return () => {

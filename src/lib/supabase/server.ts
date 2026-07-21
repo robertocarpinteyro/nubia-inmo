@@ -63,3 +63,37 @@ export async function getSessionUser() {
   } = await supabase.auth.getUser()
   return user
 }
+
+export type AppRole = "admin" | "vendedor" | "usuario"
+
+/**
+ * Devuelve el rol del usuario autenticado leyéndolo de public.users (fuente de
+ * verdad), NUNCA de user_metadata (que el propio usuario puede editar).
+ * Usa service_role para saltar RLS tras validar la sesión. null si no hay sesión.
+ */
+export async function getSessionRole(): Promise<{ userId: string; role: AppRole } | null> {
+  const user = await getSessionUser()
+  if (!user) return null
+
+  const admin = createAdminSupabase()
+  const { data } = await admin
+    // El tipo Database aún describe otro esquema; consulta sin tipar.
+    .from("users" as any)
+    .select("role")
+    .eq("auth_id", user.id)
+    .maybeSingle()
+
+  const role = ((data as any)?.role ?? "usuario") as AppRole
+  return { userId: user.id, role }
+}
+
+/**
+ * Exige que el usuario autenticado sea staff (admin o vendedor).
+ * Devuelve el rol si autoriza, o null si debe rechazarse (401/403).
+ */
+export async function requireStaff(): Promise<{ userId: string; role: AppRole } | null> {
+  const session = await getSessionRole()
+  if (!session) return null
+  if (session.role !== "admin" && session.role !== "vendedor") return null
+  return session
+}
