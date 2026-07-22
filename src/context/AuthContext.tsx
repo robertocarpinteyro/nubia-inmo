@@ -1,10 +1,11 @@
 "use client";
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 // 📌 Tipos
 interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: "admin" | "vendedor" | "usuario";
@@ -15,6 +16,9 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  /** Inicia sesión con Supabase Auth (email/password). */
+  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  /** @deprecated Compatibilidad: ya no se usa el token de Express. */
   login: (token: string, user: User) => void;
   logout: () => void;
   getAuthHeaders: () => Record<string, string>;
@@ -22,60 +26,114 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 📌 API Base URL
+// 📌 API Base URL (legacy Express — solo módulos aún no migrados)
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001/api";
 
-// 📌 Auth Provider
+// Mapea un usuario de Supabase al tipo interno. El rol se resuelve aparte
+// desde public.users (no se confía en user_metadata, que el usuario edita).
+// Default seguro: "usuario" (menor privilegio), nunca "admin".
+const toUser = (u: any, role: User["role"] = "usuario"): User | null => {
+  if (!u) return null;
+  return {
+    id: u.id,
+    email: u.email ?? "",
+    name: u.user_metadata?.name ?? u.email?.split("@")[0] ?? "Usuario",
+    role,
+  };
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Cargar sesión de localStorage al montar
   useEffect(() => {
-    try {
-      const savedToken = localStorage.getItem("nubia_token");
-      const savedUser = localStorage.getItem("nubia_user");
+    let mounted = true;
 
-      if (savedToken && savedUser) {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
+    // Lee el rol real desde public.users (RLS permite leer la propia fila).
+    // Si algo falla, cae al menor privilegio: "usuario".
+    const fetchRole = async (authId: string): Promise<User["role"]> => {
+      try {
+        const { data } = await supabase
+          .from("users" as any)
+          .select("role")
+          .eq("auth_id", authId)
+          .maybeSingle();
+        const role = (data as any)?.role;
+        return role === "admin" || role === "vendedor" ? role : "usuario";
+      } catch {
+        return "usuario";
       }
-    } catch (error) {
-      console.error("Error loading auth from localStorage:", error);
-    } finally {
+    };
+
+    const hydrate = async (session: any) => {
+      const authUser = session?.user;
+      if (!authUser) {
+        if (mounted) {
+          setUser(null);
+          setToken(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+      const role = await fetchRole(authUser.id);
+      if (!mounted) return;
+      setUser(toUser(authUser, role));
+      setToken(session?.access_token ?? null);
       setIsLoading(false);
-    }
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted) hydrate(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      hydrate(session);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = (newToken: string, newUser: User) => {
-    setToken(newToken);
-    setUser(newUser);
-    localStorage.setItem("nubia_token", newToken);
-    localStorage.setItem("nubia_user", JSON.stringify(newUser));
-  };
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error: error.message };
+      return {};
+    },
+    [supabase]
+  );
 
-  const logout = () => {
-    setToken(null);
+  // Compatibilidad con el flujo viejo (no hace nada útil con Supabase).
+  const login = (_token: string, _user: User) => {};
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("nubia_token");
-    localStorage.removeItem("nubia_user");
+    setToken(null);
     router.push("/");
-  };
+  }, [supabase, router]);
 
-  const getAuthHeaders = (): Record<string, string> => {
-    if (!token) return {};
-    return { Authorization: `Bearer ${token}` };
-  };
+  const getAuthHeaders = useCallback(
+    (): Record<string, string> => (token ? { Authorization: `Bearer ${token}` } : {}),
+    [token]
+  );
 
   return (
     <AuthContext.Provider
       value={{
         user,
         token,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!user,
         isLoading,
+        signIn,
         login,
         logout,
         getAuthHeaders,
@@ -86,7 +144,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// 📌 Hook para usar auth
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

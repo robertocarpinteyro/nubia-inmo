@@ -6,7 +6,7 @@ import { toast } from "react-toastify"
 import * as yup from "yup"
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
+import { useAuth } from "@/context/AuthContext"
 
 interface FormData {
    email: string
@@ -20,7 +20,7 @@ interface Props {
 
 const LoginForm = ({ inputStyle, labelStyle }: Props) => {
    const router = useRouter()
-   const { login } = useAuth()
+   const { signIn } = useAuth()
    const [loading, setLoading] = useState(false)
    const [showPassword, setShowPassword] = useState(false)
 
@@ -46,20 +46,14 @@ const LoginForm = ({ inputStyle, labelStyle }: Props) => {
    const onSubmit = async (data: FormData) => {
       setLoading(true)
       try {
-         const res = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-         })
-         const result = await res.json()
-         if (res.ok) {
-            login(result.token, result.user)
+         const { error } = await signIn(data.email, data.password)
+         if (!error) {
             toast.success("Sesión iniciada", { position: "top-center" })
             reset()
             closeModal()
             router.push("/dashboard/dashboard-index")
          } else {
-            toast.error(result.error || "Email o contraseña inválidos")
+            toast.error("Email o contraseña inválidos")
          }
       } catch {
          toast.error("Error de conexión. Intenta de nuevo.")

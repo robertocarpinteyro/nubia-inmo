@@ -1,7 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 
 interface Favorite {
    id: number
@@ -12,7 +11,7 @@ interface Favorite {
       price: number
       address: string
       bedrooms: number
-      bathrooms: number
+      bathrooms: string | number
       totalArea: number
       status: string
       images?: string[]
@@ -20,15 +19,12 @@ interface Favorite {
 }
 
 const FavouriteArea = () => {
-   const { getAuthHeaders } = useAuth()
    const [favs, setFavs] = useState<Favorite[]>([])
    const [loading, setLoading] = useState(true)
    const [toast, setToast] = useState("")
 
    const load = () => {
-      fetch(`${API_BASE_URL}/favorites`, {
-         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-      })
+      fetch(`/api/favorites`)
          .then((r) => r.json())
          .then((d) => setFavs(Array.isArray(d) ? d : []))
          .catch(() => setFavs([]))
@@ -39,10 +35,7 @@ const FavouriteArea = () => {
 
    const removeFavorite = async (propertyId: number) => {
       try {
-         const res = await fetch(`${API_BASE_URL}/favorites/${propertyId}`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-         })
+         const res = await fetch(`/api/favorites/${propertyId}`, { method: "DELETE" })
          if (res.ok) {
             setToast("Propiedad eliminada de favoritos")
             load()

@@ -11,7 +11,10 @@
       "Bash(git pull *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "mcp__SUPERBASE__apply_migration",
+      "mcp__SUPERBASE__get_advisors",
+      "mcp__SUPERBASE__generate_typescript_types"
     ]
   }
 }

@@ -2,11 +2,10 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { API_BASE_URL } from "@/context/AuthContext"
 import { useLanguage } from "@/context/LanguageContext"
 
 interface Property {
-   id: number
+   id: string
    title: string
    titleEn?: string
    propertyType: string
@@ -258,22 +257,41 @@ const ListingSevenArea = ({ style }: any) => {
       setLoading(true)
       try {
          const params = new URLSearchParams()
-         params.set("page", String(page))
          params.set("limit", String(ITEMS_PER_PAGE))
+         params.set("offset", String((page - 1) * ITEMS_PER_PAGE))
          if (f.search) params.set("search", f.search)
-         if (f.propertyType) params.set("propertyType", f.propertyType)
-         if (f.transactionType) params.set("transactionType", f.transactionType)
-         if (f.minBedrooms) params.set("bedrooms", f.minBedrooms)
+         if (f.propertyType) params.set("type", f.propertyType)
+         if (f.transactionType) params.set("operation", f.transactionType)
+         if (f.minBedrooms) params.set("minBedrooms", f.minBedrooms)
          if (f.minPrice) params.set("minPrice", f.minPrice)
          if (f.maxPrice) params.set("maxPrice", f.maxPrice)
-         const res = await fetch(`${API_BASE_URL}/properties?${params}`)
+         const res = await fetch(`/api/properties?${params}`)
          const data = await res.json()
-         let rows: Property[] = data?.properties || []
+         // Adapta PublicProperty -> forma esperada por la tarjeta.
+         let rows: Property[] = (data?.properties || []).map((p: any) => ({
+            id: p.propertyId,
+            title: p.title,
+            propertyType: p.type,
+            transactionType: p.operation,
+            price: p.price,
+            currency: p.currency,
+            address: p.address,
+            city: p.city,
+            state: p.state,
+            bedrooms: p.bedrooms,
+            bathrooms: p.bathrooms,
+            totalArea: p.area,
+            builtArea: p.area,
+            status: p.status,
+            featured: p.featured,
+            media: (p.images || []).map((url: string, i: number) => ({ id: i, url, mediaType: "image", sortOrder: i })),
+         }))
          if (f.sortBy === "price_low") rows = [...rows].sort((a, b) => a.price - b.price)
          if (f.sortBy === "price_high") rows = [...rows].sort((a, b) => b.price - a.price)
          setProperties(rows)
-         setTotal(data?.pagination?.total || 0)
-         setTotalPages(data?.pagination?.totalPages || 1)
+         const count = data?.count || 0
+         setTotal(count)
+         setTotalPages(Math.max(1, Math.ceil(count / ITEMS_PER_PAGE)))
       } catch { setProperties([]) }
       finally { setLoading(false) }
    }, [])

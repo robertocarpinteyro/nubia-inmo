@@ -6,7 +6,7 @@ import * as yup from "yup"
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useRouter } from "next/navigation"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
+import { createClient } from "@/lib/supabase/client"
 
 interface FormData {
    name: string
@@ -22,7 +22,7 @@ interface Props {
 
 const RegisterForm = ({ inputStyle, labelStyle }: Props) => {
    const router = useRouter()
-   const { login } = useAuth()
+   const supabase = createClient()
    const [loading, setLoading] = useState(false)
    const [showPassword, setShowPassword] = useState(false)
 
@@ -50,20 +50,38 @@ const RegisterForm = ({ inputStyle, labelStyle }: Props) => {
    const onSubmit = async (data: FormData) => {
       setLoading(true)
       try {
-         const res = await fetch(`${API_BASE_URL}/auth/signup`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
+         const { data: result, error } = await supabase.auth.signUp({
+            email: data.email,
+            password: data.password,
+            options: {
+               // El rol NO se envía aquí: lo fija el servidor (trigger) como
+               // "usuario". Solo guardamos el nombre.
+               data: { name: data.name },
+               emailRedirectTo:
+                  typeof window !== "undefined" ? `${window.location.origin}/` : undefined,
+            },
          })
-         const result = await res.json()
-         if (res.ok) {
-            login(result.token, result.user)
-            toast.success("¡Cuenta creada exitosamente!", { position: "top-center" })
-            reset()
-            closeModal()
-            setTimeout(() => router.push("/dashboard/dashboard-index"), 400)
+
+         if (error) {
+            const msg = /already registered|already exists/i.test(error.message)
+               ? "Ese correo ya está registrado. Inicia sesión."
+               : error.message
+            toast.error(msg)
+            return
+         }
+
+         reset()
+         closeModal()
+
+         // Si Auth exige confirmación de email, no hay sesión activa todavía.
+         if (!result.session) {
+            toast.success(
+               "¡Cuenta creada! Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.",
+               { position: "top-center", autoClose: 6000 }
+            )
          } else {
-            toast.error(result.error || "Error durante el registro")
+            toast.success("¡Cuenta creada exitosamente!", { position: "top-center" })
+            setTimeout(() => router.push("/dashboard/dashboard-index"), 400)
          }
       } catch {
          toast.error("Error de conexión. Intenta de nuevo.")
