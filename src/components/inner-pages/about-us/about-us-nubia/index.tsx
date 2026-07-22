@@ -20,93 +20,43 @@ const C = {
    border2:   "rgba(255,255,255,0.05)",
 }
 
-// ── Stats ────────────────────────────────────────────────────────────────────
+// ── Franja de presencia (sin métricas numéricas) ─────────────────────────────
 const StatsBar = () => {
-   const { t } = useLanguage()
-   const stats = [
-      { number: "15", suffix: "+", label: t("about.statYears") },
-      { number: "1,200", suffix: "+", label: t("about.statProperties") },
-      { number: "3,500", suffix: "+", label: t("about.statClients") },
-      { number: "8", suffix: "", label: t("about.statCities") },
-   ]
    return (
       <div
          style={{
             background: C.dark2,
             borderTop: `1px solid ${C.border}`,
             borderBottom: `1px solid ${C.border}`,
-            padding: "64px 0",
+            padding: "48px 0",
          }}
       >
          <div className="container">
             <div
                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "16px",
+                  flexWrap: "wrap",
+                  textAlign: "center",
                }}
-               className="nubia-stats-grid"
             >
-               {stats.map((s, i) => (
-                  <div
-                     key={i}
-                     style={{
-                        padding: "0 40px",
-                        borderRight: i < 3 ? `1px solid ${C.border}` : "none",
-                        ...(i === 0 ? { paddingLeft: 0 } : {}),
-                        ...(i === 3 ? { paddingRight: 0 } : {}),
-                     }}
-                  >
-                     <span
-                        style={{
-                           fontSize: "clamp(2.5rem, 5vw, 64px)",
-                           fontWeight: 900,
-                           lineHeight: 1,
-                           letterSpacing: "-0.04em",
-                           color: C.white,
-                           display: "block",
-                        }}
-                     >
-                        {s.number}
-                        <span style={{ color: C.gold }}>{s.suffix}</span>
-                     </span>
-                     <span
-                        style={{
-                           fontSize: "13px",
-                           color: "rgba(255,255,255,0.4)",
-                           letterSpacing: "0.1em",
-                           textTransform: "uppercase",
-                           marginTop: "10px",
-                           display: "block",
-                        }}
-                     >
-                        {s.label}
-                     </span>
-                  </div>
-               ))}
+               <span style={{ width: "24px", height: "1px", background: C.gold, display: "inline-block" }} />
+               <span
+                  style={{
+                     fontSize: "clamp(1.1rem, 2.5vw, 22px)",
+                     fontWeight: 700,
+                     letterSpacing: "0.02em",
+                     color: C.white,
+                  }}
+               >
+                  Con presencia en <span style={{ color: C.gold }}>Puebla</span> y{" "}
+                  <span style={{ color: C.gold }}>Ciudad de México</span>
+               </span>
+               <span style={{ width: "24px", height: "1px", background: C.gold, display: "inline-block" }} />
             </div>
          </div>
-
-         <style>{`
-            @media (max-width: 768px) {
-               .nubia-stats-grid {
-                  grid-template-columns: repeat(2, 1fr) !important;
-                  gap: 32px 0 !important;
-               }
-               .nubia-stats-grid > div {
-                  padding: 0 20px !important;
-                  border-right: none !important;
-                  border-bottom: 1px solid rgba(255,255,255,0.08);
-                  padding-bottom: 32px !important;
-               }
-               .nubia-stats-grid > div:nth-child(odd) {
-                  border-right: 1px solid rgba(255,255,255,0.08) !important;
-               }
-               .nubia-stats-grid > div:nth-last-child(-n+2) {
-                  border-bottom: none !important;
-               }
-            }
-         `}</style>
       </div>
    )
 }
