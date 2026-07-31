@@ -33,8 +33,6 @@ const footerLinks = {
    ],
    servicios: [
       { label: "Asesoría de Compra", href: "/service_01" },
-      { label: "Crédito Hipotecario", href: "/service_01" },
-      { label: "Inversión Inmobiliaria", href: "/service_01" },
       { label: "Valuación de Propiedades", href: "/service_01" },
       { label: "Gestión de Rentas", href: "/service_01" },
    ],
@@ -68,7 +66,7 @@ const NubiaFooter = () => {
                      }}
                   >
                      Conectamos personas con el hogar de sus sueños en México.
-                     15 años de experiencia. Más de 1,200 propiedades vendidas.
+                     Acompañamiento cercano y transparente en cada operación.
                   </p>
                   <div style={{ display: "flex", gap: "12px" }}>
                      {[

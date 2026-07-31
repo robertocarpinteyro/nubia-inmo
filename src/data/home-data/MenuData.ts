@@ -38,6 +38,22 @@ const menu_data: MenuItem[] = [
         link: "/listing_07",
         sub_menus: [],
     },
+    {
+        id: 3,
+        key: "about",
+        has_dropdown: false,
+        title: "Nosotros",
+        link: "/about_us_02",
+        sub_menus: [],
+    },
+    {
+        id: 4,
+        key: "contact",
+        has_dropdown: false,
+        title: "Contacto",
+        link: "/contact",
+        sub_menus: [],
+    },
 ];
 
 export default menu_data;

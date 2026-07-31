@@ -1,12 +1,12 @@
 "use client"
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "react-toastify"
 import * as yup from "yup"
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useAuth } from "@/context/AuthContext"
+import { createClient } from "@/lib/supabase/client"
 
 interface FormData {
    email: string
@@ -21,8 +21,15 @@ interface Props {
 const LoginForm = ({ inputStyle, labelStyle }: Props) => {
    const router = useRouter()
    const { signIn } = useAuth()
+   const supabase = createClient()
    const [loading, setLoading] = useState(false)
    const [showPassword, setShowPassword] = useState(false)
+
+   // Modo de recuperación de contraseña.
+   const [mode, setMode] = useState<"login" | "forgot">("login")
+   const [forgotEmail, setForgotEmail] = useState("")
+   const [forgotLoading, setForgotLoading] = useState(false)
+   const [forgotSent, setForgotSent] = useState(false)
 
    const schema = yup.object({
       email: yup.string().required("El email es obligatorio").email("Email inválido"),
@@ -62,6 +69,30 @@ const LoginForm = ({ inputStyle, labelStyle }: Props) => {
       }
    }
 
+   const onForgot = async () => {
+      const email = forgotEmail.trim()
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+         toast.error("Ingresa un email válido")
+         return
+      }
+      setForgotLoading(true)
+      try {
+         const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
+         })
+         if (error) {
+            toast.error(error.message)
+         } else {
+            // Mensaje neutro: no revela si el correo existe o no.
+            setForgotSent(true)
+         }
+      } catch {
+         toast.error("Error de conexión. Intenta de nuevo.")
+      } finally {
+         setForgotLoading(false)
+      }
+   }
+
    const fieldStyle = inputStyle || {}
    const lStyle = labelStyle || {}
 
@@ -69,6 +100,67 @@ const LoginForm = ({ inputStyle, labelStyle }: Props) => {
       fontSize: 11, color: "#F87171", marginTop: 4, display: "block",
    }
 
+   const primaryBtn = (label: string, busy: boolean): React.CSSProperties => ({
+      width: "100%",
+      background: busy ? "rgba(123,79,255,0.5)" : "#7B4FFF",
+      border: "none",
+      borderRadius: 2,
+      padding: "14px",
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: 700,
+      letterSpacing: "0.1em",
+      textTransform: "uppercase",
+      cursor: busy ? "not-allowed" : "pointer",
+      transition: "background 0.2s",
+      marginTop: 4,
+   })
+
+   // ── Vista: recuperar contraseña ──────────────────────────────────
+   if (mode === "forgot") {
+      return (
+         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {forgotSent ? (
+               <div style={{ textAlign: "center", padding: "8px 0" }}>
+                  <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.6, margin: 0 }}>
+                     Si el correo está registrado, te enviamos un enlace para restablecer tu
+                     contraseña. Revisa tu bandeja de entrada (y spam).
+                  </p>
+               </div>
+            ) : (
+               <>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", margin: 0, lineHeight: 1.6 }}>
+                     Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.
+                  </p>
+                  <div>
+                     <label style={lStyle}>Email</label>
+                     <input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={e => setForgotEmail(e.target.value)}
+                        placeholder="tucorreo@gmail.com"
+                        style={fieldStyle}
+                        onFocus={e => (e.currentTarget.style.borderColor = "rgba(123,79,255,0.5)")}
+                        onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
+                     />
+                  </div>
+                  <button type="button" onClick={onForgot} disabled={forgotLoading} style={primaryBtn("", forgotLoading)}>
+                     {forgotLoading ? "Enviando…" : "Enviar enlace"}
+                  </button>
+               </>
+            )}
+            <button
+               type="button"
+               onClick={() => { setMode("login"); setForgotSent(false) }}
+               style={{ background: "none", border: "none", color: "#9D7AFF", cursor: "pointer", fontSize: 13, padding: 0, marginTop: 4 }}
+            >
+               ← Volver a iniciar sesión
+            </button>
+         </div>
+      )
+   }
+
+   // ── Vista: iniciar sesión ────────────────────────────────────────
    return (
       <form onSubmit={handleSubmit(onSubmit)} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
          {/* Email */}
@@ -122,33 +214,17 @@ const LoginForm = ({ inputStyle, labelStyle }: Props) => {
                <input type="checkbox" style={{ accentColor: "#7B4FFF" }} />
                Mantener sesión
             </label>
-            <Link href="#" style={{ fontSize: 13, color: "#9D7AFF", textDecoration: "none" }}>
+            <button
+               type="button"
+               onClick={() => setMode("forgot")}
+               style={{ background: "none", border: "none", fontSize: 13, color: "#9D7AFF", cursor: "pointer", padding: 0 }}
+            >
                ¿Olvidaste tu contraseña?
-            </Link>
+            </button>
          </div>
 
          {/* Submit */}
-         <button
-            type="submit"
-            disabled={loading}
-            style={{
-               width: "100%",
-               background: loading ? "rgba(123,79,255,0.5)" : "#7B4FFF",
-               border: "none",
-               borderRadius: 2,
-               padding: "14px",
-               color: "#fff",
-               fontSize: 13,
-               fontWeight: 700,
-               letterSpacing: "0.1em",
-               textTransform: "uppercase",
-               cursor: loading ? "not-allowed" : "pointer",
-               transition: "background 0.2s",
-               marginTop: 4,
-            }}
-            onMouseEnter={e => { if (!loading) e.currentTarget.style.background = "#6B3FEF" }}
-            onMouseLeave={e => { if (!loading) e.currentTarget.style.background = "#7B4FFF" }}
-         >
+         <button type="submit" disabled={loading} style={primaryBtn("", loading)}>
             {loading ? "Ingresando..." : "Iniciar Sesión"}
          </button>
       </form>
