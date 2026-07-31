@@ -1,21 +1,17 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
 
 interface User { id: number; name: string; email: string; isActive: boolean; hasPurchased: boolean; createdAt: string }
 
 const UsersPage = () => {
-   const { getAuthHeaders } = useAuth()
    const [users, setUsers] = useState<User[]>([])
    const [loading, setLoading] = useState(true)
    const [filter, setFilter] = useState("")
 
    const load = (f = "") => {
       const qs = f ? `?filter=${f}` : ""
-      fetch(`${API_BASE_URL}/admin/users${qs}`, {
-         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-      })
+      fetch(`/api/admin/users${qs}`)
          .then((r) => r.json())
          .then((d) => setUsers(Array.isArray(d) ? d : []))
          .catch(() => setUsers([]))
@@ -25,10 +21,10 @@ const UsersPage = () => {
    useEffect(() => { load() }, [])
 
    const toggleActive = async (id: number, isActive: boolean) => {
-      const action = isActive ? "deactivate" : "reactivate"
-      await fetch(`${API_BASE_URL}/admin/users/${id}/${action}`, {
-         method: "PUT",
-         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      await fetch(`/api/admin/users/${id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ isActive: !isActive }),
       })
       load(filter)
    }

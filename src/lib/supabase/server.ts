@@ -106,3 +106,14 @@ export async function requireStaff(): Promise<SessionInfo | null> {
   if (session.role !== "admin" && session.role !== "vendedor") return null
   return session
 }
+
+/**
+ * Exige que el usuario autenticado sea admin.
+ * Devuelve la info de sesión si autoriza, o null si debe rechazarse (403).
+ */
+export async function requireAdmin(): Promise<SessionInfo | null> {
+  const session = await getSessionRole()
+  if (!session) return null
+  if (session.role !== "admin") return null
+  return session
+}

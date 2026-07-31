@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 
 interface Property {
    id: number
@@ -33,25 +32,24 @@ interface Sale {
 }
 
 const VendorDashboard = () => {
-   const { getAuthHeaders } = useAuth()
    const [myProps, setMyProps] = useState<Property[]>([])
    const [leads, setLeads] = useState<Lead[]>([])
    const [sales, setSales] = useState<Sale[]>([])
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
-      const h = { "Content-Type": "application/json", ...getAuthHeaders() }
-
+      // leads/ventas del vendedor se conectan en la fase de módulos secundarios;
+      // por ahora degradan a vacío sin llamar al Express retirado.
       Promise.all([
-         fetch(`${API_BASE_URL}/vendor/properties`, { headers: h }).then((r) => r.json()).catch(() => []),
-         fetch(`${API_BASE_URL}/leads/me`, { headers: h }).then((r) => r.json()).catch(() => []),
-         fetch(`${API_BASE_URL}/sales/vendor`, { headers: h }).then((r) => r.json()).catch(() => []),
+         fetch(`/api/vendor/properties`).then((r) => r.json()).catch(() => []),
+         fetch(`/api/leads/me`).then((r) => r.json()).catch(() => []),
+         fetch(`/api/sales/vendor`).then((r) => r.json()).catch(() => []),
       ]).then(([props, lds, sls]) => {
          setMyProps(Array.isArray(props) ? props : [])
          setLeads(Array.isArray(lds) ? lds.slice(0, 5) : [])
          setSales(Array.isArray(sls) ? sls.slice(0, 5) : [])
       }).finally(() => setLoading(false))
-   }, [getAuthHeaders])
+   }, [])
 
    const totalCommission = sales.reduce((sum, s) => sum + Number(s.commission || 0), 0)
 
