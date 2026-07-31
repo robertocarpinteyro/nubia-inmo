@@ -1,15 +1,15 @@
 "use client"
-import { useState, useEffect, useRef, useCallback, Fragment } from "react"
+import { useState, useRef, useCallback, Fragment } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Combobox, Transition } from "@headlessui/react"
 
-// ── Secuencia ────────────────────────────────────────────────────
-const TOTAL_FRAMES = 126
-const SUPABASE_STORAGE = "https://fafjujnwwcgijzvouwgb.supabase.co/storage/v1/object/public/hero-sequence"
-const FRAMES = Array.from({ length: TOTAL_FRAMES }, (_, i) =>
-   `${SUPABASE_STORAGE}/Create_time-lapse_day_202603301452${String(i).padStart(3, "0")}.jpg`
-)
+// ── Video de fondo del hero ──────────────────────────────────────
+// Servido por Vercel (carpeta public/), NO por Supabase → no consume
+// egress de Supabase. Reemplaza public/hero.mp4 con el video real
+// cuando esté listo; mientras, se muestra el poster de abajo.
+const HERO_VIDEO = "/hero.mp4"
+const HERO_POSTER = "/assets/images/media/img_01.jpg"
 
 interface Suggestion {
    id: string; title: string; city: string | null; state: string | null
@@ -30,12 +30,6 @@ const txLabel: Record<string, string> = { venta: "Venta", renta: "Renta" }
 
 const HeroBanner = () => {
    const router = useRouter()
-   const heroRef   = useRef<HTMLDivElement>(null)
-   const canvasRef = useRef<HTMLCanvasElement>(null)
-   const images    = useRef<(HTMLImageElement | null)[]>(Array(TOTAL_FRAMES).fill(null))
-   const loaded    = useRef<boolean[]>(Array(TOTAL_FRAMES).fill(false))
-   const rafRef    = useRef<number | null>(null)
-   const lastFrame = useRef<number>(-1)
 
    // ── Search ───────────────────────────────────────────────────────
    const [query, setQuery]               = useState("")
@@ -45,101 +39,6 @@ const HeroBanner = () => {
    const [propertyType, setPropertyType]   = useState("")
    const [transactionType, setTransactionType] = useState("")
    const debounceRef = useRef<NodeJS.Timeout | null>(null)
-
-   // ── Draw frame on canvas (object-fit cover) ──────────────────────
-   const drawFrame = useCallback((img: HTMLImageElement) => {
-      const c = canvasRef.current
-      if (!c || !img.naturalWidth) return
-      const ctx = c.getContext("2d")
-      if (!ctx) return
-      const scale = Math.max(c.width / img.naturalWidth, c.height / img.naturalHeight)
-      const x = (c.width  - img.naturalWidth  * scale) / 2
-      const y = (c.height - img.naturalHeight * scale) / 2
-      ctx.drawImage(img, x, y, img.naturalWidth * scale, img.naturalHeight * scale)
-   }, [])
-
-   // ── Set canvas = window size ─────────────────────────────────────
-   const fitCanvas = useCallback(() => {
-      const c = canvasRef.current
-      if (!c) return
-      const w = window.innerWidth
-      const h = window.innerHeight
-      if (c.width !== w || c.height !== h) {
-         c.width  = w
-         c.height = h
-         const f = Math.max(0, lastFrame.current)
-         const img = images.current[f]
-         if (img && loaded.current[f]) drawFrame(img)
-      }
-   }, [drawFrame])
-
-   // ── Preload all images ───────────────────────────────────────────
-   useEffect(() => {
-      fitCanvas()
-      FRAMES.forEach((src, i) => {
-         const img = new window.Image()
-         img.crossOrigin = "anonymous"
-         img.onload = () => {
-            loaded.current[i] = true
-            images.current[i] = img
-            if (i === 0) {
-               fitCanvas()
-               drawFrame(img)
-               lastFrame.current = 0
-            }
-         }
-         img.onerror = () => {
-            if (i === 0) console.error("[Hero] frame 0 failed to load:", src)
-         }
-         img.src = src
-         images.current[i] = img
-      })
-   }, [drawFrame, fitCanvas])
-
-   // ── Scroll handler ───────────────────────────────────────────────
-   useEffect(() => {
-      const tick = () => {
-         rafRef.current = null
-         const hero = heroRef.current
-         if (!hero) return
-
-         fitCanvas()
-
-         // progress: 0 when hero top hits viewport top → 1 when hero bottom hits viewport top
-         const { top, height } = hero.getBoundingClientRect()
-         const progress  = Math.max(0, Math.min(1, -top / height))
-         const frameIdx  = Math.round(progress * (TOTAL_FRAMES - 1))
-
-         if (frameIdx === lastFrame.current) return
-         lastFrame.current = frameIdx
-
-         const img = images.current[frameIdx]
-         if (img && loaded.current[frameIdx]) {
-            drawFrame(img)
-         } else {
-            // Find nearest loaded frame
-            for (let d = 1; d < TOTAL_FRAMES; d++) {
-               const lo = frameIdx - d, hi = frameIdx + d
-               if (lo >= 0 && loaded.current[lo] && images.current[lo]) { drawFrame(images.current[lo]!); break }
-               if (hi < TOTAL_FRAMES && loaded.current[hi] && images.current[hi]) { drawFrame(images.current[hi]!); break }
-            }
-         }
-      }
-
-      const onScroll = () => {
-         if (rafRef.current) return
-         rafRef.current = requestAnimationFrame(tick)
-      }
-
-      window.addEventListener("scroll", onScroll, { passive: true })
-      window.addEventListener("resize", onScroll, { passive: true })
-      tick() // run once on mount
-      return () => {
-         window.removeEventListener("scroll", onScroll)
-         window.removeEventListener("resize", onScroll)
-         if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      }
-   }, [drawFrame, fitCanvas])
 
    // ── Search logic ─────────────────────────────────────────────────
    const fetchSuggestions = useCallback(async (q: string) => {
@@ -183,13 +82,22 @@ const HeroBanner = () => {
    }
 
    return (
-      <div ref={heroRef} className="nubia-hero">
+      <div className="nubia-hero">
 
-         {/* ── Canvas background ──────────────────────────────────── */}
-         <canvas ref={canvasRef} style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            display: "block", zIndex: 0, background: "#182D40",
-         }} />
+         {/* ── Video de fondo (servido por Vercel, no por Supabase) ── */}
+         <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={HERO_POSTER}
+            style={{
+               position: "absolute", inset: 0, width: "100%", height: "100%",
+               objectFit: "cover", display: "block", zIndex: 0, background: "#182D40",
+            }}
+         >
+            <source src={HERO_VIDEO} type="video/mp4" />
+         </video>
 
          {/* ── Gradient overlay ───────────────────────────────────── */}
          <div style={{
