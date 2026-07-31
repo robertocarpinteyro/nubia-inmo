@@ -178,7 +178,7 @@ const HeaderTwo = ({ style_1, style_2, nubia }: any) => {
                               <>
                                  <li className="d-none d-md-flex align-items-center login-btn-one me-4 me-xxl-5">
                                     <i className="fa-regular fa-phone-volume"></i>
-                                    <Link href="tel:+528112345678" className="tran3s">+52 (81) 1234-5678</Link>
+                                    <Link href="tel:+528141558165" className="tran3s">+52 81 4155 8165</Link>
                                  </li>
                                  {isAuthenticated ? (
                                     <li className="d-flex align-items-center" style={{ gap: 6 }}>

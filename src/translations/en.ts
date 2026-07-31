@@ -109,7 +109,7 @@ const en = {
     infoEmail: "Email",
     infoEmailValue: "contacto@nubia.com",
     infoPhone: "Phone",
-    infoPhoneValue: "+52 (81) 1234-5678",
+    infoPhoneValue: "+52 81 4155 8165",
     infoHours: "Office Hours",
     infoHoursValue: "Mon–Fri 9:00 – 19:00",
     infoAddress: "Office",

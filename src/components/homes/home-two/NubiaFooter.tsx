@@ -142,10 +142,10 @@ const NubiaFooter = () => {
                   </h6>
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                      <a
-                        href="tel:+528112345678"
+                        href="tel:+528141558165"
                         style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", textDecoration: "none" }}
                      >
-                        +52 (81) 1234-5678
+                        +52 81 4155 8165
                      </a>
                      <a
                         href="mailto:hola@nubia.mx"

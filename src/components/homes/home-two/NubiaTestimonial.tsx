@@ -3,19 +3,19 @@ import { useState } from "react"
 
 const testimonials = [
    {
-      quote: "NUBIA transformó por completo nuestra búsqueda de hogar. En menos de 3 semanas encontramos la casa perfecta en Monterrey. Su asesoría fue clara, honesta y sin presiones.",
+      quote: "NUBIA transformó por completo nuestra búsqueda de hogar. En menos de 3 semanas encontramos la casa perfecta en Puebla. Su asesoría fue clara, honesta y sin presiones.",
       name: "María Fernanda Ríos",
       role: "Directora de Operaciones",
-      location: "Monterrey, NL",
+      location: "Puebla, Pue.",
       initials: "MF",
       rating: 5,
       tag: "Compra residencial",
    },
    {
-      quote: "El proceso fue impecable de principio a fin. El equipo de NUBIA conoce el mercado como nadie. Vendimos nuestra propiedad en San Pedro en tiempo récord y al mejor precio.",
+      quote: "El proceso fue impecable de principio a fin. El equipo de NUBIA conoce el mercado como nadie. Vendimos nuestra propiedad en Puebla en tiempo récord y al mejor precio.",
       name: "Carlos Mendoza",
       role: "Empresario",
-      location: "San Pedro Garza García, NL",
+      location: "Puebla, Pue.",
       initials: "CM",
       rating: 5,
       tag: "Venta de propiedad",
