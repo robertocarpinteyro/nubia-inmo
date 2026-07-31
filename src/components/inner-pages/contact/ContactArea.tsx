@@ -68,7 +68,7 @@ const ContactArea = () => {
 
    const inputStyle: React.CSSProperties = {
       width: "100%",
-      background: "#111111",
+      background: "#142537",
       border: "1px solid rgba(255,255,255,0.08)",
       borderRadius: 2,
       padding: "14px 16px",
@@ -80,7 +80,7 @@ const ContactArea = () => {
    }
 
    return (
-      <div style={{ background: "#0C0C0C", minHeight: "100vh" }}>
+      <div style={{ background: "#182D40", minHeight: "100vh" }}>
 
          {/* ── HERO ── */}
          <div style={{ paddingTop: 120, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -115,16 +115,16 @@ const ContactArea = () => {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 1, border: "1px solid rgba(255,255,255,0.06)", borderRadius: 4, overflow: "hidden" }}>
                {infoCards.map((card, i) => (
                   <div key={i} style={{
-                     background: "#111111",
+                     background: "#142537",
                      padding: "28px 24px",
                      borderRight: i < infoCards.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
                   }}>
                      <div style={{
                         width: 40, height: 40, borderRadius: 2,
-                        background: "rgba(123,79,255,0.1)",
-                        border: "1px solid rgba(123,79,255,0.2)",
+                        background: "rgba(217,167,106,0.1)",
+                        border: "1px solid rgba(217,167,106,0.2)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#9D7AFF", marginBottom: 16,
+                        color: "#E8C08E", marginBottom: 16,
                      }}>
                         {card.icon}
                      </div>
@@ -133,7 +133,7 @@ const ContactArea = () => {
                      </div>
                      {card.href ? (
                         <a href={card.href} style={{ fontSize: 14, color: "#F5F5F2", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
-                           onMouseEnter={e => (e.currentTarget.style.color = "#9D7AFF")}
+                           onMouseEnter={e => (e.currentTarget.style.color = "#E8C08E")}
                            onMouseLeave={e => (e.currentTarget.style.color = "#F5F5F2")}>
                            {card.value}
                         </a>
@@ -150,7 +150,7 @@ const ContactArea = () => {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, border: "1px solid rgba(255,255,255,0.06)", borderRadius: 4, overflow: "hidden" }}>
 
                {/* Form */}
-               <div style={{ background: "#111111", padding: "40px 36px" }}>
+               <div style={{ background: "#142537", padding: "40px 36px" }}>
                   <h2 style={{ fontFamily: "Gordita, sans-serif", fontWeight: 900, fontSize: 24, color: "#F5F5F2", letterSpacing: "-0.02em", marginBottom: 32 }}>
                      {t("contact.formTitle")}
                   </h2>
@@ -167,7 +167,7 @@ const ContactArea = () => {
                               placeholder={t("contact.formNamePlaceholder")}
                               value={form.name} onChange={handleChange}
                               style={inputStyle}
-                              onFocus={e => (e.currentTarget.style.borderColor = "rgba(123,79,255,0.5)")}
+                              onFocus={e => (e.currentTarget.style.borderColor = "rgba(217,167,106,0.5)")}
                               onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
                            />
                         </div>
@@ -180,7 +180,7 @@ const ContactArea = () => {
                               placeholder={t("contact.formEmailPlaceholder")}
                               value={form.email} onChange={handleChange}
                               style={inputStyle}
-                              onFocus={e => (e.currentTarget.style.borderColor = "rgba(123,79,255,0.5)")}
+                              onFocus={e => (e.currentTarget.style.borderColor = "rgba(217,167,106,0.5)")}
                               onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
                            />
                         </div>
@@ -197,7 +197,7 @@ const ContactArea = () => {
                               placeholder={t("contact.formPhonePlaceholder")}
                               value={form.phone} onChange={handleChange}
                               style={inputStyle}
-                              onFocus={e => (e.currentTarget.style.borderColor = "rgba(123,79,255,0.5)")}
+                              onFocus={e => (e.currentTarget.style.borderColor = "rgba(217,167,106,0.5)")}
                               onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
                            />
                         </div>
@@ -210,7 +210,7 @@ const ContactArea = () => {
                               placeholder={t("contact.formSubjectPlaceholder")}
                               value={form.subject} onChange={handleChange}
                               style={inputStyle}
-                              onFocus={e => (e.currentTarget.style.borderColor = "rgba(123,79,255,0.5)")}
+                              onFocus={e => (e.currentTarget.style.borderColor = "rgba(217,167,106,0.5)")}
                               onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
                            />
                         </div>
@@ -226,7 +226,7 @@ const ContactArea = () => {
                            placeholder={t("contact.formMessagePlaceholder")}
                            value={form.message} onChange={handleChange}
                            style={{ ...inputStyle, resize: "vertical", minHeight: 120 }}
-                           onFocus={e => (e.currentTarget.style.borderColor = "rgba(123,79,255,0.5)")}
+                           onFocus={e => (e.currentTarget.style.borderColor = "rgba(217,167,106,0.5)")}
                            onBlur={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
                         />
                      </div>
@@ -237,7 +237,7 @@ const ContactArea = () => {
                            type="submit"
                            disabled={status === "sending"}
                            style={{
-                              background: status === "sending" ? "rgba(123,79,255,0.5)" : "#7B4FFF",
+                              background: status === "sending" ? "rgba(217,167,106,0.5)" : "#D9A76A",
                               color: "#fff",
                               border: "none",
                               borderRadius: 2,
@@ -253,7 +253,7 @@ const ContactArea = () => {
                               gap: 8,
                            }}
                            onMouseEnter={e => { if (status !== "sending") e.currentTarget.style.background = "#6B3FEF" }}
-                           onMouseLeave={e => { if (status !== "sending") e.currentTarget.style.background = "#7B4FFF" }}
+                           onMouseLeave={e => { if (status !== "sending") e.currentTarget.style.background = "#D9A76A" }}
                         >
                            {status === "sending" ? (
                               <>{t("contact.formSending")}</>
@@ -276,7 +276,7 @@ const ContactArea = () => {
                </div>
 
                {/* Map */}
-               <div style={{ background: "#0C0C0C", position: "relative", minHeight: 500, borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
+               <div style={{ background: "#182D40", position: "relative", minHeight: 500, borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
                      <iframe
                         title={t("contact.mapTitle")}
@@ -295,7 +295,7 @@ const ContactArea = () => {
                      padding: "10px 16px",
                      display: "flex", alignItems: "center", gap: 8,
                   }}>
-                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9D7AFF" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8C08E" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>
                         {t("contact.infoAddressValue")}
                      </span>
