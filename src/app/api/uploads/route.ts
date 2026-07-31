@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createAdminSupabase, getSessionUser } from "@/lib/supabase/server"
+import { createAdminSupabase, requireStaff } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
 
@@ -25,8 +25,8 @@ const uuid = () =>
  * en la columna correspondiente vía PATCH /api/properties/[id].
  */
 export async function POST(req: NextRequest) {
-  const user = await getSessionUser()
-  if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  const session = await requireStaff()
+  if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 403 })
 
   let body: any
   try {

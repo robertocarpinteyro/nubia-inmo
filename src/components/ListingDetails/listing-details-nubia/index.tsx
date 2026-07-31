@@ -6,6 +6,7 @@ import Link from "next/link"
 import HeaderTwo from "@/layouts/headers/HeaderTwo"
 import NubiaFooter from "@/components/homes/home-two/NubiaFooter"
 import BeforeAfterSlider from "@/components/common/BeforeAfterSlider"
+import { useAuth } from "@/context/AuthContext"
 
 // ── Design tokens (espejo del SCSS del home) ──────────────────
 const C = {
@@ -102,6 +103,80 @@ const NubiaPropertyDetail = () => {
    const [loading, setLoading] = useState(true)
    const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", message: "" })
    const [sent, setSent] = useState(false)
+
+   // ── Favoritos y agendar visita ──────────────────────────────
+   const { isAuthenticated } = useAuth()
+   const [isFav, setIsFav] = useState(false)
+   const [favBusy, setFavBusy] = useState(false)
+   const [showVisit, setShowVisit] = useState(false)
+   const [visit, setVisit] = useState({ date: "", time: "10:00", notes: "" })
+   const [visitMsg, setVisitMsg] = useState("")
+   const [visitBusy, setVisitBusy] = useState(false)
+
+   const openLogin = () => {
+      const el = document.getElementById("loginModal")
+      const bs = (window as any).bootstrap
+      if (el && bs) bs.Modal.getOrCreateInstance(el).show()
+   }
+
+   // Estado inicial del corazón: ¿ya está en favoritos?
+   useEffect(() => {
+      if (!id || !isAuthenticated) { setIsFav(false); return }
+      fetch("/api/favorites")
+         .then(r => r.json())
+         .then(d => {
+            if (Array.isArray(d)) setIsFav(d.some((f: any) => String(f.propertyId) === String(id)))
+         })
+         .catch(() => {})
+   }, [id, isAuthenticated])
+
+   const toggleFav = async () => {
+      if (!isAuthenticated) { openLogin(); return }
+      if (!id || favBusy) return
+      setFavBusy(true)
+      try {
+         if (isFav) {
+            const r = await fetch(`/api/favorites/${id}`, { method: "DELETE" })
+            if (r.ok) setIsFav(false)
+         } else {
+            const r = await fetch("/api/favorites", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ propertyId: id }),
+            })
+            if (r.ok) setIsFav(true)
+         }
+      } finally {
+         setFavBusy(false)
+      }
+   }
+
+   const submitVisit = async () => {
+      if (!isAuthenticated) { openLogin(); return }
+      if (!id) return
+      if (!visit.date) { setVisitMsg("Selecciona una fecha"); return }
+      setVisitBusy(true)
+      setVisitMsg("")
+      try {
+         const r = await fetch("/api/visits", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ propertyId: id, scheduledDate: visit.date, scheduledTime: visit.time, notes: visit.notes }),
+         })
+         const d = await r.json()
+         if (r.ok) {
+            setVisitMsg("¡Visita solicitada! Te contactaremos para confirmar.")
+            setShowVisit(false)
+            setVisit({ date: "", time: "10:00", notes: "" })
+         } else {
+            setVisitMsg(d.error || "No se pudo agendar la visita")
+         }
+      } catch {
+         setVisitMsg("Error de conexión. Intenta de nuevo.")
+      } finally {
+         setVisitBusy(false)
+      }
+   }
 
    const images = property?.media
       ? property.media.filter(m => m.mediaType === "image").sort((a, b) => a.sortOrder - b.sortOrder).map(m => m.url)
@@ -512,14 +587,51 @@ const NubiaPropertyDetail = () => {
                            )}
 
                            <div style={{ display: "flex", gap: "10px" }}>
-                              <button className="btn-nubia-primary" style={{ flex: 1, justifyContent: "center", fontSize: "14px" }}>
+                              <button
+                                 className="btn-nubia-primary"
+                                 onClick={() => (isAuthenticated ? setShowVisit(v => !v) : openLogin())}
+                                 style={{ flex: 1, justifyContent: "center", fontSize: "14px" }}
+                              >
                                  Agendar visita
                               </button>
-                              <button className="btn-nubia-ghost" style={{ padding: "0 16px", fontSize: "18px" }}
-                                 title="Guardar">
-                                 <i className="bi bi-heart"></i>
+                              <button
+                                 className="btn-nubia-ghost"
+                                 onClick={toggleFav}
+                                 disabled={favBusy}
+                                 style={{ padding: "0 16px", fontSize: "18px" }}
+                                 title={isFav ? "Quitar de guardados" : "Guardar"}
+                              >
+                                 <i className={isFav ? "bi bi-heart-fill" : "bi bi-heart"} style={isFav ? { color: C.gold } : undefined}></i>
                               </button>
                            </div>
+
+                           {showVisit && (
+                              <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                                 <input
+                                    type="date"
+                                    value={visit.date}
+                                    onChange={e => setVisit(v => ({ ...v, date: e.target.value }))}
+                                    style={{ background: C.dark2, border: `1px solid ${C.border}`, color: C.white, padding: "10px 12px", borderRadius: "2px", fontSize: "13px", width: "100%" }}
+                                 />
+                                 <input
+                                    type="time"
+                                    value={visit.time}
+                                    onChange={e => setVisit(v => ({ ...v, time: e.target.value }))}
+                                    style={{ background: C.dark2, border: `1px solid ${C.border}`, color: C.white, padding: "10px 12px", borderRadius: "2px", fontSize: "13px", width: "100%" }}
+                                 />
+                                 <textarea
+                                    placeholder="Notas (opcional)"
+                                    value={visit.notes}
+                                    onChange={e => setVisit(v => ({ ...v, notes: e.target.value }))}
+                                    rows={2}
+                                    style={{ background: C.dark2, border: `1px solid ${C.border}`, color: C.white, padding: "10px 12px", borderRadius: "2px", fontSize: "13px", width: "100%", resize: "vertical" }}
+                                 />
+                                 <button className="btn-nubia-primary" onClick={submitVisit} disabled={visitBusy} style={{ justifyContent: "center", fontSize: "14px" }}>
+                                    {visitBusy ? "Enviando…" : "Confirmar visita"}
+                                 </button>
+                              </div>
+                           )}
+                           {visitMsg && <div style={{ marginTop: "10px", fontSize: "13px", color: C.gold }}>{visitMsg}</div>}
                         </div>
 
                         {/* Formulario de contacto */}
