@@ -113,7 +113,7 @@ const en = {
     infoHours: "Office Hours",
     infoHoursValue: "Mon–Fri 9:00 – 19:00",
     infoAddress: "Office",
-    infoAddressValue: "Av. 5 de Mayo 1810, San Pedro Cholula, Puebla",
+    infoAddressValue: "Calle Valencia 131, Segunda Sección de La Gabriel Pastor, Puebla, Pue. 72425",
     formTitle: "Send us a message",
     formName: "Full name",
     formNamePlaceholder: "Your name",

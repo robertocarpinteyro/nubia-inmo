@@ -280,7 +280,7 @@ const ContactArea = () => {
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
                      <iframe
                         title={t("contact.mapTitle")}
-                        src="https://maps.google.com/maps?q=San+Pedro+Garza+Garcia,+Nuevo+Leon,+Mexico&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                        src="https://maps.google.com/maps?q=Calle+Valencia+131,+Gabriel+Pastor,+Puebla,+72425&t=&z=15&ie=UTF8&iwloc=&output=embed"
                         style={{ width: "100%", height: "100%", border: "none", filter: "invert(90%) hue-rotate(180deg) brightness(0.85)" }}
                         loading="lazy"
                      />

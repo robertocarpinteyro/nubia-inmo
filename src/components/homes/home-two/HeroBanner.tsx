@@ -9,7 +9,7 @@ import { Combobox, Transition } from "@headlessui/react"
 // egress de Supabase. Reemplaza public/hero.mp4 con el video real
 // cuando esté listo; mientras, se muestra el poster de abajo.
 const HERO_VIDEO = "/hero.mp4"
-const HERO_POSTER = "/assets/images/media/img_01.jpg"
+const HERO_POSTER = "/assets/images/listing/img_10.jpg"
 
 interface Suggestion {
    id: string; title: string; city: string | null; state: string | null
