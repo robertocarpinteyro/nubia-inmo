@@ -1,11 +1,11 @@
 "use client"
 import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
-import FavouriteBody from "./FavouriteBody"
+import FavouriteArea from "./FavouriteArea"
 
 const DashboardFavourite = () => {
    return (
       <DashboardLayout title="Favoritos">
-         <FavouriteBody />
+         <FavouriteArea />
       </DashboardLayout>
    )
 }

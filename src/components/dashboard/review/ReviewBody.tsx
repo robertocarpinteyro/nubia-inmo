@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 import Link from "next/link"
 
 interface Review {
@@ -13,19 +12,16 @@ interface Review {
 }
 
 const ReviewBody = () => {
-   const { getAuthHeaders } = useAuth()
    const [reviews, setReviews] = useState<Review[]>([])
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
-      fetch(`${API_BASE_URL}/reviews/me`, {
-         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-      })
+      fetch(`/api/reviews/me`)
          .then((r) => r.json())
          .then((d) => setReviews(Array.isArray(d) ? d : []))
          .catch(() => setReviews([]))
          .finally(() => setLoading(false))
-   }, [getAuthHeaders])
+   }, [])
 
    return (
       <div className="nubia-dash-card" style={{ marginTop: 24, minHeight: 400 }}>

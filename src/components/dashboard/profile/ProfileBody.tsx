@@ -1,113 +1,82 @@
 "use client"
-import { useState, useEffect } from "react";
-import DashboardHeaderTwo from "@/layouts/headers/dashboard/DashboardHeaderTwo";
-import Image from "next/image";
-import UserAvatarSetting from "./UserAvatarSetting";
-import AddressAndLocation from "./AddressAndLocation";
-import Link from "next/link";
-import SocialMediaLink from "./SocialMediaLink";
-
-import avatar_1 from "@/assets/images/dashboard/avatar_02.jpg";
+import { useState, useEffect } from "react"
 
 const ProfileBody = () => {
-   const [name, setName] = useState("");
-   const [email, setEmail] = useState("");
-   const [firstName, setFirstName] = useState("");
-   const [lastName, setLastName] = useState("");
-   const [phoneNumber, setPhoneNumber] = useState("");
-   const [about, setAbout] = useState("");
-   const token = localStorage.getItem("token"); 
+   const [form, setForm] = useState({ name: "", email: "", phoneNumber: "", about: "" })
+   const [loading, setLoading] = useState(true)
+   const [saving, setSaving] = useState(false)
+   const [msg, setMsg] = useState("")
 
    useEffect(() => {
-      const fetchUserData = async () => {
-         try {
-            const res = await fetch("http://localhost:5001/api/profile", {
-               headers: {
-                  Authorization: `Bearer ${token}`,
-               },
-            });
+      fetch("/api/me")
+         .then((r) => r.json())
+         .then((d) => setForm({
+            name: d.name || "",
+            email: d.email || "",
+            phoneNumber: d.phoneNumber || "",
+            about: d.about || "",
+         }))
+         .catch(() => {})
+         .finally(() => setLoading(false))
+   }, [])
 
-            if (!res.ok) {
-               throw new Error("Failed to fetch user data");
-            }
-
-            const userData = await res.json();
-            setName(userData.name);
-            setEmail(userData.email);
-            setFirstName(userData.firstName || "");
-            setLastName(userData.lastName || "");
-            setPhoneNumber(userData.phoneNumber || "");
-            setAbout(userData.about || "");
-         } catch (error) {
-            console.error("Error fetching user data:", error);
-         }
-      };
-
-      fetchUserData();
-   }, []);
-
-   const handleSave = async () => {
+   const handleSave = async (e: React.FormEvent) => {
+      e.preventDefault()
+      setSaving(true)
+      setMsg("")
       try {
-         const res = await fetch("http://localhost:5001/api/profile", {
-            method: "PUT",
-            headers: {
-               "Content-Type": "application/json",
-               Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-               firstName,
-               lastName,
-               phoneNumber,
-               about,
-            }),
-         });
-
-         if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || "Failed to update profile");
-         }
-
-         alert("Profile updated successfully!");
-      } catch (error) {
-         console.error("Error updating profile:", error);
+         const res = await fetch("/api/me", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: form.name, phoneNumber: form.phoneNumber, about: form.about }),
+         })
+         setMsg(res.ok ? "Perfil actualizado" : "No se pudo guardar")
+      } catch {
+         setMsg("Error de conexión")
+      } finally {
+         setSaving(false)
+         setTimeout(() => setMsg(""), 3000)
       }
-   };
+   }
+
+   if (loading) return <div className="nubia-loading"><div className="spinner"></div></div>
 
    return (
-      <div className="dashboard-body">
-         <div className="position-relative">
-            <DashboardHeaderTwo title="Profile" />
-            <h2 className="main-title d-block d-lg-none">Profile</h2>
-
-            <div className="bg-white card-box border-20">
-               <div className="user-avatar-setting d-flex align-items-center mb-30">
-                  <Image src={avatar_1} alt="" className="lazy-img user-img" />
-                  <div className="upload-btn position-relative tran3s ms-4 me-3">
-                     Upload new photo
-                     <input type="file" id="uploadImg" name="uploadImg" placeholder="" />
-                  </div>
-                  <button className="delete-btn tran3s">Delete</button>
+      <div className="nubia-dash-card" style={{ marginTop: 24 }}>
+         <form onSubmit={handleSave} className="row g-3">
+            <div className="col-md-6">
+               <div className="nubia-form-group">
+                  <label>Nombre completo</label>
+                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Tu nombre" />
                </div>
-
-               <UserAvatarSetting
-                  name={name}
-                  email={email}
-                  firstName={firstName} setFirstName={setFirstName}
-                  lastName={lastName} setLastName={setLastName}
-                  phoneNumber={phoneNumber} setPhoneNumber={setPhoneNumber}
-                  about={about} setAbout={setAbout}
-               />
             </div>
-            <SocialMediaLink />
-            <AddressAndLocation />
-
-            <div className="button-group d-inline-flex align-items-center mt-30">
-               <button className="dash-btn-two tran3s me-3" onClick={handleSave}>Save</button>
-               <Link href="#" className="dash-cancel-btn tran3s">Cancel</Link>
+            <div className="col-md-6">
+               <div className="nubia-form-group">
+                  <label>Email <span style={{ opacity: 0.55, fontSize: 11 }}>(no editable)</span></label>
+                  <input value={form.email} disabled />
+               </div>
             </div>
-         </div>
+            <div className="col-md-6">
+               <div className="nubia-form-group">
+                  <label>Teléfono / WhatsApp</label>
+                  <input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} placeholder="+52 ..." />
+               </div>
+            </div>
+            <div className="col-12">
+               <div className="nubia-form-group">
+                  <label>Acerca de mí</label>
+                  <textarea rows={4} value={form.about} onChange={(e) => setForm({ ...form, about: e.target.value })} placeholder="Cuéntanos un poco sobre ti…" />
+               </div>
+            </div>
+            <div className="col-12 d-flex align-items-center justify-content-end gap-3">
+               {msg && <span style={{ fontSize: 13, color: msg.includes("actualiz") ? "#10b981" : "#F87171" }}>{msg}</span>}
+               <button type="submit" className="btn-nubia-sm primary" disabled={saving}>
+                  {saving ? "Guardando…" : "Guardar cambios"}
+               </button>
+            </div>
+         </form>
       </div>
-   );
-};
+   )
+}
 
-export default ProfileBody;
+export default ProfileBody

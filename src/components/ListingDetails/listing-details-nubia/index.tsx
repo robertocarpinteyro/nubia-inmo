@@ -193,6 +193,7 @@ const NubiaPropertyDetail = () => {
                id: data.id ?? id,
                title: data.title,
                price: num(data.price) ?? 0,
+               discountPrice: num(data.discountPrice),
                currency: data.currency,
                address: data.address,
                city: data.city,
@@ -311,8 +312,9 @@ const NubiaPropertyDetail = () => {
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(105deg, rgba(24,45,64,0.82) 0%, rgba(24,45,64,0.55) 55%, rgba(24,45,64,0.2) 100%)" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(24,45,64,0.95) 0%, rgba(24,45,64,0.3) 50%, transparent 100%)" }} />
 
-            {/* Header */}
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 20 }}>
+            {/* Header — sin z-index propio para no atrapar el modal de login
+                (position:fixed) por debajo del backdrop del hero. */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
                <HeaderTwo style_1={false} style_2={false} nubia={true} />
             </div>
 
