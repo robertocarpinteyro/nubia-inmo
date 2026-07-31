@@ -29,6 +29,19 @@ const UsersPage = () => {
       load(filter)
    }
 
+   const changeRole = async (id: number, role: string) => {
+      const res = await fetch(`/api/admin/users/${id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ role }),
+      })
+      if (!res.ok) {
+         const d = await res.json().catch(() => ({}))
+         alert(d.error || "No se pudo cambiar el rol")
+      }
+      load(filter)
+   }
+
    const applyFilter = (f: string) => { setFilter(f); load(f) }
 
    return (
@@ -55,7 +68,7 @@ const UsersPage = () => {
             ) : (
                <table className="nubia-table">
                   <thead>
-                     <tr><th>Usuario</th><th>Estado</th><th>Comprador</th><th>Registro</th><th>Acciones</th></tr>
+                     <tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Comprador</th><th>Registro</th><th>Acciones</th></tr>
                   </thead>
                   <tbody>
                      {users.map((u) => (
@@ -63,6 +76,17 @@ const UsersPage = () => {
                            <td>
                               <div className="cell-bold">{u.name}</div>
                               <div className="cell-muted">{u.email}</div>
+                           </td>
+                           <td>
+                              <select
+                                 defaultValue="usuario"
+                                 onChange={(e) => changeRole(u.id, e.target.value)}
+                                 style={{ padding: "4px 8px", borderRadius: 4, border: "1px solid rgba(0,0,0,0.15)", fontSize: 13 }}
+                              >
+                                 <option value="usuario">Usuario</option>
+                                 <option value="vendedor">Vendedor</option>
+                                 <option value="admin">Admin</option>
+                              </select>
                            </td>
                            <td><span className={`nubia-badge ${u.isActive ? "green" : "red"}`}>{u.isActive ? "Activo" : "Inactivo"}</span></td>
                            <td><span className={`nubia-badge ${u.hasPurchased ? "purple" : "gray"}`}>{u.hasPurchased ? "Sí" : "No"}</span></td>

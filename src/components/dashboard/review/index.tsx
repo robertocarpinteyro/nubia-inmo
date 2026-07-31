@@ -1,13 +1,13 @@
-import DashboardHeaderOne from "@/layouts/headers/dashboard/DashboardHeaderOne"
+"use client"
+import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
 import ReviewBody from "./ReviewBody"
 
 const DashboardReview = () => {
-  return (
-    <>
-         <DashboardHeaderOne />
+   return (
+      <DashboardLayout title="Mis Reseñas">
          <ReviewBody />
-    </>
-  )
+      </DashboardLayout>
+   )
 }
 
 export default DashboardReview

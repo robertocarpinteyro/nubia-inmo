@@ -78,6 +78,7 @@ export interface PropertyFormPayload {
   propertyType: string // es
   transactionType: string // es (venta | renta)
   price: number | string
+  discountPrice?: number | string
   currency?: string
   address?: string
   city?: string
@@ -135,6 +136,7 @@ export function formToDbColumns(form: PropertyFormPayload, isUpdate = false) {
     transactionType: form.transactionType === "renta" ? "renta" : "venta",
     // price es NOT NULL en la Base A; 0 como red de seguridad (la ruta valida).
     price: num(form.price) ?? 0,
+    discountPrice: num(form.discountPrice),
     currency: form.currency || "MXN",
     address: form.address ?? null,
     city: form.city ?? null,
@@ -177,6 +179,7 @@ export function dbRowToForm(row: PropertyRow) {
     propertyType: row.propertyType ?? "casa",
     transactionType: row.transactionType ?? "venta",
     price: row.price != null ? String(row.price) : "",
+    discountPrice: row.discountPrice != null ? String(row.discountPrice) : "",
     currency: row.currency ?? "MXN",
     address: row.address ?? "",
     city: row.city ?? "",
@@ -211,6 +214,7 @@ export interface PublicProperty {
   type: string // es
   operation: string // es
   price: number | null
+  discountPrice: number | null
   currency: string
   city: string | null
   state: string | null
@@ -242,6 +246,7 @@ export function rowToPublic(row: PropertyRow): PublicProperty {
     type: row.propertyType,
     operation: row.transactionType ?? "",
     price: num(row.price),
+    discountPrice: num(row.discountPrice),
     currency: row.currency ?? "MXN",
     city: row.city,
     state: row.state,

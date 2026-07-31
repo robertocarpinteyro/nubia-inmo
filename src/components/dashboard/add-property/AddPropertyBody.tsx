@@ -18,6 +18,7 @@ interface FormState {
    propertyType: string
    transactionType: string
    price: string
+   discountPrice: string
    currency: string
    address: string
    city: string
@@ -43,7 +44,7 @@ interface FormState {
 
 const emptyForm: FormState = {
    title: "", description: "", propertyType: "casa", transactionType: "venta",
-   price: "", currency: "MXN", address: "", city: "", state: "", zipCode: "",
+   price: "", discountPrice: "", currency: "MXN", address: "", city: "", state: "", zipCode: "",
    development: "", bedrooms: "", bathrooms: "", parkingSpaces: "", totalArea: "",
    builtArea: "", amenities: "", images: [], floorPlans: [], videoUrl: "",
    virtualTour: "", technicalSheetUrl: "", googleMapsUrl: "", featured: false,
@@ -68,6 +69,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   ...prev,
                   ...data,
                   price: data.price != null ? String(data.price) : "",
+                  discountPrice: data.discountPrice != null ? String(data.discountPrice) : "",
                   bedrooms: data.bedrooms != null ? String(data.bedrooms) : "",
                   parkingSpaces: data.parkingSpaces != null ? String(data.parkingSpaces) : "",
                   totalArea: data.totalArea != null ? String(data.totalArea) : "",
@@ -137,6 +139,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
             propertyType: form.propertyType,
             transactionType: form.transactionType,
             price: form.price,
+            discountPrice: form.discountPrice,
             currency: form.currency,
             address: form.address,
             city: form.city,
@@ -255,6 +258,12 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                         <option value="MXN">MXN</option>
                         <option value="USD">USD</option>
                      </select>
+                  </div>
+               </div>
+               <div className="col-md-3">
+                  <div className="nubia-form-group">
+                     <label>Precio con descuento <span style={{ opacity: 0.55, fontSize: 11 }}>(opcional)</span></label>
+                     <input type="number" name="discountPrice" value={form.discountPrice} onChange={handleChange} min="0" placeholder="0.00" />
                   </div>
                </div>
                <div className="col-md-3">
