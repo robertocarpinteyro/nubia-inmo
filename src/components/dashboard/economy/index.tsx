@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
 import { Bar } from "react-chartjs-2"
 import "chart.js/auto"
@@ -15,14 +14,11 @@ interface EconomyData {
 }
 
 const EconomyPage = () => {
-   const { getAuthHeaders } = useAuth()
    const [data, setData] = useState<EconomyData | null>(null)
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
-      fetch(`${API_BASE_URL}/admin/economy`, {
-         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-      })
+      fetch(`/api/admin/economy`)
          .then((r) => r.json())
          .then(setData)
          .catch(() => null)

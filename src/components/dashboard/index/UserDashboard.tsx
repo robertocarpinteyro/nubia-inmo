@@ -1,7 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 
 interface Favorite { id: number; property?: { title: string; price: number } }
 interface Visit {
@@ -19,25 +18,22 @@ interface Review {
 }
 
 const UserDashboard = () => {
-   const { getAuthHeaders } = useAuth()
    const [favs, setFavs] = useState<Favorite[]>([])
    const [visits, setVisits] = useState<Visit[]>([])
    const [reviews, setReviews] = useState<Review[]>([])
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
-      const h = { "Content-Type": "application/json", ...getAuthHeaders() }
-
       Promise.all([
-         fetch(`${API_BASE_URL}/favorites`, { headers: h }).then((r) => r.json()).catch(() => []),
-         fetch(`${API_BASE_URL}/visits/me`, { headers: h }).then((r) => r.json()).catch(() => []),
-         fetch(`${API_BASE_URL}/reviews/me`, { headers: h }).then((r) => r.json()).catch(() => []),
+         fetch(`/api/favorites`).then((r) => r.json()).catch(() => []),
+         fetch(`/api/visits/me`).then((r) => r.json()).catch(() => []),
+         fetch(`/api/reviews/me`).then((r) => r.json()).catch(() => []),
       ]).then(([f, v, r]) => {
          setFavs(Array.isArray(f) ? f : [])
          setVisits(Array.isArray(v) ? v : [])
          setReviews(Array.isArray(r) ? r : [])
       }).finally(() => setLoading(false))
-   }, [getAuthHeaders])
+   }, [])
 
    if (loading) return <div className="nubia-loading"><div className="spinner"></div></div>
 

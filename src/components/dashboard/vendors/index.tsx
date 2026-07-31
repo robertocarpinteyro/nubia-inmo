@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 import DashboardLayout from "@/components/dashboard/common/DashboardLayout"
 
 interface Vendor {
@@ -15,7 +14,6 @@ interface Vendor {
 interface NewVendorForm { name: string; email: string; password: string }
 
 const VendorsPage = () => {
-   const { getAuthHeaders } = useAuth()
    const [vendors, setVendors] = useState<Vendor[]>([])
    const [loading, setLoading] = useState(true)
    const [showModal, setShowModal] = useState(false)
@@ -24,8 +22,7 @@ const VendorsPage = () => {
    const [error, setError] = useState("")
 
    const load = () => {
-      const h = { "Content-Type": "application/json", ...getAuthHeaders() }
-      fetch(`${API_BASE_URL}/admin/vendors`, { headers: h })
+      fetch(`/api/admin/vendors`)
          .then((r) => r.json())
          .then((d) => setVendors(Array.isArray(d) ? d : []))
          .catch(() => setVendors([]))
@@ -39,13 +36,13 @@ const VendorsPage = () => {
       setSaving(true)
       setError("")
       try {
-         const res = await fetch(`${API_BASE_URL}/admin/vendors`, {
+         const res = await fetch(`/api/admin/vendors`, {
             method: "POST",
-            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(form),
          })
          const data = await res.json()
-         if (!res.ok) throw new Error(data.message || "Error al crear vendedor")
+         if (!res.ok) throw new Error(data.error || "Error al crear vendedor")
          setShowModal(false)
          setForm({ name: "", email: "", password: "" })
          load()
@@ -57,9 +54,11 @@ const VendorsPage = () => {
    }
 
    const toggleActive = async (id: number, isActive: boolean) => {
-      const h = { "Content-Type": "application/json", ...getAuthHeaders() }
-      const action = isActive ? "deactivate" : "reactivate"
-      await fetch(`${API_BASE_URL}/admin/users/${id}/${action}`, { method: "PUT", headers: h })
+      await fetch(`/api/admin/users/${id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ isActive: !isActive }),
+      })
       load()
    }
 

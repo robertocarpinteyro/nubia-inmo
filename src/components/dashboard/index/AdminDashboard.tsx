@@ -1,7 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useAuth, API_BASE_URL } from "@/context/AuthContext"
 import { Bar } from "react-chartjs-2"
 import "chart.js/auto"
 
@@ -31,25 +30,22 @@ interface User {
 }
 
 const AdminDashboard = () => {
-   const { getAuthHeaders } = useAuth()
    const [economy, setEconomy] = useState<EconomyData | null>(null)
    const [vendors, setVendors] = useState<Vendor[]>([])
    const [users, setUsers] = useState<User[]>([])
    const [loading, setLoading] = useState(true)
 
    useEffect(() => {
-      const h = { "Content-Type": "application/json", ...getAuthHeaders() }
-
       Promise.all([
-         fetch(`${API_BASE_URL}/admin/economy`, { headers: h }).then((r) => r.json()).catch(() => null),
-         fetch(`${API_BASE_URL}/admin/vendors`, { headers: h }).then((r) => r.json()).catch(() => []),
-         fetch(`${API_BASE_URL}/admin/users`, { headers: h }).then((r) => r.json()).catch(() => []),
+         fetch(`/api/admin/economy`).then((r) => r.json()).catch(() => null),
+         fetch(`/api/admin/vendors`).then((r) => r.json()).catch(() => []),
+         fetch(`/api/admin/users`).then((r) => r.json()).catch(() => []),
       ]).then(([eco, vend, usr]) => {
          setEconomy(eco)
          setVendors(Array.isArray(vend) ? vend.slice(0, 5) : [])
          setUsers(Array.isArray(usr) ? usr.slice(0, 5) : [])
       }).finally(() => setLoading(false))
-   }, [getAuthHeaders])
+   }, [])
 
    const chartData = {
       labels: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
