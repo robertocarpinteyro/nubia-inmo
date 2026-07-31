@@ -71,7 +71,7 @@ const NubiaCtaBanner = () => {
                      <Link href="/contact" style={{ color: "#E8C08E", textDecoration: "underline" }}>
                         escribirnos directamente
                      </Link>
-                     {" "}o llamarnos al <strong style={{ color: "rgba(255,255,255,0.5)" }}>+52 (81) 1234-5678</strong>
+                     {" "}o llamarnos al <strong style={{ color: "rgba(255,255,255,0.5)" }}>+52 81 4155 8165</strong>
                   </p>
                </div>
             </div>

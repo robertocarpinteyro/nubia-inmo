@@ -2,7 +2,7 @@ import Contact from "@/components/inner-pages/contact";
 import Wrapper from "@/layouts/Wrapper";
 
 export const metadata = {
-   title: "Contact HOZN - Real Estate React Next js",
+   title: "Contacto — NUBIA Inmobiliaria",
 };
 const index = () => {
    return (

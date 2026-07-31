@@ -16,25 +16,18 @@ const FooterLogo = () => {
    )
 }
 
+// Solo enlaces a páginas funcionales del sitio.
 const footerLinks = {
    propiedades: [
-      { label: "Casas en Venta", href: "/listing_07" },
+      { label: "Ver Propiedades", href: "/listing_07" },
+      { label: "Casas", href: "/listing_07" },
       { label: "Departamentos", href: "/listing_07" },
       { label: "Terrenos", href: "/listing_07" },
-      { label: "Locales Comerciales", href: "/listing_07" },
-      { label: "Propiedades en Renta", href: "/listing_07" },
    ],
    empresa: [
+      { label: "Inicio", href: "/" },
       { label: "Quiénes Somos", href: "/about_us_02" },
-      { label: "Nuestro Equipo", href: "/agent" },
-      { label: "Testimonios", href: "/" },
-      { label: "Noticias", href: "/blog_01" },
-      { label: "Trabaja con Nosotros", href: "/contact" },
-   ],
-   servicios: [
-      { label: "Asesoría de Compra", href: "/service_01" },
-      { label: "Valuación de Propiedades", href: "/service_01" },
-      { label: "Gestión de Rentas", href: "/service_01" },
+      { label: "Contacto", href: "/contact" },
    ],
 }
 
@@ -149,10 +142,10 @@ const NubiaFooter = () => {
                   </h6>
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                      <a
-                        href="tel:+528112345678"
+                        href="tel:+528141558165"
                         style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", textDecoration: "none" }}
                      >
-                        +52 (81) 1234-5678
+                        +52 81 4155 8165
                      </a>
                      <a
                         href="mailto:hola@nubia.mx"
@@ -161,8 +154,9 @@ const NubiaFooter = () => {
                         hola@nubia.mx
                      </a>
                      <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
-                        Av. 5 de Mayo 1810,<br />
-                        San Pedro Cholula, Puebla
+                        Calle Valencia 131,<br />
+                        2ª Sección de La Gabriel Pastor,<br />
+                        Puebla, Pue. 72425
                      </p>
                   </div>
                </div>
@@ -183,21 +177,6 @@ const NubiaFooter = () => {
                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.2)", margin: 0 }}>
                   © {new Date().getFullYear()} NUBIA Inmobiliaria · Todos los derechos reservados
                </p>
-               <div style={{ display: "flex", gap: "24px" }}>
-                  {[
-                     { label: "Privacidad", href: "#" },
-                     { label: "Términos", href: "#" },
-                     { label: "Cookies", href: "#" },
-                  ].map((l) => (
-                     <Link
-                        key={l.label}
-                        href={l.href}
-                        style={{ fontSize: "13px", color: "rgba(255,255,255,0.2)", textDecoration: "none" }}
-                     >
-                        {l.label}
-                     </Link>
-                  ))}
-               </div>
             </div>
          </div>
       </footer>

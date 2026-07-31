@@ -10,9 +10,11 @@ export const metadata = {
 const AboutNubiaPage = () => {
    return (
       <Wrapper>
-         <HeaderTwo style_1={true} style_2={false} />
-         <AboutUsNubia />
-         <NubiaFooter />
+         <div className="nubia-home">
+            <HeaderTwo style_1={false} style_2={false} nubia={true} />
+            <AboutUsNubia />
+            <NubiaFooter />
+         </div>
       </Wrapper>
    )
 }
