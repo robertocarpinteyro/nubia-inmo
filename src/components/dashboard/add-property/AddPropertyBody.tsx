@@ -100,54 +100,64 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
       const bucketKind = kind === "doc" ? "docs" : "images"
       const compressible = kind !== "doc" // PDFs (docs) no se comprimen
       const urls: string[] = []
+      const failed: string[] = []
       let savedOriginal = 0
       let savedFinal = 0
       try {
          const list = Array.from(files)
          for (let i = 0; i < list.length; i++) {
             const file = list[i]
-            setUploadNote(`Procesando ${i + 1}/${list.length}: ${file.name}…`)
+            setUploadNote(`Subiendo ${i + 1}/${list.length}: ${file.name}…`)
 
-            // Comprimir en el navegador antes de subir (solo imágenes).
-            let uploadBlob: Blob = file
-            let filename = file.name
-            let contentType = file.type || "application/octet-stream"
-            if (compressible) {
-               const c = await compressImage(file)
-               uploadBlob = c.blob
-               contentType = c.contentType
-               const base = file.name.replace(/\.[^./\\]+$/, "")
-               filename = `${base}.${c.ext}`
-               savedOriginal += c.originalSize
-               savedFinal += c.size
+            // Cada archivo se intenta de forma independiente: si uno falla,
+            // los demás siguen y no se pierde lo ya subido.
+            try {
+               // Comprimir en el navegador antes de subir (solo imágenes).
+               let uploadBlob: Blob = file
+               let filename = file.name
+               let contentType = file.type || "application/octet-stream"
+               if (compressible) {
+                  const c = await compressImage(file)
+                  uploadBlob = c.blob
+                  contentType = c.contentType
+                  const base = file.name.replace(/\.[^./\\]+$/, "")
+                  filename = `${base}.${c.ext}`
+                  savedOriginal += c.originalSize
+                  savedFinal += c.size
+               }
+
+               const res = await fetch("/api/uploads", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ kind: bucketKind, propertyId: propertyId || "nueva", filename }),
+               })
+               const data = await res.json()
+               if (!res.ok) throw new Error(data.error || "Error al pedir URL de subida")
+               const { error: upErr } = await supabase.storage
+                  .from(data.bucket)
+                  .uploadToSignedUrl(data.path, data.token, uploadBlob, { contentType })
+               if (upErr) throw new Error(upErr.message)
+               urls.push(data.publicUrl)
+
+               // Persistimos incrementalmente lo que ya subió, para que un
+               // corte o cierre de pestaña no borre el progreso del lote.
+               if (kind === "images") setForm(prev => ({ ...prev, images: [...prev.images, data.publicUrl] }))
+               else if (kind === "floor") setForm(prev => ({ ...prev, floorPlans: [...prev.floorPlans, data.publicUrl] }))
+               else setForm(prev => ({ ...prev, technicalSheetUrl: data.publicUrl }))
+            } catch {
+               failed.push(file.name)
             }
-
-            const res = await fetch("/api/uploads", {
-               method: "POST",
-               headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ kind: bucketKind, propertyId: propertyId || "nueva", filename }),
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || "Error al pedir URL de subida")
-            const { error: upErr } = await supabase.storage
-               .from(data.bucket)
-               .uploadToSignedUrl(data.path, data.token, uploadBlob, { contentType })
-            if (upErr) throw new Error(upErr.message)
-            urls.push(data.publicUrl)
          }
-         setForm(prev => {
-            if (kind === "images") return { ...prev, images: [...prev.images, ...urls] }
-            if (kind === "floor") return { ...prev, floorPlans: [...prev.floorPlans, ...urls] }
-            return { ...prev, technicalSheetUrl: urls[0] }
-         })
-         if (compressible && savedOriginal > 0) {
+
+         if (compressible && savedOriginal > 0 && urls.length > 0) {
             const pct = Math.round((1 - savedFinal / savedOriginal) * 100)
-            setUploadNote(
-               `${urls.length} ${urls.length === 1 ? "archivo optimizado" : "archivos optimizados"}: ` +
-               `${prettyBytes(savedOriginal)} → ${prettyBytes(savedFinal)} (−${pct}%)`
-            )
+            const okMsg = `${urls.length} ${urls.length === 1 ? "imagen subida" : "imágenes subidas"} y optimizadas: ${prettyBytes(savedOriginal)} → ${prettyBytes(savedFinal)} (−${pct}%)`
+            setUploadNote(okMsg)
          } else {
-            setUploadNote("")
+            setUploadNote(urls.length > 0 ? `${urls.length} archivo(s) subido(s).` : "")
+         }
+         if (failed.length > 0) {
+            setError(`No se pudieron subir ${failed.length} archivo(s): ${failed.slice(0, 3).join(", ")}${failed.length > 3 ? "…" : ""}. Vuelve a intentarlos.`)
          }
       } catch (err: any) {
          setError(err.message || "Error al subir archivos")
