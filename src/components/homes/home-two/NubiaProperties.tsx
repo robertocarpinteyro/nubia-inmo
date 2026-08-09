@@ -9,6 +9,7 @@ interface Property {
    title: string
    operation: string
    price: number | null
+   discountPrice?: number | null
    currency: string
    city?: string | null
    state?: string | null
@@ -98,7 +99,16 @@ const NubiaProperties = () => {
                               <span className="card-tag">{transTag(p.operation)}</span>
                            </div>
                            <div className="card-body-inner">
-                              <div className="card-price">{formatPrice(p.price, p.currency || "MXN")}</div>
+                              {p.discountPrice && p.price && p.discountPrice > 0 && p.discountPrice < p.price ? (
+                                 <div className="card-price">
+                                    <span style={{ textDecoration: "line-through", opacity: 0.45, fontWeight: 500, fontSize: "0.62em", marginRight: 8 }}>
+                                       {formatPrice(p.price, p.currency || "MXN")}
+                                    </span>
+                                    {formatPrice(p.discountPrice, p.currency || "MXN")}
+                                 </div>
+                              ) : (
+                                 <div className="card-price">{formatPrice(p.price, p.currency || "MXN")}</div>
+                              )}
                               <div className="card-title">{p.title}</div>
                               <div className="card-location">
                                  <i className="bi bi-geo-alt"></i>
