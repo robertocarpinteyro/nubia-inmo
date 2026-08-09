@@ -7,9 +7,13 @@ interface Vendor {
    name: string
    email: string
    isActive: boolean
+   partnerAgencyId?: number | null
+   agencyName?: string | null
    propertiesCount?: number
    propertiesSold?: number
 }
+
+interface Agency { id: number; name: string }
 
 interface NewVendorForm { name: string; email: string; password: string }
 
@@ -30,6 +34,21 @@ const VendorsPage = () => {
    }
 
    useEffect(() => { load() }, [])
+
+   const [agencies, setAgencies] = useState<Agency[]>([])
+   useEffect(() => {
+      fetch("/api/admin/agencies").then((r) => r.json())
+         .then((d) => setAgencies(Array.isArray(d) ? d : [])).catch(() => setAgencies([]))
+   }, [])
+
+   const setAgency = async (id: number, partnerAgencyId: string) => {
+      await fetch(`/api/admin/users/${id}`, {
+         method: "PATCH",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ partnerAgencyId: partnerAgencyId || null }),
+      })
+      load()
+   }
 
    const handleCreate = async (e: React.FormEvent) => {
       e.preventDefault()
@@ -87,6 +106,7 @@ const VendorsPage = () => {
                   <thead>
                      <tr>
                         <th>Vendedor</th>
+                        <th>Inmobiliaria</th>
                         <th>Propiedades</th>
                         <th>Vendidas</th>
                         <th>Estado</th>
@@ -99,6 +119,16 @@ const VendorsPage = () => {
                            <td>
                               <div className="cell-bold">{v.name}</div>
                               <div className="cell-muted">{v.email}</div>
+                           </td>
+                           <td>
+                              <select
+                                 value={v.partnerAgencyId ? String(v.partnerAgencyId) : ""}
+                                 onChange={(e) => setAgency(v.id, e.target.value)}
+                                 style={{ fontSize: 13, padding: "4px 8px", borderRadius: 6, border: "1px solid rgba(0,0,0,0.15)", maxWidth: 180 }}
+                              >
+                                 <option value="">Nubia (interno)</option>
+                                 {agencies.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                              </select>
                            </td>
                            <td><span className="nubia-badge purple">{v.propertiesCount ?? 0}</span></td>
                            <td><span className="nubia-badge green">{v.propertiesSold ?? 0}</span></td>

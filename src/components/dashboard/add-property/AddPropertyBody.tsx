@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { compressImage, prettyBytes } from "@/lib/images/compress"
 
 const PROPERTY_TYPES = [
    { value: "casa", label: "Casa" },
@@ -40,6 +41,15 @@ interface FormState {
    featured: boolean
    published: boolean
    status: string
+   isCollaboration: boolean
+   partnerAgencyId: string
+   commissionPercentage: string
+   commissionSplitPercent: string
+}
+
+interface Agency {
+   id: number
+   name: string
 }
 
 const emptyForm: FormState = {
@@ -49,6 +59,7 @@ const emptyForm: FormState = {
    builtArea: "", amenities: "", images: [], floorPlans: [], videoUrl: "",
    virtualTour: "", technicalSheetUrl: "", googleMapsUrl: "", featured: false,
    published: true, status: "available",
+   isCollaboration: false, partnerAgencyId: "", commissionPercentage: "", commissionSplitPercent: "",
 }
 
 const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
@@ -57,6 +68,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
    const [saving, setSaving] = useState(false)
    const [error, setError] = useState("")
    const [uploading, setUploading] = useState<"images" | "floor" | "doc" | null>(null)
+   const [uploadNote, setUploadNote] = useState("")
    const [form, setForm] = useState<FormState>(emptyForm)
 
    useEffect(() => {
@@ -77,11 +89,72 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   amenities: Array.isArray(data.amenities) ? data.amenities.join(", ") : "",
                   images: Array.isArray(data.images) ? data.images : [],
                   floorPlans: Array.isArray(data.floorPlans) ? data.floorPlans : [],
+                  isCollaboration: !!data.isCollaboration,
+                  partnerAgencyId: data.partnerAgencyId != null ? String(data.partnerAgencyId) : "",
+                  commissionPercentage: data.commissionPercentage != null ? String(data.commissionPercentage) : "",
+                  commissionSplitPercent: data.commissionSplitPercent != null ? String(data.commissionSplitPercent) : "",
                }))
             }
          })
          .catch(console.error)
    }, [propertyId])
+
+   // Inmobiliarias colaboradoras (para el selector).
+   const [agencies, setAgencies] = useState<Agency[]>([])
+   useEffect(() => {
+      fetch("/api/admin/agencies")
+         .then(r => r.json())
+         .then(d => setAgencies(Array.isArray(d) ? d : []))
+         .catch(() => setAgencies([]))
+   }, [])
+
+   // Documentos de colaboración (solo en edición).
+   const [docs, setDocs] = useState<{ id: number; name: string; signedUrl: string | null }[]>([])
+   const [docUploading, setDocUploading] = useState(false)
+   const loadDocs = () => {
+      if (!propertyId) return
+      fetch(`/api/admin/collaboration-docs?propertyId=${propertyId}`)
+         .then(r => r.json())
+         .then(d => setDocs(Array.isArray(d) ? d : []))
+         .catch(() => setDocs([]))
+   }
+   useEffect(() => { loadDocs() }, [propertyId])
+
+   const uploadCollabDoc = async (files: FileList | null) => {
+      if (!files || files.length === 0 || !propertyId) return
+      setDocUploading(true)
+      setError("")
+      try {
+         for (const file of Array.from(files)) {
+            const res = await fetch("/api/uploads", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ kind: "collab", propertyId, filename: file.name }),
+            })
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.error || "Error al pedir URL de subida")
+            const { error: upErr } = await supabase.storage
+               .from(data.bucket)
+               .uploadToSignedUrl(data.path, data.token, file, { contentType: file.type || undefined })
+            if (upErr) throw new Error(upErr.message)
+            await fetch("/api/admin/collaboration-docs", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ propertyId, name: file.name, path: data.path }),
+            })
+         }
+         loadDocs()
+      } catch (err: any) {
+         setError(err.message || "Error al subir el documento")
+      } finally {
+         setDocUploading(false)
+      }
+   }
+
+   const deleteCollabDoc = async (id: number) => {
+      await fetch(`/api/admin/collaboration-docs?id=${id}`, { method: "DELETE" })
+      loadDocs()
+   }
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value, type } = e.target as any
@@ -94,30 +167,72 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
       if (!files || files.length === 0) return
       setUploading(kind)
       setError("")
+      setUploadNote("")
       const bucketKind = kind === "doc" ? "docs" : "images"
+      const compressible = kind !== "doc" // PDFs (docs) no se comprimen
       const urls: string[] = []
+      const failed: string[] = []
+      let savedOriginal = 0
+      let savedFinal = 0
       try {
-         for (const file of Array.from(files)) {
-            const res = await fetch("/api/uploads", {
-               method: "POST",
-               headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ kind: bucketKind, propertyId: propertyId || "nueva", filename: file.name }),
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || "Error al pedir URL de subida")
-            const { error: upErr } = await supabase.storage
-               .from(data.bucket)
-               .uploadToSignedUrl(data.path, data.token, file)
-            if (upErr) throw new Error(upErr.message)
-            urls.push(data.publicUrl)
+         const list = Array.from(files)
+         for (let i = 0; i < list.length; i++) {
+            const file = list[i]
+            setUploadNote(`Subiendo ${i + 1}/${list.length}: ${file.name}…`)
+
+            // Cada archivo se intenta de forma independiente: si uno falla,
+            // los demás siguen y no se pierde lo ya subido.
+            try {
+               // Comprimir en el navegador antes de subir (solo imágenes).
+               let uploadBlob: Blob = file
+               let filename = file.name
+               let contentType = file.type || "application/octet-stream"
+               if (compressible) {
+                  const c = await compressImage(file)
+                  uploadBlob = c.blob
+                  contentType = c.contentType
+                  const base = file.name.replace(/\.[^./\\]+$/, "")
+                  filename = `${base}.${c.ext}`
+                  savedOriginal += c.originalSize
+                  savedFinal += c.size
+               }
+
+               const res = await fetch("/api/uploads", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ kind: bucketKind, propertyId: propertyId || "nueva", filename }),
+               })
+               const data = await res.json()
+               if (!res.ok) throw new Error(data.error || "Error al pedir URL de subida")
+               const { error: upErr } = await supabase.storage
+                  .from(data.bucket)
+                  .uploadToSignedUrl(data.path, data.token, uploadBlob, { contentType })
+               if (upErr) throw new Error(upErr.message)
+               urls.push(data.publicUrl)
+
+               // Persistimos incrementalmente lo que ya subió, para que un
+               // corte o cierre de pestaña no borre el progreso del lote.
+               if (kind === "images") setForm(prev => ({ ...prev, images: [...prev.images, data.publicUrl] }))
+               else if (kind === "floor") setForm(prev => ({ ...prev, floorPlans: [...prev.floorPlans, data.publicUrl] }))
+               else setForm(prev => ({ ...prev, technicalSheetUrl: data.publicUrl }))
+            } catch {
+               failed.push(file.name)
+            }
          }
-         setForm(prev => {
-            if (kind === "images") return { ...prev, images: [...prev.images, ...urls] }
-            if (kind === "floor") return { ...prev, floorPlans: [...prev.floorPlans, ...urls] }
-            return { ...prev, technicalSheetUrl: urls[0] }
-         })
+
+         if (compressible && savedOriginal > 0 && urls.length > 0) {
+            const pct = Math.round((1 - savedFinal / savedOriginal) * 100)
+            const okMsg = `${urls.length} ${urls.length === 1 ? "imagen subida" : "imágenes subidas"} y optimizadas: ${prettyBytes(savedOriginal)} → ${prettyBytes(savedFinal)} (−${pct}%)`
+            setUploadNote(okMsg)
+         } else {
+            setUploadNote(urls.length > 0 ? `${urls.length} archivo(s) subido(s).` : "")
+         }
+         if (failed.length > 0) {
+            setError(`No se pudieron subir ${failed.length} archivo(s): ${failed.slice(0, 3).join(", ")}${failed.length > 3 ? "…" : ""}. Vuelve a intentarlos.`)
+         }
       } catch (err: any) {
          setError(err.message || "Error al subir archivos")
+         setUploadNote("")
       } finally {
          setUploading(null)
       }
@@ -161,6 +276,10 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
             featured: form.featured,
             published: form.published,
             status: form.status,
+            isCollaboration: form.isCollaboration,
+            partnerAgencyId: form.partnerAgencyId || null,
+            commissionPercentage: form.commissionPercentage,
+            commissionSplitPercent: form.commissionSplitPercent,
          }
          const url = propertyId ? `/api/properties/${propertyId}` : "/api/properties"
          const method = propertyId ? "PATCH" : "POST"
@@ -299,6 +418,10 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   <div className="nubia-form-group">
                      <label>Subir imágenes {uploading === "images" && <span style={{ color: "#7B4FFF" }}>· subiendo…</span>}</label>
                      <input type="file" accept="image/*" multiple disabled={uploading === "images"} onChange={e => uploadFiles(e.target.files, "images")} />
+                     <div style={{ fontSize: 11, opacity: 0.55, marginTop: 4 }}>
+                        Las imágenes se optimizan automáticamente (máx. 2000px, WebP) antes de subir. Puedes seleccionar varias a la vez.
+                     </div>
+                     {uploadNote && <div style={{ fontSize: 12, color: "#10b981", marginTop: 6 }}>{uploadNote}</div>}
                      {form.images.length > 0 && thumb(form.images, removeImage)}
                   </div>
                </div>
@@ -320,6 +443,87 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                      <input type="file" accept="application/pdf" disabled={uploading === "doc"} onChange={e => uploadFiles(e.target.files, "doc")} />
                   </div>
                </div>
+
+               {sectionLabel("Colaboración")}
+               <div className="col-12">
+                  <div className="form-check">
+                     <input className="form-check-input" type="checkbox" name="isCollaboration" id="collabCheck"
+                        checked={form.isCollaboration} onChange={handleChange} />
+                     <label className="form-check-label" htmlFor="collabCheck">
+                        Esta propiedad es en colaboración con otra inmobiliaria
+                     </label>
+                  </div>
+               </div>
+               {form.isCollaboration && (
+                  <>
+                     <div className="col-md-4">
+                        <div className="nubia-form-group">
+                           <label>Inmobiliaria colaboradora</label>
+                           <select name="partnerAgencyId" value={form.partnerAgencyId} onChange={handleChange}>
+                              <option value="">— Selecciona —</option>
+                              {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                           </select>
+                           <div style={{ fontSize: 11, opacity: 0.55, marginTop: 4 }}>
+                              ¿No aparece? Créala en Dashboard → Colaboraciones.
+                           </div>
+                        </div>
+                     </div>
+                     <div className="col-md-4">
+                        <div className="nubia-form-group">
+                           <label>Comisión total (%)</label>
+                           <input type="number" step="any" min="0" name="commissionPercentage"
+                              value={form.commissionPercentage} onChange={handleChange} placeholder="1.5" />
+                        </div>
+                     </div>
+                     <div className="col-md-4">
+                        <div className="nubia-form-group">
+                           <label>Tu parte del reparto (%)</label>
+                           <input type="number" step="any" min="0" max="100" name="commissionSplitPercent"
+                              value={form.commissionSplitPercent} onChange={handleChange} placeholder="50" />
+                           {form.commissionPercentage && form.commissionSplitPercent && (
+                              <div style={{ fontSize: 12, color: "#10b981", marginTop: 4 }}>
+                                 Nubia recibe {((Number(form.commissionPercentage) * Number(form.commissionSplitPercent)) / 100).toFixed(3)}% del inmueble.
+                              </div>
+                           )}
+                        </div>
+                     </div>
+                     <div className="col-12">
+                        <div className="nubia-form-group">
+                           <label>Documentos de la colaboración {docUploading && <span style={{ color: "#7B4FFF" }}>· subiendo…</span>}</label>
+                           {propertyId ? (
+                              <>
+                                 <input type="file" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx"
+                                    disabled={docUploading} onChange={e => uploadCollabDoc(e.target.files)} />
+                                 <div style={{ fontSize: 11, opacity: 0.55, marginTop: 4 }}>
+                                    PDF, imágenes u hojas de cálculo. Privados: solo visibles para el equipo.
+                                 </div>
+                                 {docs.length > 0 && (
+                                    <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
+                                       {docs.map(d => (
+                                          <li key={d.id} className="d-flex align-items-center justify-content-between"
+                                             style={{ padding: "6px 0", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                             <a href={d.signedUrl ?? "#"} target="_blank" rel="noreferrer"
+                                                style={{ fontSize: 13 }}>
+                                                <i className="bi bi-file-earmark-text" style={{ marginRight: 6 }}></i>{d.name}
+                                             </a>
+                                             <button type="button" onClick={() => deleteCollabDoc(d.id)}
+                                                style={{ border: "none", background: "none", color: "#F87171", fontSize: 12, cursor: "pointer" }}>
+                                                Quitar
+                                             </button>
+                                          </li>
+                                       ))}
+                                    </ul>
+                                 )}
+                              </>
+                           ) : (
+                              <div style={{ fontSize: 12, opacity: 0.6 }}>
+                                 Guarda la propiedad primero para poder adjuntar documentos.
+                              </div>
+                           )}
+                        </div>
+                     </div>
+                  </>
+               )}
 
                {sectionLabel("Publicación")}
                <div className="col-md-6 d-flex align-items-center gap-4">

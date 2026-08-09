@@ -10,11 +10,15 @@ export async function GET() {
 
   const admin = createAdminSupabase()
   const { data: vendors, error } = await (admin.from("users" as any) as any)
-    .select("id, name, email, isActive")
+    .select('id, name, email, isActive, "partnerAgencyId"')
     .eq("role", "vendedor")
     .order("createdAt", { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Mapa id→nombre de inmobiliaria para etiquetar cada vendedor.
+  const { data: agencies } = await (admin.from("partner_agencies" as any) as any).select("id, name")
+  const agencyName = new Map((agencies ?? []).map((a: any) => [a.id, a.name]))
 
   const result = await Promise.all(
     (vendors ?? []).map(async (v: any) => {
@@ -29,6 +33,8 @@ export async function GET() {
         name: v.name,
         email: v.email,
         isActive: v.isActive,
+        partnerAgencyId: v.partnerAgencyId ?? null,
+        agencyName: v.partnerAgencyId ? agencyName.get(v.partnerAgencyId) ?? null : null,
         propertiesCount: propertiesCount ?? 0,
         propertiesSold: propertiesSold ?? 0,
       }

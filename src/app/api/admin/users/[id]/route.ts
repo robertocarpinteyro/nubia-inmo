@@ -38,6 +38,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const patch: Record<string, unknown> = { updatedAt: new Date().toISOString() }
   if (typeof body?.isActive === "boolean") patch.isActive = body.isActive
+  if (body?.partnerAgencyId !== undefined) {
+    const pid = body.partnerAgencyId === null || body.partnerAgencyId === ""
+      ? null
+      : Number(body.partnerAgencyId)
+    patch.partnerAgencyId = Number.isFinite(pid as number) ? pid : null
+  }
   if (body?.role !== undefined) {
     if (!ROLES.includes(body.role)) {
       return NextResponse.json({ error: "Rol inválido" }, { status: 400 })
