@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic"
 const BUCKETS = {
   images: "property-images",
   docs: "property-docs",
+  collab: "collaboration-docs",
 } as const
 
 const extFromName = (name: string) => {
@@ -35,7 +36,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 })
   }
 
-  const kind: keyof typeof BUCKETS = body.kind === "docs" ? "docs" : "images"
+  const kind: keyof typeof BUCKETS =
+    body.kind === "docs" ? "docs" : body.kind === "collab" ? "collab" : "images"
   const bucket = BUCKETS[kind]
   const filename = String(body.filename || "file")
   const folder = String(body.propertyId || "_unassigned").replace(/[^a-zA-Z0-9_-]/g, "-")

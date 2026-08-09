@@ -41,6 +41,15 @@ interface FormState {
    featured: boolean
    published: boolean
    status: string
+   isCollaboration: boolean
+   partnerAgencyId: string
+   commissionPercentage: string
+   commissionSplitPercent: string
+}
+
+interface Agency {
+   id: number
+   name: string
 }
 
 const emptyForm: FormState = {
@@ -50,6 +59,7 @@ const emptyForm: FormState = {
    builtArea: "", amenities: "", images: [], floorPlans: [], videoUrl: "",
    virtualTour: "", technicalSheetUrl: "", googleMapsUrl: "", featured: false,
    published: true, status: "available",
+   isCollaboration: false, partnerAgencyId: "", commissionPercentage: "", commissionSplitPercent: "",
 }
 
 const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
@@ -79,11 +89,72 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   amenities: Array.isArray(data.amenities) ? data.amenities.join(", ") : "",
                   images: Array.isArray(data.images) ? data.images : [],
                   floorPlans: Array.isArray(data.floorPlans) ? data.floorPlans : [],
+                  isCollaboration: !!data.isCollaboration,
+                  partnerAgencyId: data.partnerAgencyId != null ? String(data.partnerAgencyId) : "",
+                  commissionPercentage: data.commissionPercentage != null ? String(data.commissionPercentage) : "",
+                  commissionSplitPercent: data.commissionSplitPercent != null ? String(data.commissionSplitPercent) : "",
                }))
             }
          })
          .catch(console.error)
    }, [propertyId])
+
+   // Inmobiliarias colaboradoras (para el selector).
+   const [agencies, setAgencies] = useState<Agency[]>([])
+   useEffect(() => {
+      fetch("/api/admin/agencies")
+         .then(r => r.json())
+         .then(d => setAgencies(Array.isArray(d) ? d : []))
+         .catch(() => setAgencies([]))
+   }, [])
+
+   // Documentos de colaboración (solo en edición).
+   const [docs, setDocs] = useState<{ id: number; name: string; signedUrl: string | null }[]>([])
+   const [docUploading, setDocUploading] = useState(false)
+   const loadDocs = () => {
+      if (!propertyId) return
+      fetch(`/api/admin/collaboration-docs?propertyId=${propertyId}`)
+         .then(r => r.json())
+         .then(d => setDocs(Array.isArray(d) ? d : []))
+         .catch(() => setDocs([]))
+   }
+   useEffect(() => { loadDocs() }, [propertyId])
+
+   const uploadCollabDoc = async (files: FileList | null) => {
+      if (!files || files.length === 0 || !propertyId) return
+      setDocUploading(true)
+      setError("")
+      try {
+         for (const file of Array.from(files)) {
+            const res = await fetch("/api/uploads", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ kind: "collab", propertyId, filename: file.name }),
+            })
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.error || "Error al pedir URL de subida")
+            const { error: upErr } = await supabase.storage
+               .from(data.bucket)
+               .uploadToSignedUrl(data.path, data.token, file, { contentType: file.type || undefined })
+            if (upErr) throw new Error(upErr.message)
+            await fetch("/api/admin/collaboration-docs", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ propertyId, name: file.name, path: data.path }),
+            })
+         }
+         loadDocs()
+      } catch (err: any) {
+         setError(err.message || "Error al subir el documento")
+      } finally {
+         setDocUploading(false)
+      }
+   }
+
+   const deleteCollabDoc = async (id: number) => {
+      await fetch(`/api/admin/collaboration-docs?id=${id}`, { method: "DELETE" })
+      loadDocs()
+   }
 
    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value, type } = e.target as any
@@ -205,6 +276,10 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
             featured: form.featured,
             published: form.published,
             status: form.status,
+            isCollaboration: form.isCollaboration,
+            partnerAgencyId: form.partnerAgencyId || null,
+            commissionPercentage: form.commissionPercentage,
+            commissionSplitPercent: form.commissionSplitPercent,
          }
          const url = propertyId ? `/api/properties/${propertyId}` : "/api/properties"
          const method = propertyId ? "PATCH" : "POST"
@@ -368,6 +443,87 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                      <input type="file" accept="application/pdf" disabled={uploading === "doc"} onChange={e => uploadFiles(e.target.files, "doc")} />
                   </div>
                </div>
+
+               {sectionLabel("Colaboración")}
+               <div className="col-12">
+                  <div className="form-check">
+                     <input className="form-check-input" type="checkbox" name="isCollaboration" id="collabCheck"
+                        checked={form.isCollaboration} onChange={handleChange} />
+                     <label className="form-check-label" htmlFor="collabCheck">
+                        Esta propiedad es en colaboración con otra inmobiliaria
+                     </label>
+                  </div>
+               </div>
+               {form.isCollaboration && (
+                  <>
+                     <div className="col-md-4">
+                        <div className="nubia-form-group">
+                           <label>Inmobiliaria colaboradora</label>
+                           <select name="partnerAgencyId" value={form.partnerAgencyId} onChange={handleChange}>
+                              <option value="">— Selecciona —</option>
+                              {agencies.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                           </select>
+                           <div style={{ fontSize: 11, opacity: 0.55, marginTop: 4 }}>
+                              ¿No aparece? Créala en Dashboard → Colaboraciones.
+                           </div>
+                        </div>
+                     </div>
+                     <div className="col-md-4">
+                        <div className="nubia-form-group">
+                           <label>Comisión total (%)</label>
+                           <input type="number" step="any" min="0" name="commissionPercentage"
+                              value={form.commissionPercentage} onChange={handleChange} placeholder="1.5" />
+                        </div>
+                     </div>
+                     <div className="col-md-4">
+                        <div className="nubia-form-group">
+                           <label>Tu parte del reparto (%)</label>
+                           <input type="number" step="any" min="0" max="100" name="commissionSplitPercent"
+                              value={form.commissionSplitPercent} onChange={handleChange} placeholder="50" />
+                           {form.commissionPercentage && form.commissionSplitPercent && (
+                              <div style={{ fontSize: 12, color: "#10b981", marginTop: 4 }}>
+                                 Nubia recibe {((Number(form.commissionPercentage) * Number(form.commissionSplitPercent)) / 100).toFixed(3)}% del inmueble.
+                              </div>
+                           )}
+                        </div>
+                     </div>
+                     <div className="col-12">
+                        <div className="nubia-form-group">
+                           <label>Documentos de la colaboración {docUploading && <span style={{ color: "#7B4FFF" }}>· subiendo…</span>}</label>
+                           {propertyId ? (
+                              <>
+                                 <input type="file" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx"
+                                    disabled={docUploading} onChange={e => uploadCollabDoc(e.target.files)} />
+                                 <div style={{ fontSize: 11, opacity: 0.55, marginTop: 4 }}>
+                                    PDF, imágenes u hojas de cálculo. Privados: solo visibles para el equipo.
+                                 </div>
+                                 {docs.length > 0 && (
+                                    <ul style={{ listStyle: "none", padding: 0, marginTop: 10 }}>
+                                       {docs.map(d => (
+                                          <li key={d.id} className="d-flex align-items-center justify-content-between"
+                                             style={{ padding: "6px 0", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                                             <a href={d.signedUrl ?? "#"} target="_blank" rel="noreferrer"
+                                                style={{ fontSize: 13 }}>
+                                                <i className="bi bi-file-earmark-text" style={{ marginRight: 6 }}></i>{d.name}
+                                             </a>
+                                             <button type="button" onClick={() => deleteCollabDoc(d.id)}
+                                                style={{ border: "none", background: "none", color: "#F87171", fontSize: 12, cursor: "pointer" }}>
+                                                Quitar
+                                             </button>
+                                          </li>
+                                       ))}
+                                    </ul>
+                                 )}
+                              </>
+                           ) : (
+                              <div style={{ fontSize: 12, opacity: 0.6 }}>
+                                 Guarda la propiedad primero para poder adjuntar documentos.
+                              </div>
+                           )}
+                        </div>
+                     </div>
+                  </>
+               )}
 
                {sectionLabel("Publicación")}
                <div className="col-md-6 d-flex align-items-center gap-4">

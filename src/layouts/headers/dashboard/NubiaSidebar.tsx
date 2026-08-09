@@ -14,6 +14,7 @@ const adminNav: NavItem[] = [
    { href: "/dashboard/properties-list", icon: "bi-building", label: "Propiedades" },
    { href: "/dashboard/add-property", icon: "bi-plus-circle", label: "Añadir Propiedad" },
    { href: "/dashboard/vendors", icon: "bi-people", label: "Vendedores" },
+   { href: "/dashboard/collaborations", icon: "bi-briefcase", label: "Colaboraciones" },
    { href: "/dashboard/users", icon: "bi-person-lines-fill", label: "Usuarios" },
    { href: "/dashboard/economy", icon: "bi-bar-chart-line", label: "Economía" },
 ]

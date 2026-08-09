@@ -42,6 +42,11 @@ export interface PropertyRow {
   amenities: string[] | null
   development: string | null
   virtualTour: string | null
+  // Colaboraciones con otras inmobiliarias:
+  isCollaboration: boolean | null
+  partnerAgencyId: number | null
+  commissionPercentage: number | string | null
+  commissionSplitPercent: number | string | null
 }
 
 // ── Catálogos de mapeo UI(es) <-> DB(es) ──────────────────────────────
@@ -100,6 +105,11 @@ export interface PropertyFormPayload {
   virtualTour?: string
   technicalSheetUrl?: string
   googleMapsUrl?: string
+  // Colaboraciones:
+  isCollaboration?: boolean
+  partnerAgencyId?: number | string | null
+  commissionPercentage?: number | string
+  commissionSplitPercent?: number | string
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
@@ -158,6 +168,12 @@ export function formToDbColumns(form: PropertyFormPayload, isUpdate = false) {
     videoUrl: form.videoUrl || null,
     technicalSheet: form.technicalSheetUrl || null,
     googleMapsUrl: form.googleMapsUrl || null,
+    isCollaboration: !!form.isCollaboration,
+    partnerAgencyId: form.isCollaboration ? intOrNull(form.partnerAgencyId) : null,
+    commissionPercentage: num(form.commissionPercentage) ?? (form.isCollaboration ? 1.5 : 4),
+    commissionSplitPercent: form.isCollaboration
+      ? num(form.commissionSplitPercent) ?? 50
+      : null,
     updatedAt: new Date().toISOString(),
   }
 
@@ -202,6 +218,10 @@ export function dbRowToForm(row: PropertyRow) {
     virtualTour: row.virtualTour ?? "",
     technicalSheetUrl: row.technicalSheet ?? "",
     googleMapsUrl: row.googleMapsUrl ?? "",
+    isCollaboration: row.isCollaboration ?? false,
+    partnerAgencyId: row.partnerAgencyId ?? null,
+    commissionPercentage: row.commissionPercentage != null ? String(row.commissionPercentage) : "",
+    commissionSplitPercent: row.commissionSplitPercent != null ? String(row.commissionSplitPercent) : "",
   }
 }
 
