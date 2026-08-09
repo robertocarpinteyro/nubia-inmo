@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { compressImage, prettyBytes } from "@/lib/images/compress"
 
 const PROPERTY_TYPES = [
    { value: "casa", label: "Casa" },
@@ -57,6 +58,7 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
    const [saving, setSaving] = useState(false)
    const [error, setError] = useState("")
    const [uploading, setUploading] = useState<"images" | "floor" | "doc" | null>(null)
+   const [uploadNote, setUploadNote] = useState("")
    const [form, setForm] = useState<FormState>(emptyForm)
 
    useEffect(() => {
@@ -94,20 +96,42 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
       if (!files || files.length === 0) return
       setUploading(kind)
       setError("")
+      setUploadNote("")
       const bucketKind = kind === "doc" ? "docs" : "images"
+      const compressible = kind !== "doc" // PDFs (docs) no se comprimen
       const urls: string[] = []
+      let savedOriginal = 0
+      let savedFinal = 0
       try {
-         for (const file of Array.from(files)) {
+         const list = Array.from(files)
+         for (let i = 0; i < list.length; i++) {
+            const file = list[i]
+            setUploadNote(`Procesando ${i + 1}/${list.length}: ${file.name}…`)
+
+            // Comprimir en el navegador antes de subir (solo imágenes).
+            let uploadBlob: Blob = file
+            let filename = file.name
+            let contentType = file.type || "application/octet-stream"
+            if (compressible) {
+               const c = await compressImage(file)
+               uploadBlob = c.blob
+               contentType = c.contentType
+               const base = file.name.replace(/\.[^./\\]+$/, "")
+               filename = `${base}.${c.ext}`
+               savedOriginal += c.originalSize
+               savedFinal += c.size
+            }
+
             const res = await fetch("/api/uploads", {
                method: "POST",
                headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ kind: bucketKind, propertyId: propertyId || "nueva", filename: file.name }),
+               body: JSON.stringify({ kind: bucketKind, propertyId: propertyId || "nueva", filename }),
             })
             const data = await res.json()
             if (!res.ok) throw new Error(data.error || "Error al pedir URL de subida")
             const { error: upErr } = await supabase.storage
                .from(data.bucket)
-               .uploadToSignedUrl(data.path, data.token, file)
+               .uploadToSignedUrl(data.path, data.token, uploadBlob, { contentType })
             if (upErr) throw new Error(upErr.message)
             urls.push(data.publicUrl)
          }
@@ -116,8 +140,18 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
             if (kind === "floor") return { ...prev, floorPlans: [...prev.floorPlans, ...urls] }
             return { ...prev, technicalSheetUrl: urls[0] }
          })
+         if (compressible && savedOriginal > 0) {
+            const pct = Math.round((1 - savedFinal / savedOriginal) * 100)
+            setUploadNote(
+               `${urls.length} ${urls.length === 1 ? "archivo optimizado" : "archivos optimizados"}: ` +
+               `${prettyBytes(savedOriginal)} → ${prettyBytes(savedFinal)} (−${pct}%)`
+            )
+         } else {
+            setUploadNote("")
+         }
       } catch (err: any) {
          setError(err.message || "Error al subir archivos")
+         setUploadNote("")
       } finally {
          setUploading(null)
       }
@@ -299,6 +333,10 @@ const AddPropertyBody = ({ propertyId }: { propertyId?: string }) => {
                   <div className="nubia-form-group">
                      <label>Subir imágenes {uploading === "images" && <span style={{ color: "#7B4FFF" }}>· subiendo…</span>}</label>
                      <input type="file" accept="image/*" multiple disabled={uploading === "images"} onChange={e => uploadFiles(e.target.files, "images")} />
+                     <div style={{ fontSize: 11, opacity: 0.55, marginTop: 4 }}>
+                        Las imágenes se optimizan automáticamente (máx. 2000px, WebP) antes de subir. Puedes seleccionar varias a la vez.
+                     </div>
+                     {uploadNote && <div style={{ fontSize: 12, color: "#10b981", marginTop: 6 }}>{uploadNote}</div>}
                      {form.images.length > 0 && thumb(form.images, removeImage)}
                   </div>
                </div>
