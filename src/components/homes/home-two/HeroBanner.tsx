@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation"
 import { Combobox, Transition } from "@headlessui/react"
 
 // ── Video de fondo del hero ──────────────────────────────────────
-// Servido por Vercel (carpeta public/), NO por Supabase → no consume
-// egress de Supabase. Reemplaza public/hero.mp4 con el video real
-// cuando esté listo; mientras, se muestra el poster de abajo.
-const HERO_VIDEO = "/hero.mp4"
-const HERO_POSTER = "/assets/images/listing/img_10.jpg"
+// Servido por Cloudinary (CDN de video), NO por Supabase → no consume
+// egress de Supabase y se entrega optimizado. El poster es el primer
+// frame del propio video (so_0) para una transición fluida al cargar.
+const HERO_VIDEO =
+   "https://res.cloudinary.com/dxcr9utre/video/upload/v1786491825/Dolly_hacia_el_centro_202608111743_vjqlmd.mp4"
+const HERO_POSTER =
+   "https://res.cloudinary.com/dxcr9utre/video/upload/so_0/v1786491825/Dolly_hacia_el_centro_202608111743_vjqlmd.jpg"
 
 interface Suggestion {
    id: string; title: string; city: string | null; state: string | null
