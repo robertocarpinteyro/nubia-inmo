@@ -23,7 +23,7 @@ const NubiaLogo = () => {
          src="/assets/images/logo/Nubia_Logotipo.png"
          alt="NUBIA"
          height={56}
-         style={{ height: 56, width: "auto", filter: "brightness(0) saturate(100%) invert(17%) sepia(29%) saturate(900%) hue-rotate(172deg) brightness(90%) contrast(95%)" }}
+         style={{ height: 56, width: "auto", maxWidth: "100%", objectFit: "contain", display: "block", filter: "brightness(0) saturate(100%) invert(17%) sepia(29%) saturate(900%) hue-rotate(172deg) brightness(90%) contrast(95%)" }}
          onError={() => setErr(true)}
       />
    )
