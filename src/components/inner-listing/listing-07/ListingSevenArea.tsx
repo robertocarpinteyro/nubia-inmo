@@ -274,6 +274,7 @@ const ListingSevenArea = ({ style }: any) => {
             propertyType: p.type,
             transactionType: p.operation,
             price: p.price,
+            discountPrice: p.discountPrice,
             currency: p.currency,
             address: p.address,
             city: p.city,
