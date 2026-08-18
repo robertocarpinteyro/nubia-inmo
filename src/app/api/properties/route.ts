@@ -41,7 +41,11 @@ export async function GET(req: NextRequest) {
   if (minBedrooms) query = query.gte("bedrooms", Number(minBedrooms))
   if (search) query = query.textSearch("search_vector", search, { type: "websearch", config: "spanish" })
 
-  query = query.order("createdAt", { ascending: false }).range(offset, offset + limit - 1)
+  // Destacadas primero, luego las más recientes.
+  query = query
+    .order("featured", { ascending: false })
+    .order("createdAt", { ascending: false })
+    .range(offset, offset + limit - 1)
 
   const { data, error, count } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
