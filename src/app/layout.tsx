@@ -22,7 +22,7 @@ export default function RootLayout({
         <meta name="author" content="NUBIA Inmobiliaria" />
         {/* Open Graph */}
         <meta property="og:site_name" content="NUBIA Inmobiliaria" />
-        <meta property="og:url" content="https://nubiainmo.mx" />
+        <meta property="og:url" content="https://www.nubiainmobiliaria.mx" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="NUBIA Inmobiliaria — Propiedades en México" />
         <meta property="og:description" content="Conectamos personas con el hogar de sus sueños en México. Propiedades residenciales, comerciales e inversión." />
